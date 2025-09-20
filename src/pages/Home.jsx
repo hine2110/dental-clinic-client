@@ -1,6 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/authContext";
 
 function Home() {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   return (
     <>
       {/* Header */}
@@ -42,7 +46,48 @@ function Home() {
               <i className="mobile-nav-toggle d-xl-none bi bi-list"></i>
             </nav>
 
-            <a className="cta-btn d-none d-sm-block" href="#appointment">Make an Appointment</a>
+            <div className="auth-buttons d-flex align-items-center">
+              {user ? (
+                <div className="d-flex align-items-center">
+                  <span className="me-3 text-white">
+                    Xin chào, {user.firstName} {user.lastName}!
+                  </span>
+                  <button 
+                    className="btn btn-outline-light btn-sm me-2"
+                    onClick={() => {
+                      // Navigate to dashboard based on role
+                      if (user.role === 'patient') navigate('/patient/dashboard');
+                      else if (user.role === 'doctor') navigate('/doctor/dashboard');
+                      else if (user.role === 'admin') navigate('/admin/dashboard');
+                      else if (user.role === 'receptionist') navigate('/receptionist/dashboard');
+                    }}
+                  >
+                    Dashboard
+                  </button>
+                  <button 
+                    className="btn btn-light btn-sm"
+                    onClick={logout}
+                  >
+                    Đăng xuất
+                  </button>
+                </div>
+              ) : (
+                <div className="d-flex align-items-center">
+                  <button 
+                    className="btn btn-outline-light btn-sm me-2"
+                    onClick={() => navigate('/login')}
+                  >
+                    Đăng nhập
+                  </button>
+                  <button 
+                    className="btn btn-light btn-sm"
+                    onClick={() => navigate('/register')}
+                  >
+                    Đăng ký
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
