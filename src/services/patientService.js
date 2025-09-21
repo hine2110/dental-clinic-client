@@ -1,4 +1,3 @@
-// src/services/patientService.js
 import axios from 'axios';
 
 const API = process.env.REACT_APP_API_BASE_URL + '/auth';
@@ -38,3 +37,10 @@ export const logout = (token) =>
       Authorization: `Bearer ${token}`
     }
   });
+
+// Google OAuth
+export const googleLogin = () => {
+  window.location.href = `${process.env.REACT_APP_API_BASE_URL}/auth/google`;
+};
+
+  

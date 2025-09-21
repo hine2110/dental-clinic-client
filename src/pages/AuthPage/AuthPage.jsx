@@ -135,8 +135,8 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="auth-container">
-      <div className={`container ${isActive ? 'active' : ''}`} id="container">
+    <div className="auth-page">
+      <div className={`auth-container ${isActive ? 'active' : ''}`} id="container">
         {/* Register Form */}
         <div className="form-container sign-up">
           <form onSubmit={handleRegister}>
