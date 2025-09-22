@@ -1,7 +1,11 @@
-import React from 'react';
-import AuthButtons from './AuthButtons';
+import React from "react";
+import { Link } from "react-router-dom";
+import AuthButtons from "./AuthButtons";
+import { useAuth } from "../../context/authContext";
 
 function Header({ onOpenLogin, onOpenRegister }) {
+  const { user } = useAuth();
+
   return (
     <header id="header" className="header sticky-top">
       {/* Topbar */}
@@ -16,10 +20,18 @@ function Header({ onOpenLogin, onOpenRegister }) {
             </i>
           </div>
           <div className="social-links d-none d-md-flex align-items-center">
-            <a href="#" className="twitter"><i className="bi bi-twitter-x"></i></a>
-            <a href="#" className="facebook"><i className="bi bi-facebook"></i></a>
-            <a href="#" className="instagram"><i className="bi bi-instagram"></i></a>
-            <a href="#" className="linkedin"><i className="bi bi-linkedin"></i></a>
+            <a href="#" className="twitter">
+              <i className="bi bi-twitter-x"></i>
+            </a>
+            <a href="#" className="facebook">
+              <i className="bi bi-facebook"></i>
+            </a>
+            <a href="#" className="instagram">
+              <i className="bi bi-instagram"></i>
+            </a>
+            <a href="#" className="linkedin">
+              <i className="bi bi-linkedin"></i>
+            </a>
           </div>
         </div>
       </div>
@@ -33,39 +45,103 @@ function Header({ onOpenLogin, onOpenRegister }) {
 
           <nav id="navmenu" className="navmenu">
             <ul>
-              <li><a href="#hero" className="active">Home</a></li>
-              <li><a href="#about">About</a></li>
-              <li><a href="#services">Services</a></li>
-              <li><a href="#departments">Departments</a></li>
-              <li><a href="#doctors">Doctors</a></li>
+              <li>
+                <a href="#hero" className="active">
+                  Home
+                </a>
+              </li>
+              <li>
+                <a href="#about">About</a>
+              </li>
+              <li>
+                <a href="#services">Services</a>
+              </li>
+              <li>
+                <a href="#departments">Departments</a>
+              </li>
+              <li>
+                <a href="#doctors">Doctors</a>
+              </li>
               <li className="dropdown">
-                <a href="#"><span>Dropdown</span> <i className="bi bi-chevron-down toggle-dropdown"></i></a>
+                <a href="#">
+                  <span>Dropdown</span>{" "}
+                  <i className="bi bi-chevron-down toggle-dropdown"></i>
+                </a>
                 <ul>
-                  <li><a href="#">Dropdown 1</a></li>
+                  <li>
+                    <a href="#">Dropdown 1</a>
+                  </li>
                   <li className="dropdown">
-                    <a href="#"><span>Deep Dropdown</span> <i className="bi bi-chevron-down toggle-dropdown"></i></a>
+                    <a href="#">
+                      <span>Deep Dropdown</span>{" "}
+                      <i className="bi bi-chevron-down toggle-dropdown"></i>
+                    </a>
                     <ul>
-                      <li><a href="#">Deep Dropdown 1</a></li>
-                      <li><a href="#">Deep Dropdown 2</a></li>
-                      <li><a href="#">Deep Dropdown 3</a></li>
-                      <li><a href="#">Deep Dropdown 4</a></li>
-                      <li><a href="#">Deep Dropdown 5</a></li>
+                      <li>
+                        <a href="#">Deep Dropdown 1</a>
+                      </li>
+                      <li>
+                        <a href="#">Deep Dropdown 2</a>
+                      </li>
+                      <li>
+                        <a href="#">Deep Dropdown 3</a>
+                      </li>
+                      <li>
+                        <a href="#">Deep Dropdown 4</a>
+                      </li>
+                      <li>
+                        <a href="#">Deep Dropdown 5</a>
+                      </li>
                     </ul>
                   </li>
-                  <li><a href="#">Dropdown 2</a></li>
-                  <li><a href="#">Dropdown 3</a></li>
-                  <li><a href="#">Dropdown 4</a></li>
+                  <li>
+                    <a href="#">Dropdown 2</a>
+                  </li>
+                  <li>
+                    <a href="#">Dropdown 3</a>
+                  </li>
+                  <li>
+                    <a href="#">Dropdown 4</a>
+                  </li>
                 </ul>
               </li>
-              <li><a href="#contact">Contact</a></li>
+              <li>
+                <a href="#contact">Contact</a>
+              </li>
             </ul>
             <i className="mobile-nav-toggle d-xl-none bi bi-list"></i>
           </nav>
 
-          <div className="d-flex align-items-center w-100" style={{ gap: '40px' }}>
-            <a className="cta-btn d-none d-sm-block" href="#appointment">Make an Appointment</a>
-            <div style={{ marginLeft: 'auto' }}>
-              <AuthButtons onOpenLogin={onOpenLogin} onOpenRegister={onOpenRegister} />
+          <div
+            className="d-flex align-items-center w-100"
+            style={{ gap: "40px" }}
+          >
+            <a className="cta-btn d-none d-sm-block" href="#appointment">
+              Make an Appointment
+            </a>
+            {user?.role === "admin" && (
+              <>
+                <Link
+                  to="/create-account"
+                  className="btn btn-outline-primary d-none d-sm-block"
+                  style={{ marginRight: "10px" }}
+                >
+                  Create Account
+                </Link>
+                <Link
+                  to="/admin"
+                  className="btn btn-outline-secondary d-none d-sm-block"
+                  style={{ marginRight: "10px" }}
+                >
+                  Admin Dashboard
+                </Link>
+              </>
+            )}
+            <div style={{ marginLeft: "auto" }}>
+              <AuthButtons
+                onOpenLogin={onOpenLogin}
+                onOpenRegister={onOpenRegister}
+              />
             </div>
           </div>
         </div>
