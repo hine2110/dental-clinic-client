@@ -1,9 +1,17 @@
 import React from 'react';
-import { useAuth } from '../../context/authContext';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/authContext.jsx';
 import { logout as logoutAPI } from '../../services/patientService';
 
 function AuthButtons({ onOpenLogin, onOpenRegister }) {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleProfileClick = () => {
+    if (user?.role === 'patient') {
+      navigate('/profile');
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -24,7 +32,12 @@ function AuthButtons({ onOpenLogin, onOpenRegister }) {
     // User is logged in - show profile and logout
     return (
       <div className="auth-buttons d-none d-md-flex align-items-center" style={{ gap: '20px', marginLeft: 'auto' }}>
-        <div className="user-profile d-flex align-items-center" style={{ gap: '12px' }}>
+        <div 
+          className="user-profile d-flex align-items-center" 
+          style={{ gap: '12px', cursor: 'pointer' }}
+          onClick={handleProfileClick}
+          title="Xem profile"
+        >
           <div style={{ 
             width: '36px', 
             height: '36px', 
@@ -36,7 +49,8 @@ function AuthButtons({ onOpenLogin, onOpenRegister }) {
             justifyContent: 'center',
             fontSize: '16px',
             fontWeight: 'bold',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            transition: 'transform 0.2s ease'
           }}>
             {user.fullName ? user.fullName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
           </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import { login, register, sendVerificationCode } from "../services/patientService";
 import {
   login,
   register,
@@ -47,6 +48,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }) {
   // Login form data
   const [loginData, setLoginData] = useState({
     email: "",
+    password: ""
     password: "",
   });
 
@@ -60,6 +62,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }) {
     dateOfBirth: "",
     address: {
       street: "",
+      city: ""
+    },
+    code: ""
       city: "",
     },
     code: "",
@@ -73,21 +78,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }) {
       localStorage.setItem("user", JSON.stringify(res.data.data.user));
       setUser(res.data.data.user);
       message.success("Login successful!");
-      onClose();
-
-      // Redirect based on user role
-      if (res.data.data.user.role === "admin") {
-        navigate("/admin");
-      } else if (res.data.data.user.role === "doctor") {
-        navigate("/doctor/dashboard");
-      } else if (res.data.data.user.role === "patient") {
-        navigate("/patient/dashboard");
-      } else if (res.data.data.user.role === "staff") {
-        navigate("/staff/dashboard");
-      } else {
-        navigate("/");
-      }
-
+      onClose();   
+      // Redirect to home page
+      navigate("/");
+      
       // Reset form
       setLoginData({ email: "", password: "" });
     } catch (err) {
@@ -100,13 +94,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }) {
     try {
       const res = await register({
         ...registerData,
-        dateOfBirth: registerData.dateOfBirth
-          ? new Date(registerData.dateOfBirth).toISOString().split("T")[0]
-          : undefined,
+        dateOfBirth: registerData.dateOfBirth ? new Date(registerData.dateOfBirth).toISOString().split("T")[0] : undefined
       });
       message.success(res.data.message || "Registration successful!");
       setIsActive(false); // Switch to login
-
+      
       // Reset form
       setRegisterData({
         firstName: "",
@@ -116,7 +108,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }) {
         phone: "",
         dateOfBirth: "",
         address: { street: "", city: "" },
-        code: "",
+        code: ""
       });
       setCodeSent(false);
     } catch (err) {
@@ -136,9 +128,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }) {
       setCodeSent(true);
       message.success("Verification code sent to your email!");
     } catch (err) {
-      message.error(
-        err.response?.data?.message || "Failed to send verification code"
-      );
+      message.error(err.response?.data?.message || "Failed to send verification code");
     } finally {
       setLoading(false);
     }
@@ -282,17 +272,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }) {
                 type="text"
                 placeholder="Address"
                 value={registerData.address.street}
-                onChange={(e) =>
-                  handleInputChange("address.street", e.target.value)
-                }
+                onChange={(e) => handleInputChange("address.street", e.target.value)}
               />
               <input
                 type="text"
                 placeholder="City"
                 value={registerData.address.city}
-                onChange={(e) =>
-                  handleInputChange("address.city", e.target.value)
-                }
+                onChange={(e) => handleInputChange("address.city", e.target.value)}
               />
             </div>
 
@@ -381,10 +367,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }) {
               type="password"
               placeholder="Password"
               value={loginData.password}
-              onChange={(e) =>
-                handleLoginInputChange("password", e.target.value)
-              }
-              required
+              onChange={(e) => handleLoginInputChange("password", e.target.value)}
             />
 
             <a href="/forgot-password">Forgot Password?</a>

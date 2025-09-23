@@ -1,11 +1,7 @@
 // src/pages/AuthPage.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  login,
-  register,
-  sendVerificationCode,
-} from "../../services/patientService";
+import { login, register, sendVerificationCode } from "../../services/patientService";
 import { useAuth } from "../../context/authContext";
 import { message } from "antd";
 import "./AuthPage.css";
@@ -28,10 +24,10 @@ export default function AuthPage() {
   const [codeSent, setCodeSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Login form data
+ // Login form data
   const [loginData, setLoginData] = useState({
     email: "",
-    password: "",
+    password: ""
   });
 
   // Register form data
@@ -44,9 +40,9 @@ export default function AuthPage() {
     dateOfBirth: "",
     address: {
       street: "",
-      city: "",
+      city: ""
     },
-    code: "",
+    code: ""
   });
 
   const handleLogin = async (e) => {
@@ -57,7 +53,7 @@ export default function AuthPage() {
       localStorage.setItem("user", JSON.stringify(res.data.data.user));
       setUser(res.data.data.user);
       message.success("Đăng nhập thành công!");
-
+      
       // Redirect based on user role
       const redirect = localStorage.getItem("redirectAfterLogin");
       if (redirect) {
@@ -86,9 +82,7 @@ export default function AuthPage() {
     try {
       const res = await register({
         ...registerData,
-        dateOfBirth: registerData.dateOfBirth
-          ? new Date(registerData.dateOfBirth).toISOString().split("T")[0]
-          : undefined,
+        dateOfBirth: registerData.dateOfBirth ? new Date(registerData.dateOfBirth).toISOString().split("T")[0] : undefined
       });
       message.success(res.data.message || "Đăng ký thành công!");
       navigate("/login");
@@ -118,7 +112,7 @@ export default function AuthPage() {
   const handleInputChange = (field, value) => {
     if (field.includes(".")) {
       const [parent, child] = field.split(".");
-      setRegisterData((prev) => ({
+      setRegisterData(prev => ({
         ...prev,
         [parent]: {
           ...prev[parent],
@@ -142,10 +136,7 @@ export default function AuthPage() {
 
   return (
     <div className="auth-page">
-      <div
-        className={`auth-container ${isActive ? "active" : ""}`}
-        id="container"
-      >
+      <div className={`auth-container ${isActive ? "active" : ""}`} id="container">
         {/* Register Form */}
         <div className="form-container sign-up">
           <form onSubmit={handleRegister}>
@@ -216,17 +207,13 @@ export default function AuthPage() {
                 type="text"
                 placeholder="Địa chỉ"
                 value={registerData.address.street}
-                onChange={(e) =>
-                  handleInputChange("address.street", e.target.value)
-                }
+                onChange={(e) => handleInputChange("address.street", e.target.value)}
               />
               <input
                 type="text"
                 placeholder="Thành phố"
                 value={registerData.address.city}
-                onChange={(e) =>
-                  handleInputChange("address.city", e.target.value)
-                }
+                onChange={(e) => handleInputChange("address.city", e.target.value)}
               />
             </div>
 
@@ -243,11 +230,12 @@ export default function AuthPage() {
                 type="button"
                 onClick={handleSendCode}
                 disabled={!registerData.email || codeSent || loading}
-                style={{
-                  padding: "10px 15px",
+
+                style={{ 
+                  padding: "10px 15px", 
                   fontSize: "12px",
                   whiteSpace: "nowrap",
-                  minWidth: "120px",
+                  minWidth: "120px"
                 }}
               >
                 {loading ? "Đang gửi..." : codeSent ? "Đã gửi" : "Gửi mã"}
@@ -287,10 +275,7 @@ export default function AuthPage() {
               type="password"
               placeholder="Mật khẩu"
               value={loginData.password}
-              onChange={(e) =>
-                handleLoginInputChange("password", e.target.value)
-              }
-              required
+              onChange={(e) => handleLoginInputChange("password", e.target.value)}
             />
 
             <a href="/forgot-password">Quên mật khẩu?</a>
@@ -303,34 +288,21 @@ export default function AuthPage() {
           <div className="toggle">
             <div className="toggle-panel toggle-left">
               <h1>Chào mừng trở lại!</h1>
-              <p>
-                Nhập thông tin cá nhân để sử dụng tất cả tính năng của trang web
-              </p>
-              <button
-                className="hidden"
-                id="login"
-                onClick={() => {
-                  setIsActive(false);
-                  navigate("/login");
-                }}
-              >
+              <p>Nhập thông tin cá nhân để sử dụng tất cả tính năng của trang web</p>
+              <button className="hidden" id="login" onClick={() => {
+                setIsActive(false);
+                navigate("/login");
+              }}>
                 Đăng nhập
               </button>
             </div>
             <div className="toggle-panel toggle-right">
               <h1>Xin chào!</h1>
-              <p>
-                Đăng ký với thông tin cá nhân để sử dụng tất cả tính năng của
-                trang web
-              </p>
-              <button
-                className="hidden"
-                id="register"
-                onClick={() => {
-                  setIsActive(true);
-                  navigate("/register");
-                }}
-              >
+              <p>Đăng ký với thông tin cá nhân để sử dụng tất cả tính năng của trang web</p>
+              <button className="hidden" id="register" onClick={() => {
+                setIsActive(true);
+                navigate("/register");
+              }}>
                 Đăng ký
               </button>
             </div>
