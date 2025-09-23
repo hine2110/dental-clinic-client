@@ -1,23 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
-import { login, register, sendVerificationCode } from '../services/patientService';
-import { useAuth } from '../context/authContext.jsx';
-import { message } from 'antd';
-import './AuthModal.css';
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
+import { login, register, sendVerificationCode } from "../services/patientService";
+import { useAuth } from "../context/authContext";
+import { message } from "antd";
+import "./AuthModal.css";
 
-export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
+export default function AuthModal({ isOpen, onClose, initialMode = "login" }) {
   const { setUser } = useAuth();
   const navigate = useNavigate();
   const modalRef = useRef();
-  const [isActive, setIsActive] = useState(initialMode === 'register');
+  const [isActive, setIsActive] = useState(initialMode === "register");
   const [codeSent, setCodeSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Reset modal state when opening
   useEffect(() => {
     if (isOpen) {
-      setIsActive(initialMode === 'register');
+      setIsActive(initialMode === "register");
       setCodeSent(false);
       setLoading(false);
     }
@@ -32,52 +32,52 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleOutsideClick);
+      document.addEventListener("mousedown", handleOutsideClick);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener("mousedown", handleOutsideClick);
     };
   }, [isOpen, onClose]);
 
   // Login form data
   const [loginData, setLoginData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: ""
   });
 
   // Register form data
   const [registerData, setRegisterData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    phone: '',
-    dateOfBirth: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    phone: "",
+    dateOfBirth: "",
     address: {
-      street: '',
-      city: ''
+      street: "",
+      city: ""
     },
-    code: ''
+    code: ""
   });
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const res = await login(loginData);
-      localStorage.setItem('token', res.data.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.data.user));
+      localStorage.setItem("token", res.data.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.data.user));
       setUser(res.data.data.user);
-      message.success('Login successful!');
+      message.success("Login successful!");
       onClose();
       
       // Redirect to home page
-      navigate('/');
+      navigate("/");
       
       // Reset form
-      setLoginData({ email: '', password: '' });
+      setLoginData({ email: "", password: "" });
     } catch (err) {
-      message.error(err.response?.data?.message || 'Login failed');
+      message.error(err.response?.data?.message || "Login failed");
     }
   };
 
@@ -86,31 +86,31 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
     try {
       const res = await register({
         ...registerData,
-        dateOfBirth: registerData.dateOfBirth ? new Date(registerData.dateOfBirth).toISOString().split('T')[0] : undefined
+        dateOfBirth: registerData.dateOfBirth ? new Date(registerData.dateOfBirth).toISOString().split("T")[0] : undefined
       });
-      message.success(res.data.message || 'Registration successful!');
+      message.success(res.data.message || "Registration successful!");
       setIsActive(false); // Switch to login
       
       // Reset form
       setRegisterData({
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        phone: '',
-        dateOfBirth: '',
-        address: { street: '', city: '' },
-        code: ''
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        phone: "",
+        dateOfBirth: "",
+        address: { street: "", city: "" },
+        code: ""
       });
       setCodeSent(false);
     } catch (err) {
-      message.error(err.response?.data?.message || 'Registration failed');
+      message.error(err.response?.data?.message || "Registration failed");
     }
   };
 
   const handleSendCode = async () => {
     if (!registerData.email) {
-      message.warning('Please enter email first!');
+      message.warning("Please enter email first!");
       return;
     }
 
@@ -118,9 +118,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
       setLoading(true);
       await sendVerificationCode(registerData.email);
       setCodeSent(true);
-      message.success('Verification code sent to your email!');
+      message.success("Verification code sent to your email!");
     } catch (err) {
-      message.error(err.response?.data?.message || 'Failed to send verification code');
+      message.error(err.response?.data?.message || "Failed to send verification code");
     } finally {
       setLoading(false);
     }
@@ -201,14 +201,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                 type="text"
                 placeholder="First Name"
                 value={registerData.firstName}
-                onChange={(e) => handleInputChange('firstName', e.target.value)}
+                onChange={(e) => handleInputChange("firstName", e.target.value)}
                 required
               />
               <input
                 type="text"
                 placeholder="Last Name"
                 value={registerData.lastName}
-                onChange={(e) => handleInputChange('lastName', e.target.value)}
+                onChange={(e) => handleInputChange("lastName", e.target.value)}
                 required
               />
             </div>
@@ -217,7 +217,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
               type="email"
               placeholder="Email"
               value={registerData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
+              onChange={(e) => handleInputChange("email", e.target.value)}
               required
             />
             
@@ -225,7 +225,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
               type="password"
               placeholder="Password"
               value={registerData.password}
-              onChange={(e) => handleInputChange('password', e.target.value)}
+              onChange={(e) => handleInputChange("password", e.target.value)}
               required
             />
             
@@ -233,7 +233,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
               type="tel"
               placeholder="Phone Number"
               value={registerData.phone}
-              onChange={(e) => handleInputChange('phone', e.target.value)}
+              onChange={(e) => handleInputChange("phone", e.target.value)}
               required
             />
             
@@ -241,7 +241,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
               type="date"
               placeholder="Date of Birth"
               value={registerData.dateOfBirth}
-              onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+              onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
             />
             
             <div className="form-row">
@@ -249,13 +249,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                 type="text"
                 placeholder="Address"
                 value={registerData.address.street}
-                onChange={(e) => handleInputChange('address.street', e.target.value)}
+                onChange={(e) => handleInputChange("address.street", e.target.value)}
               />
               <input
                 type="text"
                 placeholder="City"
                 value={registerData.address.city}
-                onChange={(e) => handleInputChange('address.city', e.target.value)}
+                onChange={(e) => handleInputChange("address.city", e.target.value)}
               />
             </div>
 
@@ -264,7 +264,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                 type="text"
                 placeholder="Verification Code"
                 value={registerData.code}
-                onChange={(e) => handleInputChange('code', e.target.value)}
+                onChange={(e) => handleInputChange("code", e.target.value)}
                 required
                 disabled={!codeSent}
               />
@@ -324,7 +324,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
               type="email"
               placeholder="Email"
               value={loginData.email}
-              onChange={(e) => handleLoginInputChange('email', e.target.value)}
+              onChange={(e) => handleLoginInputChange("email", e.target.value)}
               required
             />
             
@@ -332,7 +332,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
               type="password"
               placeholder="Password"
               value={loginData.password}
-              onChange={(e) => handleLoginInputChange('password', e.target.value)}
+              onChange={(e) => handleLoginInputChange("password", e.target.value)}
               required
             />
             

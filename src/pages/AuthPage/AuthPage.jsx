@@ -1,10 +1,10 @@
 // src/pages/AuthPage.jsx
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { login, register, sendVerificationCode } from '../../services/patientService';
-import { useAuth } from '../../context/authContext.jsx';
-import { message } from 'antd';
-import './AuthPage.css';
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { login, register, sendVerificationCode } from "../../services/patientService";
+import { useAuth } from "../../context/authContext";
+import { message } from "antd";
+import "./AuthPage.css";
 
 export default function AuthPage() {
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ export default function AuthPage() {
 
   // Set initial state based on route
   useEffect(() => {
-    if (location.pathname === '/register') {
+    if (location.pathname === "/register") {
       setIsActive(true);
     } else {
       setIsActive(false);
@@ -26,33 +26,33 @@ export default function AuthPage() {
 
   // Login form data
   const [loginData, setLoginData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: ""
   });
 
   // Register form data
   const [registerData, setRegisterData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    phone: '',
-    dateOfBirth: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    phone: "",
+    dateOfBirth: "",
     address: {
-      street: '',
-      city: ''
+      street: "",
+      city: ""
     },
-    code: ''
+    code: ""
   });
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const res = await login(loginData);
-      localStorage.setItem('token', res.data.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.data.user));
+      localStorage.setItem("token", res.data.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.data.user));
       setUser(res.data.data.user);
-      message.success('Đăng nhập thành công!');
+      message.success("Đăng nhập thành công!");
       
       // Redirect based on user role
       const redirect = localStorage.getItem("redirectAfterLogin");
@@ -73,7 +73,7 @@ export default function AuthPage() {
         }
       }
     } catch (err) {
-      message.error(err.response?.data?.message || 'Đăng nhập thất bại');
+      message.error(err.response?.data?.message || "Đăng nhập thất bại");
     }
   };
 
@@ -82,18 +82,18 @@ export default function AuthPage() {
     try {
       const res = await register({
         ...registerData,
-        dateOfBirth: registerData.dateOfBirth ? new Date(registerData.dateOfBirth).toISOString().split('T')[0] : undefined
+        dateOfBirth: registerData.dateOfBirth ? new Date(registerData.dateOfBirth).toISOString().split("T")[0] : undefined
       });
-      message.success(res.data.message || 'Đăng ký thành công!');
-      navigate('/login');
+      message.success(res.data.message || "Đăng ký thành công!");
+      navigate("/login");
     } catch (err) {
-      message.error(err.response?.data?.message || 'Đăng ký thất bại');
+      message.error(err.response?.data?.message || "Đăng ký thất bại");
     }
   };
 
   const handleSendCode = async () => {
     if (!registerData.email) {
-      message.warning('Vui lòng nhập email trước!');
+      message.warning("Vui lòng nhập email trước!");
       return;
     }
 
@@ -101,17 +101,17 @@ export default function AuthPage() {
       setLoading(true);
       await sendVerificationCode(registerData.email);
       setCodeSent(true);
-      message.success('Mã xác thực đã được gửi đến email của bạn!');
+      message.success("Mã xác thực đã được gửi đến email của bạn!");
     } catch (err) {
-      message.error(err.response?.data?.message || 'Gửi mã xác thực thất bại');
+      message.error(err.response?.data?.message || "Gửi mã xác thực thất bại");
     } finally {
       setLoading(false);
     }
   };
 
   const handleInputChange = (field, value) => {
-    if (field.includes('.')) {
-      const [parent, child] = field.split('.');
+    if (field.includes(".")) {
+      const [parent, child] = field.split(".");
       setRegisterData(prev => ({
         ...prev,
         [parent]: {
@@ -136,7 +136,7 @@ export default function AuthPage() {
 
   return (
     <div className="auth-page">
-      <div className={`auth-container ${isActive ? 'active' : ''}`} id="container">
+      <div className={`auth-container ${isActive ? "active" : ""}`} id="container">
         {/* Register Form */}
         <div className="form-container sign-up">
           <form onSubmit={handleRegister}>
@@ -159,14 +159,14 @@ export default function AuthPage() {
                 type="text"
                 placeholder="Họ"
                 value={registerData.firstName}
-                onChange={(e) => handleInputChange('firstName', e.target.value)}
+                onChange={(e) => handleInputChange("firstName", e.target.value)}
                 required
               />
               <input
                 type="text"
                 placeholder="Tên"
                 value={registerData.lastName}
-                onChange={(e) => handleInputChange('lastName', e.target.value)}
+                onChange={(e) => handleInputChange("lastName", e.target.value)}
                 required
               />
             </div>
@@ -175,7 +175,7 @@ export default function AuthPage() {
               type="email"
               placeholder="Email"
               value={registerData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
+              onChange={(e) => handleInputChange("email", e.target.value)}
               required
             />
             
@@ -183,7 +183,7 @@ export default function AuthPage() {
               type="password"
               placeholder="Mật khẩu"
               value={registerData.password}
-              onChange={(e) => handleInputChange('password', e.target.value)}
+              onChange={(e) => handleInputChange("password", e.target.value)}
               required
             />
             
@@ -191,7 +191,7 @@ export default function AuthPage() {
               type="tel"
               placeholder="Số điện thoại"
               value={registerData.phone}
-              onChange={(e) => handleInputChange('phone', e.target.value)}
+              onChange={(e) => handleInputChange("phone", e.target.value)}
               required
             />
             
@@ -199,7 +199,7 @@ export default function AuthPage() {
               type="date"
               placeholder="Ngày sinh"
               value={registerData.dateOfBirth}
-              onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+              onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
             />
             
             <div className="form-row">
@@ -207,13 +207,13 @@ export default function AuthPage() {
                 type="text"
                 placeholder="Địa chỉ"
                 value={registerData.address.street}
-                onChange={(e) => handleInputChange('address.street', e.target.value)}
+                onChange={(e) => handleInputChange("address.street", e.target.value)}
               />
               <input
                 type="text"
                 placeholder="Thành phố"
                 value={registerData.address.city}
-                onChange={(e) => handleInputChange('address.city', e.target.value)}
+                onChange={(e) => handleInputChange("address.city", e.target.value)}
               />
             </div>
 
@@ -222,7 +222,7 @@ export default function AuthPage() {
                 type="text"
                 placeholder="Mã xác thực"
                 value={registerData.code}
-                onChange={(e) => handleInputChange('code', e.target.value)}
+                onChange={(e) => handleInputChange("code", e.target.value)}
                 required
                 disabled={!codeSent}
               />
@@ -231,13 +231,13 @@ export default function AuthPage() {
                 onClick={handleSendCode}
                 disabled={!registerData.email || codeSent || loading}
                 style={{ 
-                  padding: '10px 15px', 
-                  fontSize: '12px',
-                  whiteSpace: 'nowrap',
-                  minWidth: '120px'
+                  padding: "10px 15px", 
+                  fontSize: "12px",
+                  whiteSpace: "nowrap",
+                  minWidth: "120px"
                 }}
               >
-                {loading ? 'Đang gửi...' : codeSent ? 'Đã gửi' : 'Gửi mã'}
+                {loading ? "Đang gửi..." : codeSent ? "Đã gửi" : "Gửi mã"}
               </button>
             </div>
             
@@ -266,7 +266,7 @@ export default function AuthPage() {
               type="email"
               placeholder="Email"
               value={loginData.email}
-              onChange={(e) => handleLoginInputChange('email', e.target.value)}
+              onChange={(e) => handleLoginInputChange("email", e.target.value)}
               required
             />
             
@@ -274,7 +274,7 @@ export default function AuthPage() {
               type="password"
               placeholder="Mật khẩu"
               value={loginData.password}
-              onChange={(e) => handleLoginInputChange('password', e.target.value)}
+              onChange={(e) => handleLoginInputChange("password", e.target.value)}
               required
             />
             
@@ -291,7 +291,7 @@ export default function AuthPage() {
               <p>Nhập thông tin cá nhân để sử dụng tất cả tính năng của trang web</p>
               <button className="hidden" id="login" onClick={() => {
                 setIsActive(false);
-                navigate('/login');
+                navigate("/login");
               }}>
                 Đăng nhập
               </button>
@@ -301,7 +301,7 @@ export default function AuthPage() {
               <p>Đăng ký với thông tin cá nhân để sử dụng tất cả tính năng của trang web</p>
               <button className="hidden" id="register" onClick={() => {
                 setIsActive(true);
-                navigate('/register');
+                navigate("/register");
               }}>
                 Đăng ký
               </button>

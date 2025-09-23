@@ -1,11 +1,11 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./context/authContext.jsx";
+import { AuthProvider } from "./context/authContext";
 import Home from "./pages/Home";
 import AuthSuccess from "./pages/AuthSuccess";
 import { CreateAccount, AdminDashboard } from "./pages/AdminPage";
 import ProfilePage from "./pages/patient/ProfilePage";
-import ProfileGuard from './components/ProfileGuard';
+import ProfileGuard from "./components/ProfileGuard";
 import "./App.css";
 
 function App() {
