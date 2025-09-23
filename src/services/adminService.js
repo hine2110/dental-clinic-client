@@ -1,18 +1,18 @@
 import axios from "axios";
 
 const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+  process.env.REACT_APP_API_BASE_URL || "http://localhost:5000/api";
 
 // Create axios instance with default config
-const api = axios.create({
+const adminAPI = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Add request interceptor to include auth token
-api.interceptors.request.use(
+// Add auth token to requests
+adminAPI.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -25,73 +25,100 @@ api.interceptors.request.use(
   }
 );
 
-// Add response interceptor for error handling
-api.interceptors.response.use(
-  (response) => response,
+// Handle responses and errors
+adminAPI.interceptors.response.use(
+  (response) => response.data,
   (error) => {
+    console.error("🚨 AdminAPI Error:", error);
+
+    // Handle unauthorized access
     if (error.response?.status === 401) {
-      // Token expired or invalid
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       window.location.href = "/";
     }
-    return Promise.reject(error);
+
+    // Return full error details for better debugging
+    const errorDetails = {
+      message:
+        error.response?.data?.message || error.message || "An error occurred",
+      status: error.response?.status,
+      errors: error.response?.data?.errors,
+      details: error.response?.data?.details,
+      response: error.response,
+    };
+
+    console.error("📋 Error details:", errorDetails);
+    return Promise.reject(errorDetails);
   }
 );
 
-// Admin API functions
+// Admin Services
 export const adminService = {
-  // Create staff account (doctor, receptionist, nurse)
-  createStaffAccount: async (accountData) => {
-    try {
-      const response = await api.post("/auth/create-account", accountData);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error.message;
-    }
+  // User Management
+  getAllUsers: (params = {}) => {
+    const queryParams = new URLSearchParams();
+
+    // Add parameters if provided
+    if (params.page) queryParams.append("page", params.page);
+    if (params.limit) queryParams.append("limit", params.limit);
+    if (params.role) queryParams.append("role", params.role);
+    if (params.isActive !== undefined)
+      queryParams.append("isActive", params.isActive);
+    if (params.search) queryParams.append("search", params.search);
+    if (params.sortBy) queryParams.append("sortBy", params.sortBy);
+    if (params.sortOrder) queryParams.append("sortOrder", params.sortOrder);
+
+    const url = `/admin/users${
+      queryParams.toString() ? `?${queryParams.toString()}` : ""
+    }`;
+    return adminAPI.get(url);
   },
 
-  // Get all users (for admin dashboard)
-  getAllUsers: async () => {
-    try {
-      const response = await api.get("/admin/users");
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error.message;
-    }
-  },
+  getUserById: (userId) => adminAPI.get(`/admin/users/${userId}`),
 
-  // Get user by ID
-  getUserById: async (userId) => {
-    try {
-      const response = await api.get(`/admin/users/${userId}`);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error.message;
-    }
-  },
+  createStaffAccount: (userData) =>
+    adminAPI.post("/admin/create-account", userData),
 
-  // Update user status
-  updateUserStatus: async (userId, status) => {
-    try {
-      const response = await api.put(`/admin/users/${userId}/status`, {
-        status,
-      });
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error.message;
-    }
-  },
+  updateUser: (userId, userData) =>
+    adminAPI.put(`/admin/users/${userId}`, userData),
 
-  // Delete user
-  deleteUser: async (userId) => {
-    try {
-      const response = await api.delete(`/admin/users/${userId}`);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error.message;
-    }
-  },
+  deleteUser: (userId) => adminAPI.delete(`/admin/users/${userId}`),
+
+  toggleUserStatus: (userId) =>
+    adminAPI.patch(`/admin/users/${userId}/toggle-status`),
+
+  // Analytics
+  getDashboardStats: () => adminAPI.get("/admin/dashboard/stats"),
+
+  getUserAnalytics: (period = "30d") =>
+    adminAPI.get(`/admin/analytics/users?period=${period}`),
+
+  getSystemAnalytics: () => adminAPI.get("/admin/analytics/system"),
+
+  // Reports
+  generateUserReport: (filters) =>
+    adminAPI.post("/admin/reports/users", filters),
+
+  exportUsers: (format = "csv") =>
+    adminAPI.get(`/admin/export/users?format=${format}`, {
+      responseType: "blob",
+    }),
+
+  // System Management
+  getSystemSettings: () => adminAPI.get("/admin/settings"),
+
+  updateSystemSettings: (settings) => adminAPI.put("/admin/settings", settings),
+
+  getAuditLogs: (page = 1, limit = 50) =>
+    adminAPI.get(`/admin/audit-logs?page=${page}&limit=${limit}`),
+
+  // Notifications
+  getNotifications: () => adminAPI.get("/admin/notifications"),
+
+  markNotificationRead: (notificationId) =>
+    adminAPI.patch(`/admin/notifications/${notificationId}/read`),
+
+  markAllNotificationsRead: () =>
+    adminAPI.patch("/admin/notifications/read-all"),
 };
-
-export default adminService;
