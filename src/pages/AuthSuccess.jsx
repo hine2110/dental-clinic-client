@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../context/authContext.jsx';
 import { message } from 'antd';
 
 const AuthSuccess = () => {

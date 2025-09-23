@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { login, register, sendVerificationCode } from '../services/patientService';
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../context/authContext.jsx';
 import { message } from 'antd';
 import './AuthModal.css';
 

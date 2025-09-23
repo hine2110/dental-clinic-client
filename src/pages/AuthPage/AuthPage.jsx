@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { login, register, sendVerificationCode } from '../../services/patientService';
-import { useAuth } from '../../context/authContext';
+import { useAuth } from '../../context/authContext.jsx';
 import { message } from 'antd';
 import './AuthPage.css';
 

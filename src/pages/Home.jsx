@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useAuth } from "../context/authContext";
+import { useAuth } from "../context/authContext.jsx";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import HeroSection from "../components/sections/HeroSection";
