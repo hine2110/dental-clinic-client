@@ -20,11 +20,11 @@ export default function AuthPage() {
       setIsActive(false);
     }
   }, [location.pathname]);
-  
+
   const [codeSent, setCodeSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Login form data
+ // Login form data
   const [loginData, setLoginData] = useState({
     email: "",
     password: ""
@@ -65,7 +65,7 @@ export default function AuthPage() {
         } else if (res.data.data.user.role === "doctor") {
           navigate("/doctor/dashboard");
         } else if (res.data.data.user.role === "admin") {
-          navigate("/admin/dashboard");
+          navigate("/admin");
         } else if (res.data.data.user.role === "receptionist") {
           navigate("/receptionist/dashboard");
         } else {
@@ -116,21 +116,21 @@ export default function AuthPage() {
         ...prev,
         [parent]: {
           ...prev[parent],
-          [child]: value
-        }
+          [child]: value,
+        },
       }));
     } else {
-      setRegisterData(prev => ({
+      setRegisterData((prev) => ({
         ...prev,
-        [field]: value
+        [field]: value,
       }));
     }
   };
 
   const handleLoginInputChange = (field, value) => {
-    setLoginData(prev => ({
+    setLoginData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -153,7 +153,7 @@ export default function AuthPage() {
               </a>
             </div>
             <span>hoặc sử dụng email để đăng ký</span>
-            
+
             <div className="form-row">
               <input
                 type="text"
@@ -170,7 +170,7 @@ export default function AuthPage() {
                 required
               />
             </div>
-            
+
             <input
               type="email"
               placeholder="Email"
@@ -178,7 +178,7 @@ export default function AuthPage() {
               onChange={(e) => handleInputChange("email", e.target.value)}
               required
             />
-            
+
             <input
               type="password"
               placeholder="Mật khẩu"
@@ -186,7 +186,7 @@ export default function AuthPage() {
               onChange={(e) => handleInputChange("password", e.target.value)}
               required
             />
-            
+
             <input
               type="tel"
               placeholder="Số điện thoại"
@@ -194,14 +194,14 @@ export default function AuthPage() {
               onChange={(e) => handleInputChange("phone", e.target.value)}
               required
             />
-            
+
             <input
               type="date"
               placeholder="Ngày sinh"
               value={registerData.dateOfBirth}
               onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
             />
-            
+
             <div className="form-row">
               <input
                 type="text"
@@ -230,6 +230,7 @@ export default function AuthPage() {
                 type="button"
                 onClick={handleSendCode}
                 disabled={!registerData.email || codeSent || loading}
+
                 style={{ 
                   padding: "10px 15px", 
                   fontSize: "12px",
@@ -240,7 +241,7 @@ export default function AuthPage() {
                 {loading ? "Đang gửi..." : codeSent ? "Đã gửi" : "Gửi mã"}
               </button>
             </div>
-            
+
             <button type="submit">Đăng ký</button>
           </form>
         </div>
@@ -261,7 +262,7 @@ export default function AuthPage() {
               </a>
             </div>
             <span>hoặc sử dụng email và mật khẩu</span>
-            
+
             <input
               type="email"
               placeholder="Email"
@@ -269,15 +270,14 @@ export default function AuthPage() {
               onChange={(e) => handleLoginInputChange("email", e.target.value)}
               required
             />
-            
+
             <input
               type="password"
               placeholder="Mật khẩu"
               value={loginData.password}
               onChange={(e) => handleLoginInputChange("password", e.target.value)}
-              required
             />
-            
+
             <a href="/forgot-password">Quên mật khẩu?</a>
             <button type="submit">Đăng nhập</button>
           </form>

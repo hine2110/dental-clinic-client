@@ -26,14 +26,14 @@ const AuthSuccess = () => {
       try {
         // Parse user data
         const userData = JSON.parse(decodeURIComponent(user));
-        
+
         // Save to localStorage
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(userData));
-        
+
         // Update AuthContext
         setUser(userData);
-        
+
         // Show success message
         message.success("Google login successful!");
         
@@ -112,7 +112,7 @@ const AuthSuccess = () => {
           }}></div>
         </div>
       </div>
-      
+
       <style>{`
         @keyframes loading {
           0% { transform: translateX(-100%); }
