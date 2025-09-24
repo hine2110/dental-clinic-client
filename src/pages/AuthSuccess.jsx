@@ -88,13 +88,13 @@ const AuthSuccess = () => {
           marginBottom: "20px",
           color: "#1977cc"
         }}>
-          Đang xử lý đăng nhập...
+          Processing login...
         </h2>
         <p style={{ 
           marginBottom: "30px",
           color: "#666"
         }}>
-          Vui lòng chờ trong giây lát.
+          Please wait a moment.
         </p>
         <div style={{
           width: "100%",

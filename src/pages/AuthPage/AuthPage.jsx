@@ -52,7 +52,7 @@ export default function AuthPage() {
       localStorage.setItem("token", res.data.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.data.user));
       setUser(res.data.data.user);
-      message.success("Đăng nhập thành công!");
+      message.success("Login successful!");
       
       // Redirect based on user role
       const redirect = localStorage.getItem("redirectAfterLogin");
@@ -73,7 +73,7 @@ export default function AuthPage() {
         }
       }
     } catch (err) {
-      message.error(err.response?.data?.message || "Đăng nhập thất bại");
+      message.error(err.response?.data?.message || "Login failed");
     }
   };
 
@@ -84,16 +84,16 @@ export default function AuthPage() {
         ...registerData,
         dateOfBirth: registerData.dateOfBirth ? new Date(registerData.dateOfBirth).toISOString().split("T")[0] : undefined
       });
-      message.success(res.data.message || "Đăng ký thành công!");
+      message.success(res.data.message || "Registration successful!");
       navigate("/login");
     } catch (err) {
-      message.error(err.response?.data?.message || "Đăng ký thất bại");
+      message.error(err.response?.data?.message || "Registration failed");
     }
   };
 
   const handleSendCode = async () => {
     if (!registerData.email) {
-      message.warning("Vui lòng nhập email trước!");
+      message.warning("Please enter email first!");
       return;
     }
 
@@ -101,9 +101,9 @@ export default function AuthPage() {
       setLoading(true);
       await sendVerificationCode(registerData.email);
       setCodeSent(true);
-      message.success("Mã xác thực đã được gửi đến email của bạn!");
+      message.success("Verification code has been sent to your email!");
     } catch (err) {
-      message.error(err.response?.data?.message || "Gửi mã xác thực thất bại");
+      message.error(err.response?.data?.message || "Failed to send verification code");
     } finally {
       setLoading(false);
     }
@@ -140,7 +140,7 @@ export default function AuthPage() {
         {/* Register Form */}
         <div className="form-container sign-up">
           <form onSubmit={handleRegister}>
-            <h1>Tạo tài khoản</h1>
+            <h1>Create Account</h1>
             <div className="social-icons">
               <a href="#" className="icon">
                 <i className="fa-brands fa-google-plus-g"></i>
@@ -152,19 +152,19 @@ export default function AuthPage() {
                 <i className="fa-brands fa-linkedin-in"></i>
               </a>
             </div>
-            <span>hoặc sử dụng email để đăng ký</span>
+            <span>or use email to register</span>
 
             <div className="form-row">
               <input
                 type="text"
-                placeholder="Họ"
+                placeholder="First Name"
                 value={registerData.firstName}
                 onChange={(e) => handleInputChange("firstName", e.target.value)}
                 required
               />
               <input
                 type="text"
-                placeholder="Tên"
+                placeholder="Last Name"
                 value={registerData.lastName}
                 onChange={(e) => handleInputChange("lastName", e.target.value)}
                 required
@@ -181,7 +181,7 @@ export default function AuthPage() {
 
             <input
               type="password"
-              placeholder="Mật khẩu"
+              placeholder="Password"
               value={registerData.password}
               onChange={(e) => handleInputChange("password", e.target.value)}
               required
@@ -189,7 +189,7 @@ export default function AuthPage() {
 
             <input
               type="tel"
-              placeholder="Số điện thoại"
+              placeholder="Phone Number"
               value={registerData.phone}
               onChange={(e) => handleInputChange("phone", e.target.value)}
               required
@@ -197,7 +197,7 @@ export default function AuthPage() {
 
             <input
               type="date"
-              placeholder="Ngày sinh"
+              placeholder="Date of Birth"
               value={registerData.dateOfBirth}
               onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
             />
@@ -205,13 +205,13 @@ export default function AuthPage() {
             <div className="form-row">
               <input
                 type="text"
-                placeholder="Địa chỉ"
+                placeholder="Address"
                 value={registerData.address.street}
                 onChange={(e) => handleInputChange("address.street", e.target.value)}
               />
               <input
                 type="text"
-                placeholder="Thành phố"
+                placeholder="City"
                 value={registerData.address.city}
                 onChange={(e) => handleInputChange("address.city", e.target.value)}
               />
@@ -220,7 +220,7 @@ export default function AuthPage() {
             <div className="form-row">
               <input
                 type="text"
-                placeholder="Mã xác thực"
+                placeholder="Verification Code"
                 value={registerData.code}
                 onChange={(e) => handleInputChange("code", e.target.value)}
                 required
@@ -238,18 +238,18 @@ export default function AuthPage() {
                   minWidth: "120px"
                 }}
               >
-                {loading ? "Đang gửi..." : codeSent ? "Đã gửi" : "Gửi mã"}
+                {loading ? "Sending..." : codeSent ? "Sent" : "Send Code"}
               </button>
             </div>
 
-            <button type="submit">Đăng ký</button>
+            <button type="submit">Register</button>
           </form>
         </div>
 
         {/* Login Form */}
         <div className="form-container sign-in">
           <form onSubmit={handleLogin}>
-            <h1>Đăng nhập</h1>
+            <h1>Sign In</h1>
             <div className="social-icons">
               <a href="#" className="icon">
                 <i className="fa-brands fa-google-plus-g"></i>
@@ -261,7 +261,7 @@ export default function AuthPage() {
                 <i className="fa-brands fa-linkedin-in"></i>
               </a>
             </div>
-            <span>hoặc sử dụng email và mật khẩu</span>
+            <span>or use email and password</span>
 
             <input
               type="email"
@@ -273,13 +273,13 @@ export default function AuthPage() {
 
             <input
               type="password"
-              placeholder="Mật khẩu"
+              placeholder="Password"
               value={loginData.password}
               onChange={(e) => handleLoginInputChange("password", e.target.value)}
             />
 
-            <a href="/forgot-password">Quên mật khẩu?</a>
-            <button type="submit">Đăng nhập</button>
+            <a href="/forgot-password">Forgot Password?</a>
+            <button type="submit">Sign In</button>
           </form>
         </div>
 
@@ -287,23 +287,23 @@ export default function AuthPage() {
         <div className="toggle-container">
           <div className="toggle">
             <div className="toggle-panel toggle-left">
-              <h1>Chào mừng trở lại!</h1>
-              <p>Nhập thông tin cá nhân để sử dụng tất cả tính năng của trang web</p>
+              <h1>Welcome Back!</h1>
+              <p>Enter your personal details to use all features of our dental clinic</p>
               <button className="hidden" id="login" onClick={() => {
                 setIsActive(false);
                 navigate("/login");
               }}>
-                Đăng nhập
+                Sign In
               </button>
             </div>
             <div className="toggle-panel toggle-right">
-              <h1>Xin chào!</h1>
-              <p>Đăng ký với thông tin cá nhân để sử dụng tất cả tính năng của trang web</p>
+              <h1>Hello!</h1>
+              <p>Register with your personal details to use all features of our dental clinic</p>
               <button className="hidden" id="register" onClick={() => {
                 setIsActive(true);
                 navigate("/register");
               }}>
-                Đăng ký
+                Sign Up
               </button>
             </div>
           </div>

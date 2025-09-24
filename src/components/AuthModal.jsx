@@ -2,11 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { login, register, sendVerificationCode } from "../services/patientService";
-import {
-  login,
-  register,
-  sendVerificationCode,
-} from "../services/patientService";
 import { useAuth } from "../context/authContext";
 import { message } from "antd";
 import "./AuthModal.css";
@@ -49,7 +44,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }) {
   const [loginData, setLoginData] = useState({
     email: "",
     password: ""
-    password: "",
   });
 
   // Register form data
@@ -65,9 +59,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }) {
       city: ""
     },
     code: ""
-      city: "",
-    },
-    code: "",
   });
 
   const handleLogin = async (e) => {
@@ -78,9 +69,20 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }) {
       localStorage.setItem("user", JSON.stringify(res.data.data.user));
       setUser(res.data.data.user);
       message.success("Login successful!");
-      onClose();   
-      // Redirect to home page
-      navigate("/");
+      onClose();
+      
+      // Redirect based on user role
+      if (res.data.data.user.role === "patient") {
+        navigate("/patient/dashboard");
+      } else if (res.data.data.user.role === "doctor") {
+        navigate("/doctor/dashboard");
+      } else if (res.data.data.user.role === "admin") {
+        navigate("/admin");
+      } else if (res.data.data.user.role === "receptionist") {
+        navigate("/receptionist/dashboard");
+      } else {
+        navigate("/");
+      }
       
       // Reset form
       setLoginData({ email: "", password: "" });

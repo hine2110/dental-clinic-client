@@ -6,7 +6,6 @@ import AuthSuccess from "./pages/AuthSuccess";
 import { CreateAccount, AdminDashboard } from "./pages/AdminPage";
 import ProfilePage from "./pages/patient/ProfilePage";
 import ProfileGuard from "./components/ProfileGuard";
-import { AdminDashboard } from "./pages/AdminPage";
 import "./App.css";
 function App() {
   return (

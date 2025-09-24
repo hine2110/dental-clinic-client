@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/authContext';
 import { getProfileStatus, createOrUpdateProfile } from '../services/patientService';
 import PatientInfoModal from './PatientInfoModal';
+import '../pages/Home.css';
 
 const ProfileGuard = ({ children }) => {
   const { user } = useAuth();
   const [isProfileComplete, setIsProfileComplete] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  // Removed showModal state as it's no longer needed
 
   useEffect(() => {
     const checkProfileStatus = async () => {
@@ -20,15 +21,12 @@ const ProfileGuard = ({ children }) => {
         const response = await getProfileStatus();
         if (response.success) {
           setIsProfileComplete(response.data.isProfileComplete);
-          if (!response.data.isProfileComplete) {
-            setShowModal(true);
-          }
+          // No need to set showModal anymore
         }
       } catch (error) {
         console.error('Error checking profile status:', error);
-        // Nếu xảy ra lỗi, giả định rằng hồ sơ chưa hoàn chỉnh
+        // If error occurs, assume profile is incomplete
         setIsProfileComplete(false);
-        setShowModal(true);
       } finally {
         setIsLoading(false);
       }
@@ -37,12 +35,36 @@ const ProfileGuard = ({ children }) => {
     checkProfileStatus();
   }, [user]);
 
+  // Listen for profile update event from Home component
+  useEffect(() => {
+    const handleProfileUpdate = async () => {
+      if (!user || user.role !== 'patient') {
+        return;
+      }
+
+      try {
+        const response = await getProfileStatus();
+        if (response.success) {
+          setIsProfileComplete(response.data.isProfileComplete);
+        }
+      } catch (error) {
+        console.error('Error re-checking profile status:', error);
+      }
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
+  }, [user]);
+
   const handleSaveProfile = async (profileData) => {
     try {
       const response = await createOrUpdateProfile(profileData);
       if (response.success) {
         setIsProfileComplete(true);
-        setShowModal(false);
+        // Profile is now complete, notification will disappear
       }
     } catch (error) {
       console.error('Error saving profile:', error);
@@ -50,13 +72,7 @@ const ProfileGuard = ({ children }) => {
     }
   };
 
-  const handleCloseModal = () => {
-    // Không cho phép đóng modal nếu hồ sơ chưa hoàn chỉnh
-    if (!isProfileComplete) {
-      return;
-    }
-    setShowModal(false);
-  };
+  // Removed handleCloseModal as it's no longer needed
 
   if (isLoading) {
     return (
@@ -67,32 +83,39 @@ const ProfileGuard = ({ children }) => {
     );
   }
 
-  // Nếu người dùng không phải là bệnh nhân, thì hiển thị trẻ em
+  // If user is not a patient, show children
   if (!user || user.role !== 'patient') {
     return children;
   }
 
-  // Nếu hồ sơ chưa hoàn chỉnh, hiển thị modal
+  // If profile is incomplete, show children with notification
   if (!isProfileComplete) {
     return (
       <>
-        <PatientInfoModal
-          isOpen={showModal}
-          onClose={handleCloseModal}
-          onSave={handleSaveProfile}
-        />
-        {/* Show overlay behind modal */}
-        <div className="profile-incomplete-overlay">
-          <div className="profile-incomplete-message">
-            <h2>Profile Setup Required</h2>
-            <p>Please complete your profile to continue using the system.</p>
+        {children}
+        {/* Show notification banner with button */}
+        <div className="profile-notification">
+          <div className="notification-content">
+            <span className="notification-text">
+              ⚠️ Please complete your profile to access all features
+            </span>
+            <button 
+              className="notification-button"
+              onClick={() => {
+                // Trigger profile modal in Home component
+                const event = new CustomEvent('openProfileModal');
+                window.dispatchEvent(event);
+              }}
+            >
+              📝 Complete Profile
+            </button>
           </div>
         </div>
       </>
     );
   }
 
-  // Nếu hồ sơ đã hoàn chỉnh, hiển thị trẻ em
+  // If profile is complete, show children
   return children;
 };
 

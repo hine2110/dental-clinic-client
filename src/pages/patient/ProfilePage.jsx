@@ -21,11 +21,11 @@ const ProfilePage = () => {
         if (response.success) {
           setProfile(response.data);
         } else {
-          setError('Không thể tải thông tin profile');
+          setError('Unable to load profile information');
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
-        setError('Lỗi khi tải thông tin profile');
+        setError('Error loading profile information');
       } finally {
         setLoading(false);
       }
@@ -48,8 +48,8 @@ const ProfilePage = () => {
       <div className="profile-page">
         <div className="profile-container">
           <div className="access-denied">
-            <h2>Không có quyền truy cập</h2>
-            <p>Chỉ có bệnh nhân mới có thể xem trang profile này.</p>
+            <h2>Access Denied</h2>
+            <p>Only patients can view this profile page.</p>
           </div>
         </div>
       </div>
@@ -62,7 +62,7 @@ const ProfilePage = () => {
         <div className="profile-container">
           <div className="loading">
             <div className="loading-spinner"></div>
-            <p>Đang tải thông tin profile...</p>
+            <p>Loading profile information...</p>
           </div>
         </div>
       </div>
@@ -74,10 +74,10 @@ const ProfilePage = () => {
       <div className="profile-page">
         <div className="profile-container">
           <div className="error">
-            <h2>Lỗi</h2>
+            <h2>Error</h2>
             <p>{error}</p>
             <button onClick={() => window.location.reload()} className="btn-primary">
-              Thử lại
+              Try Again
             </button>
           </div>
         </div>
@@ -90,10 +90,10 @@ const ProfilePage = () => {
       <div className="profile-page">
         <div className="profile-container">
           <div className="no-profile">
-            <h2>Chưa có thông tin profile</h2>
-            <p>Bạn chưa có thông tin profile. Vui lòng tạo profile để sử dụng hệ thống.</p>
+            <h2>No Profile Information</h2>
+            <p>You don't have profile information yet. Please create a profile to use the system.</p>
             <button onClick={() => setShowEditModal(true)} className="btn-primary">
-              Tạo Profile
+              Create Profile
             </button>
           </div>
         </div>
@@ -112,11 +112,11 @@ const ProfilePage = () => {
             </div>
           </div>
           <div className="profile-info">
-            <h1>{profile.basicInfo?.fullName || 'Chưa có tên'}</h1>
+            <h1>{profile.basicInfo?.fullName || 'No Name'}</h1>
             <p className="profile-email">{user?.email}</p>
             <div className="profile-status">
               <span className={`status-badge ${profile.isProfileComplete ? 'complete' : 'incomplete'}`}>
-                {profile.isProfileComplete ? 'Đã hoàn thành' : 'Chưa hoàn thành'}
+                {profile.isProfileComplete ? 'Completed' : 'Incomplete'}
               </span>
             </div>
           </div>
@@ -125,7 +125,7 @@ const ProfilePage = () => {
               onClick={() => setShowEditModal(true)} 
               className="btn-primary"
             >
-              Chỉnh sửa
+              Edit
             </button>
           </div>
         </div>
@@ -134,45 +134,45 @@ const ProfilePage = () => {
         <div className="profile-content">
           {/* Thông tin cơ bản */}
           <div className="profile-section">
-            <h2>Thông tin cơ bản</h2>
+            <h2>Basic Information</h2>
             <div className="profile-grid">
               <div className="profile-field">
-                <label>Họ và tên</label>
-                <p>{profile.basicInfo?.fullName || 'Chưa có'}</p>
+                <label>Full Name</label>
+                <p>{profile.basicInfo?.fullName || 'Not available'}</p>
               </div>
               <div className="profile-field">
-                <label>Ngày sinh</label>
-                <p>{profile.basicInfo?.dateOfBirth ? new Date(profile.basicInfo.dateOfBirth).toLocaleDateString('vi-VN') : 'Chưa có'}</p>
+                <label>Date of Birth</label>
+                <p>{profile.basicInfo?.dateOfBirth ? new Date(profile.basicInfo.dateOfBirth).toLocaleDateString('en-US') : 'Not available'}</p>
               </div>
               <div className="profile-field">
-                <label>Giới tính</label>
-                <p>{profile.basicInfo?.gender === 'male' ? 'Nam' : profile.basicInfo?.gender === 'female' ? 'Nữ' : profile.basicInfo?.gender || 'Chưa có'}</p>
+                <label>Gender</label>
+                <p>{profile.basicInfo?.gender === 'male' ? 'Male' : profile.basicInfo?.gender === 'female' ? 'Female' : profile.basicInfo?.gender || 'Not available'}</p>
               </div>
               <div className="profile-field">
-                <label>Số CCCD</label>
-                <p>{profile.basicInfo?.idCard?.idNumber || 'Chưa có'}</p>
+                <label>ID Number</label>
+                <p>{profile.basicInfo?.idCard?.idNumber || 'Not available'}</p>
               </div>
             </div>
           </div>
 
           {/* Thông tin liên hệ */}
           <div className="profile-section">
-            <h2>Thông tin liên hệ</h2>
+            <h2>Contact Information</h2>
             <div className="profile-grid">
               <div className="profile-field">
-                <label>Số điện thoại</label>
-                <p>{profile.contactInfo?.phone || 'Chưa có'}</p>
+                <label>Phone Number</label>
+                <p>{profile.contactInfo?.phone || 'Not available'}</p>
               </div>
               <div className="profile-field">
                 <label>Email</label>
-                <p>{profile.contactInfo?.email || 'Chưa có'}</p>
+                <p>{profile.contactInfo?.email || 'Not available'}</p>
               </div>
               <div className="profile-field full-width">
-                <label>Địa chỉ</label>
+                <label>Address</label>
                 <p>
                   {profile.contactInfo?.address ? 
-                    `${profile.contactInfo.address.street || ''}, ${profile.contactInfo.address.city || ''}, ${profile.contactInfo.address.state || ''}`.trim() || 'Chưa có'
-                    : 'Chưa có'
+                    `${profile.contactInfo.address.street || ''}, ${profile.contactInfo.address.city || ''}, ${profile.contactInfo.address.state || ''}`.trim() || 'Not available'
+                    : 'Not available'
                   }
                 </p>
               </div>
@@ -182,19 +182,19 @@ const ProfilePage = () => {
           {/* Liên hệ khẩn cấp */}
           {profile.emergencyContact?.name && (
             <div className="profile-section">
-              <h2>Liên hệ khẩn cấp</h2>
+              <h2>Emergency Contact</h2>
               <div className="profile-grid">
                 <div className="profile-field">
-                  <label>Tên</label>
+                  <label>Name</label>
                   <p>{profile.emergencyContact.name}</p>
                 </div>
                 <div className="profile-field">
-                  <label>Mối quan hệ</label>
-                  <p>{profile.emergencyContact.relationship || 'Chưa có'}</p>
+                  <label>Relationship</label>
+                  <p>{profile.emergencyContact.relationship || 'Not available'}</p>
                 </div>
                 <div className="profile-field">
-                  <label>Số điện thoại</label>
-                  <p>{profile.emergencyContact.phone || 'Chưa có'}</p>
+                  <label>Phone Number</label>
+                  <p>{profile.emergencyContact.phone || 'Not available'}</p>
                 </div>
               </div>
             </div>
@@ -203,11 +203,11 @@ const ProfilePage = () => {
           {/* Thông tin y tế */}
           {(profile.medicalHistory?.length > 0 || profile.allergies?.length > 0) && (
             <div className="profile-section">
-              <h2>Thông tin y tế</h2>
+              <h2>Medical Information</h2>
               
               {profile.medicalHistory?.length > 0 && (
                 <div className="medical-info">
-                  <h3>Lịch sử bệnh án</h3>
+                  <h3>Medical History</h3>
                   <div className="medical-list">
                     {profile.medicalHistory.map((item, index) => (
                       <div key={index} className="medical-item">
@@ -222,7 +222,7 @@ const ProfilePage = () => {
 
               {profile.allergies?.length > 0 && (
                 <div className="medical-info">
-                  <h3>Dị ứng</h3>
+                  <h3>Allergies</h3>
                   <div className="allergy-list">
                     {profile.allergies.map((item, index) => (
                       <div key={index} className="allergy-item">
@@ -240,7 +240,7 @@ const ProfilePage = () => {
           {/* Thông tin bảo hiểm */}
           {profile.insuranceInfo && (
             <div className="profile-section">
-              <h2>Thông tin bảo hiểm</h2>
+              <h2>Insurance Information</h2>
               <p>{profile.insuranceInfo}</p>
             </div>
           )}
