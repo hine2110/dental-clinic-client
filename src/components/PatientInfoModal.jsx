@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import './PatientInfoModal.css';
 
 const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
-  // State để lưu dữ liệu form
+  // State to store form data
   const [formData, setFormData] = useState({
     basicInfo: {
       fullName: '',           
@@ -33,12 +33,12 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
     insuranceInfo: ''         
   });
 
-  // State để lưu lỗi validation
+  // State to store validation errors
   const [errors, setErrors] = useState({});
-  // State để hiển thị trạng thái đang submit
+  // State to show submitting status
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Hàm xử lý thay đổi input thông thường
+  // Function to handle regular input changes
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -46,7 +46,7 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
     }));
   };
 
-  // Hàm xử lý thay đổi input lồng nhau (như basicInfo.fullName)
+  // Function to handle nested input changes (like basicInfo.fullName)
   const handleNestedInputChange = (parent, field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -57,7 +57,7 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
     }));
   };
 
-  // Hàm xử lý thay đổi địa chỉ
+  // Function to handle address changes
   const handleAddressChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -71,7 +71,7 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
     }));
   };
 
-  // Hàm xử lý thay đổi số CCCD
+  // Function to handle ID card changes
   const handleIdCardChange = (value) => {
     setFormData(prev => ({
       ...prev,
@@ -84,82 +84,82 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
     }));
   };
 
-  // Hàm validate form
+  // Function to validate form
   const validateForm = () => {
     const newErrors = {};
 
-    // Validate thông tin cơ bản
+    // Validate basic information
     if (!formData.basicInfo.fullName.trim()) {
-      newErrors.fullName = 'Họ tên là bắt buộc';
+      newErrors.fullName = 'Full name is required';
     }
     if (!formData.basicInfo.dateOfBirth) {
-      newErrors.dateOfBirth = 'Ngày sinh là bắt buộc';
+      newErrors.dateOfBirth = 'Date of birth is required';
     }
     if (!formData.basicInfo.gender) {
-      newErrors.gender = 'Giới tính là bắt buộc';
+      newErrors.gender = 'Gender is required';
     }
     if (!formData.basicInfo.idCard.idNumber.trim()) {
-      newErrors.idNumber = 'Số CCCD là bắt buộc';
+      newErrors.idNumber = 'ID number is required';
     }
 
-    // Validate thông tin liên hệ
+    // Validate contact information
     if (!formData.contactInfo.phone.trim()) {
-      newErrors.phone = 'Số điện thoại là bắt buộc';
+      newErrors.phone = 'Phone number is required';
     }
     if (!formData.contactInfo.email.trim()) {
-      newErrors.email = 'Email là bắt buộc';
+      newErrors.email = 'Email is required';
     }
     if (!formData.contactInfo.address.street.trim()) {
-      newErrors.street = 'Địa chỉ đường là bắt buộc';
+      newErrors.street = 'Street address is required';
     }
     if (!formData.contactInfo.address.city.trim()) {
-      newErrors.city = 'Thành phố là bắt buộc';
+      newErrors.city = 'City is required';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Hàm xử lý submit form
+  // Function to handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Kiểm tra validation trước khi submit
+    // Check validation before submitting
     if (!validateForm()) {
       return;
     }
 
     setIsSubmitting(true);
     try {
-      // Gọi hàm onSave từ props để lưu dữ liệu
+      // Call onSave function from props to save data
       await onSave(formData);
       onClose();
     } catch (error) {
-      console.error('Lỗi khi lưu profile:', error);
+      console.error('Error saving profile:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Nếu modal không mở thì không render gì
+  // If modal is not open, don't render anything
   if (!isOpen) return null;
 
   return createPortal(
     <div className="patient-modal-overlay">
       <div className="patient-modal">
-        {/* Header của modal */}
+        {/* Modal header */}
         <div className="patient-modal-header">
-          <h2>Hoàn thiện thông tin cá nhân</h2>
+          <h2>Complete Personal Information</h2>
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
         
         <form onSubmit={handleSubmit} className="patient-modal-form">
           {/* Phần thông tin cơ bản */}
           <div className="form-section">
-            <h3>Thông tin cơ bản</h3>
+            <h3>Basic Information</h3>
             <div className="form-row">
               <div className="form-group">
-                <label>Họ và tên *</label>
+                <label>Full Name *</label>
                 <input
                   type="text"
                   value={formData.basicInfo.fullName}
@@ -170,7 +170,7 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
               </div>
               
               <div className="form-group">
-                <label>Ngày sinh *</label>
+                <label>Date of Birth *</label>
                 <input
                   type="date"
                   value={formData.basicInfo.dateOfBirth}
@@ -183,28 +183,28 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
 
             <div className="form-row">
               <div className="form-group">
-                <label>Giới tính *</label>
+                <label>Gender *</label>
                 <select
                   value={formData.basicInfo.gender}
                   onChange={(e) => handleNestedInputChange('basicInfo', 'gender', e.target.value)}
                   className={errors.gender ? 'error' : ''}
                 >
-                  <option value="">Chọn giới tính</option>
-                  <option value="male">Nam</option>
-                  <option value="female">Nữ</option>
-                  <option value="other">Khác</option>
+                  <option value="">Select Gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
                 </select>
                 {errors.gender && <span className="error-text">{errors.gender}</span>}
               </div>
               
               <div className="form-group">
-                <label>Số CCCD *</label>
+                <label>ID Number *</label>
                 <input
                   type="text"
                   value={formData.basicInfo.idCard.idNumber}
                   onChange={(e) => handleIdCardChange(e.target.value)}
                   className={errors.idNumber ? 'error' : ''}
-                  placeholder="Nhập số CCCD của bạn"
+                  placeholder="Enter your ID number"
                 />
                 {errors.idNumber && <span className="error-text">{errors.idNumber}</span>}
               </div>
@@ -213,10 +213,10 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
 
           {/* Phần thông tin liên hệ */}
           <div className="form-section">
-            <h3>Thông tin liên hệ</h3>
+            <h3>Contact Information</h3>
             <div className="form-row">
               <div className="form-group">
-                <label>Số điện thoại *</label>
+                <label>Phone Number *</label>
                 <input
                   type="tel"
                   value={formData.contactInfo.phone}
@@ -240,7 +240,7 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
 
             <div className="form-row">
               <div className="form-group">
-                <label>Địa chỉ đường *</label>
+                <label>Street Address *</label>
                 <input
                   type="text"
                   value={formData.contactInfo.address.street}
@@ -251,7 +251,7 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
               </div>
               
               <div className="form-group">
-                <label>Thành phố *</label>
+                <label>City *</label>
                 <input
                   type="text"
                   value={formData.contactInfo.address.city}
@@ -264,7 +264,7 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
 
             <div className="form-row">
               <div className="form-group">
-                <label>Tỉnh/Thành phố</label>
+                <label>Province/State</label>
                 <input
                   type="text"
                   value={formData.contactInfo.address.state}
@@ -273,7 +273,7 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
               </div>
               
               <div className="form-group">
-                <label>Mã bưu điện</label>
+                <label>Postal Code</label>
                 <input
                   type="text"
                   value={formData.contactInfo.address.zipCode}
@@ -285,10 +285,10 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
 
           {/* Phần liên hệ khẩn cấp */}
           <div className="form-section">
-            <h3>Liên hệ khẩn cấp (Tùy chọn)</h3>
+            <h3>Emergency Contact (Optional)</h3>
             <div className="form-row">
               <div className="form-group">
-                <label>Tên người liên hệ khẩn cấp</label>
+                <label>Emergency Contact Name</label>
                 <input
                   type="text"
                   value={formData.emergencyContact.name}
@@ -297,7 +297,7 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
               </div>
               
               <div className="form-group">
-                <label>Mối quan hệ</label>
+                <label>Relationship</label>
                 <input
                   type="text"
                   value={formData.emergencyContact.relationship}
@@ -307,7 +307,7 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
             </div>
             
             <div className="form-group">
-              <label>Số điện thoại liên hệ khẩn cấp</label>
+              <label>Emergency Contact Phone</label>
               <input
                 type="tel"
                 value={formData.emergencyContact.phone}
@@ -318,23 +318,23 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
 
           {/* Phần thông tin y tế */}
           <div className="form-section">
-            <h3>Thông tin y tế (Tùy chọn)</h3>
+            <h3>Medical Information (Optional)</h3>
             <div className="form-group">
-              <label>Lịch sử bệnh án</label>
+              <label>Medical History</label>
               <textarea
                 value={formData.medicalHistory}
                 onChange={(e) => handleInputChange('medicalHistory', e.target.value)}
-                placeholder="Mô tả các tình trạng sức khỏe hoặc lịch sử bệnh án"
+                placeholder="Describe health conditions or medical history"
                 rows="3"
               />
             </div>
             
             <div className="form-group">
-              <label>Dị ứng</label>
+              <label>Allergies</label>
               <textarea
                 value={formData.allergies}
                 onChange={(e) => handleInputChange('allergies', e.target.value)}
-                placeholder="Liệt kê các dị ứng hoặc phản ứng bất lợi"
+                placeholder="List allergies or adverse reactions"
                 rows="3"
               />
             </div>
@@ -343,10 +343,10 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
           {/* Nút hành động */}
           <div className="form-actions">
             <button type="button" onClick={onClose} className="btn-secondary">
-              Hủy
+              Cancel
             </button>
             <button type="submit" className="btn-primary" disabled={isSubmitting}>
-              {isSubmitting ? 'Đang lưu...' : 'Lưu thông tin'}
+              {isSubmitting ? 'Saving...' : 'Save Information'}
             </button>
           </div>
         </form>

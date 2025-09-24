@@ -29,7 +29,7 @@ export default function ForgotPassword() {
   const handleSendCode = async (e) => {
     e.preventDefault();
     if (!sendCodeData.email) {
-      message.warning('Vui lòng nhập email!');
+      message.warning('Please enter email!');
       return;
     }
 
@@ -40,9 +40,9 @@ export default function ForgotPassword() {
       setResetData(prev => ({ ...prev, email: sendCodeData.email }));
       setCodeSent(true);
       setIsActive(true);
-      message.success('Mã xác thực đã được gửi đến email của bạn!');
+      message.success('Verification code has been sent to your email!');
     } catch (err) {
-      message.error(err.response?.data?.message || 'Gửi mã xác thực thất bại');
+      message.error(err.response?.data?.message || 'Failed to send verification code');
     } finally {
       setLoading(false);
     }
@@ -51,7 +51,7 @@ export default function ForgotPassword() {
   const handleResetPassword = async (e) => {
     e.preventDefault();
     if (resetData.newPassword !== resetData.confirmPassword) {
-      message.error('Mật khẩu xác nhận không khớp!');
+      message.error('Confirm password does not match!');
       return;
     }
 
@@ -62,10 +62,10 @@ export default function ForgotPassword() {
         code: resetData.code,
         newPassword: resetData.newPassword
       });
-      message.success('Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại.');
+      message.success('Password reset successful! Please login again.');
       setSuccess(true);
     } catch (err) {
-      message.error(err.response?.data?.message || 'Đặt lại mật khẩu thất bại');
+      message.error(err.response?.data?.message || 'Password reset failed');
     } finally {
       setLoading(false);
     }
@@ -94,10 +94,10 @@ export default function ForgotPassword() {
               ✓
             </div>
             <h1 style={{ color: '#52c41a', marginBottom: '16px', fontSize: '32px' }}>
-              Thành công!
+              Success!
             </h1>
             <p style={{ color: '#666', marginBottom: '30px', fontSize: '16px' }}>
-              Mật khẩu của bạn đã được đặt lại thành công.
+              Your password has been reset successfully.
             </p>
             <button 
               onClick={() => navigate('/login')}
@@ -114,7 +114,7 @@ export default function ForgotPassword() {
                 letterSpacing: '0.5px'
               }}
             >
-              Đăng nhập ngay
+              Login Now
             </button>
           </div>
         </div>
@@ -128,19 +128,19 @@ export default function ForgotPassword() {
         {/* Send Code Form */}
         <div className="form-container sign-in">
           <form onSubmit={handleSendCode}>
-            <h1>Gửi mã xác thực</h1>
-            <span>Nhập email để nhận mã xác thực</span>
+            <h1>Send Verification Code</h1>
+            <span>Enter email to receive verification code</span>
             
             <input
               type="email"
-              placeholder="Email đã đăng ký"
+              placeholder="Registered email"
               value={sendCodeData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
               required
             />
             
             <button type="submit" disabled={loading}>
-              {loading ? 'Đang gửi...' : 'Gửi mã xác thực'}
+              {loading ? 'Sending...' : 'Send Verification Code'}
             </button>
           </form>
         </div>
@@ -148,8 +148,8 @@ export default function ForgotPassword() {
         {/* Reset Password Form */}
         <div className="form-container sign-up">
           <form onSubmit={handleResetPassword}>
-            <h1>Đặt lại mật khẩu</h1>
-            <span>Nhập mã xác thực và mật khẩu mới</span>
+            <h1>Reset Password</h1>
+            <span>Enter verification code and new password</span>
             
             <input
               type="email"
@@ -161,7 +161,7 @@ export default function ForgotPassword() {
             
             <input
               type="text"
-              placeholder="Mã xác thực"
+              placeholder="Verification Code"
               value={resetData.code}
               onChange={(e) => handleResetInputChange('code', e.target.value)}
               required
@@ -170,7 +170,7 @@ export default function ForgotPassword() {
             
             <input
               type="password"
-              placeholder="Mật khẩu mới"
+              placeholder="New Password"
               value={resetData.newPassword}
               onChange={(e) => handleResetInputChange('newPassword', e.target.value)}
               required
@@ -178,14 +178,14 @@ export default function ForgotPassword() {
             
             <input
               type="password"
-              placeholder="Xác nhận mật khẩu mới"
+              placeholder="Confirm New Password"
               value={resetData.confirmPassword}
               onChange={(e) => handleResetInputChange('confirmPassword', e.target.value)}
               required
             />
             
             <button type="submit" disabled={loading || !codeSent}>
-              {loading ? 'Đang xử lý...' : 'Đặt lại mật khẩu'}
+              {loading ? 'Processing...' : 'Reset Password'}
             </button>
           </form>
         </div>
@@ -194,17 +194,17 @@ export default function ForgotPassword() {
         <div className="toggle-container">
           <div className="toggle">
             <div className="toggle-panel toggle-left">
-              <h1>Quên mật khẩu?</h1>
-              <p>Nhập email để nhận mã xác thực và đặt lại mật khẩu mới</p>
+              <h1>Forgot Password?</h1>
+              <p>Enter email to receive verification code and reset new password</p>
               <button className="hidden" id="send-code" onClick={() => setIsActive(false)}>
-                Gửi mã
+                Send Code
               </button>
             </div>
             <div className="toggle-panel toggle-right">
-              <h1>Đặt lại mật khẩu</h1>
-              <p>Nhập mã xác thực và mật khẩu mới để hoàn tất quá trình</p>
+              <h1>Reset Password</h1>
+              <p>Enter verification code and new password to complete the process</p>
               <button className="hidden" id="reset-password" onClick={() => setIsActive(true)}>
-                Đặt lại
+                Reset
               </button>
             </div>
           </div>

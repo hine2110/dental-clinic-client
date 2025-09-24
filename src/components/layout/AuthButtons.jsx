@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/authContext.jsx';
+import { useAuth } from '../../context/authContext';
 import { logout as logoutAPI } from '../../services/patientService';
 
 function AuthButtons({ onOpenLogin, onOpenRegister }) {
@@ -8,8 +8,12 @@ function AuthButtons({ onOpenLogin, onOpenRegister }) {
   const navigate = useNavigate();
 
   const handleProfileClick = () => {
+    // Navigate to profile page for all logged-in users
     if (user?.role === 'patient') {
       navigate('/profile');
+    } else {
+      // For non-patient users, show message
+      alert('Profile functionality is only available for patients.');
     }
   };
 
