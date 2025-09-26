@@ -8,7 +8,7 @@ function ContactSection() {
           <div className="col-12">
             <div className="section-title" data-aos="fade-up" data-aos-delay="100">
               <h2>Contact</h2>
-              <p>Magnam dolores commodi suscipit. Necessitatibus eius consequatur ex aliquid fuga eum quidem</p>
+              <p>If you have any questions or would like to book an appointment, our team is here to help you. Contact us today and let us take care of your smile.</p>
             </div>
           </div>
         </div>
@@ -19,21 +19,21 @@ function ContactSection() {
                 <div className="info-box">
                   <i className="bi bi-geo-alt"></i>
                   <h3>Address</h3>
-                  <p>A108 Adam Street,<br />New York, NY 535022</p>
+                  <p>K47/32 Hoang Van Thai<br />Da Nang</p>
                 </div>
               </div>
               <div className="col-md-6" data-aos="fade-up" data-aos-delay="300">
                 <div className="info-box">
                   <i className="bi bi-telephone"></i>
                   <h3>Call Us</h3>
-                  <p>+1 5589 55488 55<br />+1 6678 254445 41</p>
+                  <p>+84 935 655 266<br />+84 888 708 368</p>
                 </div>
               </div>
               <div className="col-md-6" data-aos="fade-up" data-aos-delay="400">
                 <div className="info-box">
                   <i className="bi bi-envelope"></i>
                   <h3>Email Us</h3>
-                  <p>info@example.com<br />contact@example.com</p>
+                  <p>huy26102101@gmail.com<br />huyntgde170695@fpt.edu.vn</p>
                 </div>
               </div>
               <div className="col-md-6" data-aos="fade-up" data-aos-delay="500">

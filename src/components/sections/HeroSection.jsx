@@ -6,16 +6,18 @@ function HeroSection() {
       <img src="/assets/img/hero-bg.jpg" alt="" data-aos="fade-in" />
       <div className="container position-relative">
         <div className="welcome position-relative" data-aos="fade-down" data-aos-delay="100">
-          <h2>WELCOME TO MEDILAB</h2>
-          <p>We are team of talented designers making websites with Bootstrap</p>
+          <h2>WELCOME TO</h2>
+          <h2>BeautySmile Clinic</h2>
+          <p>Confidence Begins with a Smile</p>
         </div>
         <div className="content row gy-4">
           <div className="col-lg-4 d-flex align-items-stretch">
             <div className="why-box" data-aos="zoom-out" data-aos-delay="200">
-              <h3>Why Choose Medilab?</h3>
+              <h3>Why Choose BeautySmile Clinic?</h3>
               <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore
-                et dolore magna aliqua. Duis aute irure dolor in reprehenderit Asperiores dolores sed et.
+                At BeautySmile Clinic, we believe a healthy smile is the key to confidence and happiness. 
+                Our experienced dental team is dedicated to providing gentle, modern, and personalized care for every patient. 
+                From routine check-ups to advanced cosmetic dentistry, we use the latest technology to ensure your smile is both healthy and beautiful.
               </p>
               <div className="text-center">
                 <a href="#about" className="more-btn">
@@ -30,22 +32,22 @@ function HeroSection() {
                 <div className="col-xl-4 d-flex align-items-stretch">
                   <div className="icon-box" data-aos="zoom-out" data-aos-delay="300">
                     <i className="bi bi-clipboard-data"></i>
-                    <h4>Corporis voluptates officia eiusmod</h4>
-                    <p>Consequuntur sunt aut quasi enim aliquam quae harum pariatur laboris nisi ut aliquip</p>
+                    <h4>Professional Dental Care</h4>
+                    <p>At BeautySmile Clinic, we provide gentle, modern, and personalized treatments to keep your smile healthy and beautiful.</p>
                   </div>
                 </div>
                 <div className="col-xl-4 d-flex align-items-stretch">
                   <div className="icon-box" data-aos="zoom-out" data-aos-delay="400">
                     <i className="bi bi-gem"></i>
-                    <h4>Ullamco laboris ladore pan</h4>
-                    <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt</p>
+                    <h4>Advanced Technology</h4>
+                    <p>We use modern equipment and the latest techniques to ensure safe, effective, and comfortable dental care for every patient.</p>
                   </div>
                 </div>
                 <div className="col-xl-4 d-flex align-items-stretch">
                   <div className="icon-box" data-aos="zoom-out" data-aos-delay="500">
                     <i className="bi bi-inboxes"></i>
-                    <h4>Labore consequatur incidid dolore</h4>
-                    <p>Aut suscipit aut cum nemo deleniti aut omnis. Doloribus ut maiores omnis facere</p>
+                    <h4>Experienced Dental Team</h4>
+                    <p>Our skilled and caring dentists are dedicated to providing personalized treatments and ensuring your comfort at every visit.</p>
                   </div>
                 </div>
               </div>
