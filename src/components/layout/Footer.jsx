@@ -8,11 +8,11 @@ function Footer() {
           <div className="col-lg-4 col-md-6 footer-contact">
             <h3>Medilab</h3>
             <p>
-              A108 Adam Street <br />
-              New York, NY 535022<br />
-              United States <br /><br />
-              <strong>Phone:</strong> +1 5589 55488 55<br />
-              <strong>Email:</strong> info@example.com<br />
+              K47/32 Hoang Van Thai <br />
+              Da Nang<br />
+              Vietnam <br /><br />
+              <strong>Phone:</strong> +84 935 655 266<br />
+              <strong>Email:</strong> huy26102101@gmail.com<br />
             </p>
           </div>
           <div className="col-lg-2 col-md-6 footer-links">
@@ -47,9 +47,6 @@ function Footer() {
       <div className="container footer-bottom clearfix">
         <div className="copyright">
           &copy; Copyright <strong><span>Medilab</span></strong>. All Rights Reserved
-        </div>
-        <div className="credits">
-          Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
         </div>
       </div>
     </footer>
