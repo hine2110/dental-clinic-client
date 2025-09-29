@@ -99,4 +99,61 @@ export const getPatientProfile = async () => {
     throw error;
   }
 };
+
+// ==================== SERVICES API ====================
+
+// Get all services for patient (public access)
+export const getServices = async (params = {}) => {
+  try {
+    const queryParams = new URLSearchParams(params);
+    const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/patient/services?${queryParams}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error getting services:', error);
+    throw error;
+  }
+};
+
+// Get service by ID
+export const getServiceById = async (serviceId) => {
+  try {
+    const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/patient/services/${serviceId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error getting service:', error);
+    throw error;
+  }
+};
+
+// Get service categories
+export const getServiceCategories = async () => {
+  try {
+    const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/patient/services/categories`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error getting service categories:', error);
+    throw error;
+  }
+};
   

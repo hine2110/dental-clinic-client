@@ -1,82 +1,158 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { getServices } from '../../services/patientService';
+import ServiceCard from './ServiceCard';
+import ServiceDetailModal from './ServiceDetailModal';
+import './ServicesSection.css';
 
 function ServicesSection() {
-  return (
-    <section id="services" className="services section">
-      <div className="container section-title" data-aos="fade-up">
-        <h2>Services</h2>
-        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
-      </div>
-      <div className="container">
-        <div className="row gy-4">
-          <div className="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
-            <div className="service-item position-relative">
-              <div className="icon">
-                <i className="fas fa-heartbeat"></i>
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showAll, setShowAll] = useState(false);
+  const [displayedServices, setDisplayedServices] = useState([]);
+  const [selectedService, setSelectedService] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  useEffect(() => {
+    if (services.length > 0) {
+      if (showAll) {
+        setDisplayedServices(services);
+      } else {
+        setDisplayedServices(services.slice(0, 3));
+      }
+    }
+  }, [services, showAll]);
+
+  const fetchServices = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await getServices({ limit: 20 }); // Lấy nhiều services để có thể show more
+      
+      if (response.success) {
+        setServices(response.data);
+      } else {
+        setError(response.message || 'Failed to load services');
+      }
+    } catch (err) {
+      console.error('Error fetching services:', err);
+      setError('Failed to load services');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleShowAll = () => {
+    setShowAll(!showAll);
+  };
+
+  const handleServiceClick = (service) => {
+    console.log('Service clicked:', service);
+    setSelectedService(service);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedService(null);
+  };
+
+  if (loading) {
+    return (
+      <section id="services" className="services section">
+        <div className="container section-title" data-aos="fade-up">
+          <h2>Services</h2>
+          <p>Dedicated – Professional – Effective: High-quality dental care for all ages.</p>
+        </div>
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-12 text-center">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
               </div>
-              <a href="#" className="stretched-link">
-                <h3>Nesciunt Mete</h3>
-              </a>
-              <p>Provident nihil minus qui consequatur non omnis maiores. Eos accusantium minus dolores iure perferendis tempore et consequatur.</p>
-            </div>
-          </div>
-          <div className="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
-            <div className="service-item position-relative">
-              <div className="icon">
-                <i className="fas fa-pills"></i>
-              </div>
-              <a href="#" className="stretched-link">
-                <h3>Eosle Commodi</h3>
-              </a>
-              <p>Ut autem aut autem non a. Sint sint sit facilis nam iusto sint. Libero corrupti neque eum hic non ut nesciunt dolorem.</p>
-            </div>
-          </div>
-          <div className="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
-            <div className="service-item position-relative">
-              <div className="icon">
-                <i className="fas fa-hospital-user"></i>
-              </div>
-              <a href="#" className="stretched-link">
-                <h3>Ledo Markt</h3>
-              </a>
-              <p>Ut excepturi voluptatem nisi sed. Quidem fuga consequatur. Minus ea aut. Vel qui id voluptas adipisci eos earum corrupti.</p>
-            </div>
-          </div>
-          <div className="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
-            <div className="service-item position-relative">
-              <div className="icon">
-                <i className="fas fa-dna"></i>
-              </div>
-              <a href="#" className="stretched-link">
-                <h3>Asperiores Commodit</h3>
-              </a>
-              <p>Non et temporibus minus omnis sed dolor esse consequatur. Cupiditate sed error ea fuga sit provident adipisci neque.</p>
-            </div>
-          </div>
-          <div className="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
-            <div className="service-item position-relative">
-              <div className="icon">
-                <i className="fas fa-wheelchair"></i>
-              </div>
-              <a href="#" className="stretched-link">
-                <h3>Velit Doloremque</h3>
-              </a>
-              <p>Cumque et suscipit saepe. Est maiores autem enim facilis ut aut ipsam corporis aut. Sed animi at autem alias eius labore.</p>
-            </div>
-          </div>
-          <div className="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
-            <div className="service-item position-relative">
-              <div className="icon">
-                <i className="fas fa-notes-medical"></i>
-              </div>
-              <a href="#" className="stretched-link">
-                <h3>Dolori Architecto</h3>
-              </a>
-              <p>Hic molestias ea quibusdam eos. Fugiat enim doloremque aut neque non et debitis iure. Corrupti recusandae ducimus enim.</p>
+              <p className="mt-3">Loading services...</p>
             </div>
           </div>
         </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section id="services" className="services section">
+        <div className="container section-title" data-aos="fade-up">
+          <h2>Services</h2>
+          <p>Dedicated – Professional – Effective: High-quality dental care for all ages.</p>
+        </div>
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-12 text-center">
+              <div className="alert alert-warning" role="alert">
+                <i className="fas fa-exclamation-triangle me-2"></i>
+                {error}
+                <button className="btn btn-sm btn-outline-primary ms-3" onClick={fetchServices}>
+                  Try Again
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section id="services" className="services section">
+      <div className="container section-title" data-aos="fade-up">
+        <h2>Our Services</h2>
+        <p>Dedicated – Professional – Effective: High-quality dental care for all ages.</p>
       </div>
+      <div className="container">
+        <div className="row gy-4">
+          {displayedServices.map((service, index) => (
+            <ServiceCard 
+              key={service._id} 
+              service={service} 
+              index={index} 
+              onServiceClick={handleServiceClick}
+            />
+          ))}
+        </div>
+        
+        {/* View More/Less Button */}
+        {services.length > 3 && (
+          <div className="text-center mt-4" data-aos="fade-up" data-aos-delay="400">
+            <button 
+              className="btn btn-outline-primary"
+              onClick={toggleShowAll}
+            >
+              {showAll ? (
+                <>
+                  <i className="fas fa-chevron-up me-2"></i>
+                  Show Less
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-chevron-down me-2"></i>
+                  View More Services
+                </>
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+      
+      {/* Service Detail Modal */}
+      <ServiceDetailModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        service={selectedService}
+      />
     </section>
   );
 }

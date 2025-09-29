@@ -1,0 +1,98 @@
+/* Additional styles for ServicesSection */
+.service-thumbnail {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 8px 8px 0 0;
+  margin-bottom: 15px;
+}
+
+.service-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.service-item:hover .service-image {
+  transform: scale(1.05);
+}
+
+.service-content {
+  padding: 15px;
+}
+
+.service-clickable {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.service-clickable:hover {
+  transform: translateY(-2px);
+}
+
+.service-clickable:hover h3 {
+  color: var(--accent-color);
+}
+
+.service-clickable h3 {
+  margin-bottom: 12px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.service-price {
+  margin: 12px 0;
+  font-size: 18px;
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+.service-category {
+  margin-top: 8px;
+}
+
+.service-category .badge {
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.service-item:hover .service-price {
+  color: var(--contrast-color);
+}
+
+.service-item:hover .service-category .badge {
+  background-color: var(--contrast-color) !important;
+  color: var(--accent-color);
+}
+
+/* View More Button Styling */
+.btn-outline-primary {
+  border: 2px solid var(--accent-color);
+  color: var(--accent-color);
+  background-color: transparent;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--accent-color);
+  color: var(--contrast-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-outline-primary:focus {
+  box-shadow: 0 0 0 0.2rem rgba(var(--accent-color-rgb), 0.25);
+}
+
+.btn-outline-primary i {
+  transition: transform 0.3s ease;
+}
+
+.btn-outline-primary:hover i {
+  transform: scale(1.1);
+}
