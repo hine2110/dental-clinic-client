@@ -114,7 +114,7 @@ export default function ForgotPasswordPage() {
           <div style={{ textAlign: "center", marginBottom: 12 }}>
             <img src={emailLogo} alt="Email" style={{ width: 64, height: 64, objectFit: "contain" }} />
           </div>
-          <h2 style={{ marginBottom: 16, color: "#1977cc" }}>Create New Password</h2>
+          <h2 style={{ textAlign: "center" ,marginBottom: 16, color: "#1977cc" }}>Create New Password</h2>
           {!tokenValid ? (
             <p style={{ color: "#dc3545" }}>Invalid or expired reset link.</p>
           ) : (
@@ -176,7 +176,7 @@ export default function ForgotPasswordPage() {
         <div style={{ textAlign: "center", marginBottom: 12 }}>
           <img src={emailLogo} alt="Email" style={{ width: 64, height: 64, objectFit: "contain" }} />
         </div>
-        <h2 style={{ marginBottom: 16, color: "#1977cc" }}>Forgot Password</h2>
+        <h2 style={{ marginBottom: 16, color: "#1977cc", textAlign: "center" }}>Forgot Password</h2>
         <p style={{ marginBottom: 16, color: "#555" }}>Enter your registered email. We will send you a link to create a new password.</p>
         <form onSubmit={handleSendEmail}>
           <div style={{ marginBottom: 16 }}>
