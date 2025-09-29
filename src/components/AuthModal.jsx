@@ -65,13 +65,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }) {
       message.success("Login successful!");
       onClose();
       // Redirect based on user role
-      if (res.data.data.user.role === "patient") {
-        navigate("/");
-      } else if (res.data.data.user.role === "doctor") {
-        navigate("/doctor/dashboard");
-      } else if (res.data.data.user.role === "admin") {
+      const role = res.data.data.user.role;
+      if (role === "doctor") {
+        navigate("/doctor");
+      } else if (role === "admin") {
         navigate("/admin");
-      } else if (res.data.data.user.role === "receptionist") {
+      } else if (role === "patient") {
+        navigate("/");
+      } else if (role === "receptionist") {
         navigate("/receptionist/dashboard");
       } else {
         navigate("/");

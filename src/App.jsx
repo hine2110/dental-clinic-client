@@ -4,8 +4,10 @@ import { AuthProvider } from "./context/authContext";
 import Home from "./pages/Home";
 import AuthSuccess from "./pages/AuthSuccess";
 import { CreateAccount, AdminDashboard } from "./pages/AdminPage";
+import { DoctorRoute } from "./pages/DoctorPage";
 import ProfilePage from "./pages/patient/ProfilePage";
 import ProfileGuard from "./components/ProfileGuard";
+import ProtectedRoute from "./components/ProtectedRoute";
 import ForgotPasswordPage from "./pages/ForgotPassword";
 import "./App.css";
 
@@ -19,6 +21,7 @@ function App() {
             <Route path="/auth-success" element={<AuthSuccess />} />
             <Route path="/create-account" element={<CreateAccount />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/doctor/*" element={<DoctorRoute />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ForgotPasswordPage />} />

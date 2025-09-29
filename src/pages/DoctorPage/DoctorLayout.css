@@ -1,0 +1,52 @@
+.doctor-app {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+.doctor-sidebar {
+  border-right: 1px solid #eee;
+  padding: 16px;
+  background: #fafafa;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav a {
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #333;
+}
+
+.nav a.active {
+  background: #1977cc;
+  color: #fff;
+}
+
+.doctor-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.doctor-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+  background: #fff;
+}
+
+.doctor-content {
+  padding: 20px;
+}
+
+
