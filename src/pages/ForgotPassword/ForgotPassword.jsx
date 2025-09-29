@@ -194,7 +194,7 @@ export default function ForgotPassword() {
         <div className="toggle-container">
           <div className="toggle">
             <div className="toggle-panel toggle-left">
-              <h1>Forgot Password?</h1>
+              <h1 style={{ textAlign: "center" }}>Forgot Password?</h1>
               <p>Enter email to receive verification code and reset new password</p>
               <button className="hidden" id="send-code" onClick={() => setIsActive(false)}>
                 Send Code
