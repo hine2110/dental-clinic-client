@@ -36,10 +36,12 @@ const AuthSuccess = () => {
 
         // Show success message
         message.success("Google login successful!");
-        
-        // Redirect to home
+
+        // Redirect by role
+        const role = userData?.role;
+        const target = role === 'doctor' ? '/doctor' : role === 'admin' ? '/admin' : '/';
         setTimeout(() => {
-          navigate("/");
+          navigate(target);
         }, 1500);
       } catch (parseError) {
         console.error("Error parsing user data:", parseError);
