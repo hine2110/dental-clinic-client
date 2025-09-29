@@ -1,0 +1,4 @@
+# Placeholder for thumbnail.jpg
+# This file should be replaced with an actual image file
+# For demo purposes, you can copy any existing image from the img folder
+# and rename it to thumbnail.jpg
