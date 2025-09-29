@@ -1,8 +1,11 @@
 import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/authContext';
 import './DoctorLayout.css';
 
 const DoctorLayout = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   return (
     <div className="doctor-app">
       <aside className="doctor-sidebar">
@@ -17,8 +20,19 @@ const DoctorLayout = () => {
         </nav>
       </aside>
       <main className="doctor-main">
-        <header className="doctor-header">
-          <h1>Doctor Portal</h1>
+        <header className="doctor-header" style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}>
+          <h1 style={{margin:0}}>Doctor Portal</h1>
+          <div style={{display:'flex',alignItems:'center',gap:12}}>
+            {user?.fullName && (
+              <span style={{color:'#555'}}>Hi, {user.fullName}</span>
+            )}
+            <button
+              className="btn btn-danger"
+              onClick={() => { logout(); navigate('/'); }}
+            >
+              Logout
+            </button>
+          </div>
         </header>
         <section className="doctor-content">
           <Outlet />
