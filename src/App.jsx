@@ -9,6 +9,7 @@ import ProfilePage from "./pages/patient/ProfilePage";
 import ProfileGuard from "./components/ProfileGuard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ForgotPasswordPage from "./pages/ForgotPassword";
+import PaymentStatusPage from "./pages/patient/PaymentStatusPage";
 import "./App.css";
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ForgotPasswordPage />} />
+            <Route path="/payment" element={<PaymentStatusPage />} />
           </Routes>
         </ProfileGuard>
       </Router>

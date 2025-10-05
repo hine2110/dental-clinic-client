@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useAuth } from '../context/authContext';
 import './PatientInfoModal.css';
 
 const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
+  const { user } = useAuth();
   // State to store form data
   const [formData, setFormData] = useState({
     basicInfo: {
@@ -37,6 +39,18 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
   const [errors, setErrors] = useState({});
   // State to show submitting status
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData(prev => ({
+        ...prev,
+        contactInfo: {
+          ...prev.contactInfo,
+          email: user?.email || ''
+        }
+      }));
+    }
+  }, [isOpen, user]);
 
   // Function to handle regular input changes
   const handleInputChange = (field, value) => {
@@ -231,10 +245,11 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
                 <input
                   type="email"
                   value={formData.contactInfo.email}
-                  onChange={(e) => handleNestedInputChange('contactInfo', 'email', e.target.value)}
-                  className={errors.email ? 'error' : ''}
+                  readOnly 
+                  disabled
+                  className="disabled-input"
                 />
-                {errors.email && <span className="error-text">{errors.email}</span>}
+                {/* Bạn không cần hiển thị lỗi ở đây nữa vì người dùng không thể nhập */}
               </div>
             </div>
 
