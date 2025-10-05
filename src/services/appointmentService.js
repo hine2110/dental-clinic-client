@@ -1,8 +1,13 @@
-// Service để quản lý API đặt lịch hẹn
+// Service để quản lý các API liên quan đến lịch hẹn
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 class AppointmentService {
-  // Lấy danh sách giờ khả dụng
+  /**
+   * Lấy danh sách các khung giờ có thể đặt lịch trong một ngày cụ thể.
+   * @param {string} date - Ngày theo định dạng YYYY-MM-DD
+   * @param {string} locationId - ID của cơ sở
+   * @returns {Promise<object>} Dữ liệu trả về từ API
+   */
   static async getAvailableTimeSlots(date, locationId) {
     try {
       const response = await fetch(`${API_BASE_URL}/patient/appointments/available-times?date=${date}&locationId=${locationId}`);
@@ -19,7 +24,13 @@ class AppointmentService {
     }
   }
 
-  // Lấy danh sách bác sĩ khả dụng
+  /**
+   * Lấy danh sách bác sĩ rảnh trong một khung giờ cụ thể.
+   * @param {string} date - Ngày theo định dạng YYYY-MM-DD
+   * @param {string} time - Giờ theo định dạng HH:MM
+   * @param {string} locationId - ID của cơ sở
+   * @returns {Promise<object>} Dữ liệu trả về từ API
+   */
   static async getAvailableDoctors(date, time, locationId) {
     try {
       const response = await fetch(`${API_BASE_URL}/patient/appointments/available-doctors?date=${date}&time=${time}&locationId=${locationId}`);
@@ -36,15 +47,17 @@ class AppointmentService {
     }
   }
 
-  // Đặt lịch hẹn
-  static async createAppointment(appointmentData) {
+  /**
+   * Tạo phiên thanh toán Stripe Checkout và trả về URL để redirect
+   */
+  static async createStripeCheckoutSession(appointmentData) {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error('Vui lòng đăng nhập để đặt lịch hẹn');
       }
 
-      const response = await fetch(`${API_BASE_URL}/patient/appointments`, {
+      const response = await fetch(`${API_BASE_URL}/stripe/create-checkout-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -54,19 +67,21 @@ class AppointmentService {
       });
 
       const data = await response.json();
-      
       if (!response.ok) {
-        throw new Error(data.message || 'Lỗi khi đặt lịch hẹn');
+        throw new Error(data.message || 'Lỗi khi tạo phiên thanh toán');
       }
-      
       return data;
     } catch (error) {
-      console.error('Error creating appointment:', error);
+      console.error('Error creating Stripe Checkout session:', error);
       throw error;
     }
   }
 
-  // Lấy danh sách lịch hẹn của bệnh nhân
+  /**
+   * Lấy danh sách tất cả lịch hẹn của bệnh nhân đã đăng nhập.
+   * @param {object} filters - Các bộ lọc tùy chọn (ví dụ: { status: 'confirmed' })
+   * @returns {Promise<object>} Dữ liệu trả về từ API
+   */
   static async getPatientAppointments(filters = {}) {
     try {
       const token = localStorage.getItem('token');
@@ -94,7 +109,11 @@ class AppointmentService {
     }
   }
 
-  // Hủy lịch hẹn
+  /**
+   * Gửi yêu cầu hủy một lịch hẹn.
+   * @param {string} appointmentId - ID của lịch hẹn cần hủy
+   * @returns {Promise<object>} Dữ liệu trả về từ API
+   */
   static async cancelAppointment(appointmentId) {
     try {
       const token = localStorage.getItem('token');

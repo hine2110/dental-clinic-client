@@ -18,12 +18,13 @@ function AppointmentSection() {
     reasonForVisit: ''
   });
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
   const [availableDoctors, setAvailableDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [profileComplete, setProfileComplete] = useState(true);
+  const [profileComplete, setProfileComplete] = useState(false);
   const [checkingProfile, setCheckingProfile] = useState(true);
 
   // Sử dụng config từ file cấu hình
@@ -59,6 +60,7 @@ function AppointmentSection() {
         setCheckingProfile(false);
         return;
       }
+      setIsLoggedIn(true);
 
       console.log('Checking profile status...');
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/patient/profile/status`, {
@@ -146,53 +148,53 @@ function AppointmentSection() {
 
   // Xử lý submit form
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    setSuccess(false);
+  e.preventDefault();
 
-    try {
-      // Check if profile is complete
-      if (!profileComplete) {
-        setError(MESSAGES.ERROR_PROFILE_INCOMPLETE);
-        setLoading(false);
-        return;
-      }
+  // Kiểm tra đăng nhập trước
+  if (!isLoggedIn) {
+    setError("Vui lòng đăng nhập để đặt lịch hẹn.");
+    window.dispatchEvent(new CustomEvent('openLoginModal'));
+    return;
+  }
 
-      // Validation
-      if (!formData.name || !formData.email || !formData.phone || !formData.date || !formData.timeSlot || !formData.doctor) {
-        setError(MESSAGES.ERROR_VALIDATION);
-        setLoading(false);
-        return;
-      }
+  setLoading(true);
+  setError('');
 
-      // Gọi API đặt lịch
-      const data = await AppointmentService.createAppointment({
-        doctorId: formData.doctor,
-        date: formData.date,
-        time: formData.timeSlot,
-        reasonForVisit: formData.reasonForVisit
-      });
-
-      setSuccess(true);
-      // Reset form
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        date: '',
-        timeSlot: '',
-        doctor: '',
-        reasonForVisit: ''
-      });
-      setAvailableTimeSlots([]);
-      setAvailableDoctors([]);
-    } catch (err) {
-      setError(err.message || MESSAGES.ERROR_NETWORK);
-    } finally {
+  try {
+    // Kiểm tra đã hoàn thành hồ sơ chưa
+    if (!profileComplete) {
+      setError("Vui lòng hoàn thành hồ sơ của bạn trước khi đặt lịch.");
       setLoading(false);
+      return;
     }
-  };
+
+    // Kiểm tra thông tin form
+    if (!formData.date || !formData.timeSlot || !formData.doctor) {
+      setError("Vui lòng điền đầy đủ thông tin ngày, giờ và bác sĩ.");
+      setLoading(false);
+      return;
+    }
+
+    // Tạo Stripe Checkout Session và redirect
+    const response = await AppointmentService.createStripeCheckoutSession({
+      doctorId: formData.doctor,
+      date: formData.date,
+      time: formData.timeSlot,
+      reasonForVisit: formData.reasonForVisit
+    });
+
+    if (response.success && response.url) {
+      window.location.href = response.url;
+      return; // redirecting
+    }
+
+    throw new Error(response.message || 'Không nhận được URL thanh toán');
+
+  } catch (err) {
+    setError(err.message || "Đã có lỗi xảy ra. Vui lòng thử lại.");
+    setLoading(false); // Chỉ setLoading(false) khi có lỗi
+  }
+};
 
   // Show loading while checking profile
   if (checkingProfile) {
@@ -212,12 +214,11 @@ function AppointmentSection() {
   }
 
   // Show profile incomplete message
-  if (!profileComplete) {
+  if (isLoggedIn && !profileComplete) {
     return (
       <section id="appointment" className="appointment section">
         <div className="container section-title" data-aos="fade-up">
           <h2>Make an Appointment</h2>
-          <p>Book an appointment with our specialist doctors</p>
         </div>
         <div className="container" data-aos="fade-up" data-aos-delay="100">
           <div className="alert alert-warning text-center">
@@ -226,7 +227,6 @@ function AppointmentSection() {
             <button 
               className="btn btn-primary"
               onClick={() => {
-                // Trigger profile modal in Home component
                 const event = new CustomEvent('openProfileModal');
                 window.dispatchEvent(event);
               }}
