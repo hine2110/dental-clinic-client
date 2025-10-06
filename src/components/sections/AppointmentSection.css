@@ -1,0 +1,112 @@
+/* src/components/sections/AppointmentSection.css */
+
+/* --- Container cho Custom Select --- */
+.custom-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* --- Nút bấm giả lập ô Select --- */
+.time-select-trigger {
+  width: 100%;
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 0;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  color: #495057;
+  transition: border-color 0.2s;
+}
+
+.time-select-trigger:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+.time-select-trigger:hover:not(:disabled) {
+  border-color: #80bdff;
+}
+
+/* Mũi tên dropdown cho nút chọn giờ */
+.time-select-trigger::after {
+  content: '▼';
+  font-size: 0.7em;
+  color: #6c757d;
+  transition: transform 0.2s;
+}
+
+.time-select-trigger.open::after {
+  transform: rotate(180deg);
+}
+
+.placeholder {
+  color: #6c757d;
+}
+
+/* --- Popup chứa các nút giờ --- */
+.time-picker-popup {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  width: 100%;
+  background-color: white;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  z-index: 100;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Lưới các nút giờ --- */
+.time-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 10px;
+}
+
+.time-slot-button {
+  padding: 12px 8px;
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+  background-color: white;
+  color: #495057;
+  cursor: pointer;
+  font-weight: 500;
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+}
+
+.time-slot-button:hover:not(:disabled) {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.time-slot-button.selected {
+  background-color: #1977cc;
+  color: white;
+  border-color: #1977cc;
+  box-shadow: 0 0 0 2px rgba(25, 119, 204, 0.25);
+}
+
+.time-slot-button:disabled {
+  background-color: #e9ecef;
+  color: #adb5bd;
+  cursor: not-allowed;
+  opacity: 0.7;
+}

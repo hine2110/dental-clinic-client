@@ -113,10 +113,10 @@ const ServiceDetailModal = ({ isOpen, onClose, service }) => {
           <button className="btn btn-secondary" onClick={onClose}>
             Close
           </button>
-          <button className="btn btn-primary">
+          <a href="#appointment" className="btn btn-primary" onClick={onClose}>
             <i className="fas fa-calendar-plus me-2"></i>
-            Book Appointment
-          </button>
+                Book Appointment
+          </a>
         </div>
       </div>
     </div>,
