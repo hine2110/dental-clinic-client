@@ -1,47 +1,158 @@
-import React from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Layout, Menu, Avatar, Dropdown, Button, Badge } from 'antd';
+import { 
+  DashboardOutlined, 
+  CalendarOutlined, 
+  UserOutlined, 
+  FileTextOutlined, 
+  FileSearchOutlined,
+  ScheduleOutlined,
+  SettingOutlined,
+  LogoutOutlined,
+  BellOutlined,
+  MenuOutlined
+} from '@ant-design/icons';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/authContext';
 import './DoctorLayout.css';
 
-const DoctorLayout = () => {
-  const { user, logout } = useAuth();
+const { Header, Sider, Content } = Layout;
+
+const DoctorLayout = ({ children }) => {
+  const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, logout } = useAuth();
+
+  const menuItems = [
+    {
+      key: '/doctor',
+      icon: <DashboardOutlined />,
+      label: 'Dashboard',
+    },
+    {
+      key: '/doctor/appointments',
+      icon: <CalendarOutlined />,
+      label: 'Lịch hẹn',
+    },
+    {
+      key: '/doctor/patients',
+      icon: <UserOutlined />,
+      label: 'Bệnh nhân',
+    },
+    {
+      key: '/doctor/prescriptions',
+      icon: <FileTextOutlined />,
+      label: 'Đơn thuốc',
+    },
+    {
+      key: '/doctor/medical-records',
+      icon: <FileSearchOutlined />,
+      label: 'Hồ sơ bệnh án',
+    },
+    {
+      key: '/doctor/schedule',
+      icon: <ScheduleOutlined />,
+      label: 'Lịch làm việc',
+    },
+    {
+      key: '/doctor/profile',
+      icon: <SettingOutlined />,
+      label: 'Hồ sơ',
+    },
+  ];
+
+  const handleMenuClick = ({ key }) => {
+    navigate(key);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  const userMenuItems = [
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: 'Hồ sơ cá nhân',
+      onClick: () => navigate('/doctor/profile'),
+    },
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: 'Đăng xuất',
+      onClick: handleLogout,
+    },
+  ];
+
   return (
-    <div className="doctor-app">
-      <aside className="doctor-sidebar">
-        <div className="brand">Clinic Doctor</div>
-        <nav className="nav">
-          <NavLink to="/doctor" end className={({ isActive }) => isActive ? 'active' : ''}>Dashboard</NavLink>
-          <NavLink to="/doctor/appointments" className={({ isActive }) => isActive ? 'active' : ''}>Appointments</NavLink>
-          <NavLink to="/doctor/patients" className={({ isActive }) => isActive ? 'active' : ''}>Patients</NavLink>
-          <NavLink to="/doctor/prescriptions" className={({ isActive }) => isActive ? 'active' : ''}>Prescriptions</NavLink>
-          <NavLink to="/doctor/schedule" className={({ isActive }) => isActive ? 'active' : ''}>Schedule</NavLink>
-          <NavLink to="/doctor/profile" className={({ isActive }) => isActive ? 'active' : ''}>Profile</NavLink>
-        </nav>
-      </aside>
-      <main className="doctor-main">
-        <header className="doctor-header" style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}>
-          <h1 style={{margin:0}}>Doctor Portal</h1>
-          <div style={{display:'flex',alignItems:'center',gap:12}}>
-            {user?.fullName && (
-              <span style={{color:'#555'}}>Hi, {user.fullName}</span>
-            )}
-            <button
-              className="btn btn-danger"
-              onClick={() => { logout(); navigate('/'); }}
-            >
-              Logout
-            </button>
+    <Layout style={{ minHeight: '100vh' }}>
+      <Sider 
+        trigger={null} 
+        collapsible 
+        collapsed={collapsed}
+        className="doctor-sider"
+      >
+        <div className="doctor-logo">
+          <h3>{collapsed ? 'DC' : 'Dental Clinic'}</h3>
+        </div>
+        <Menu
+          theme="dark"
+          mode="inline"
+          selectedKeys={[location.pathname]}
+          items={menuItems}
+          onClick={handleMenuClick}
+        />
+      </Sider>
+      
+      <Layout>
+        <Header className="doctor-header">
+          <div className="header-left">
+            <Button
+              type="text"
+              icon={collapsed ? <MenuOutlined /> : <MenuOutlined />}
+              onClick={() => setCollapsed(!collapsed)}
+              style={{ fontSize: '16px', width: 64, height: 64 }}
+            />
           </div>
-        </header>
-        <section className="doctor-content">
-          <Outlet />
-        </section>
-      </main>
-    </div>
+          
+          <div className="header-right">
+            <Badge count={0} size="small">
+              <Button 
+                type="text" 
+                icon={<BellOutlined />} 
+                size="large"
+                className="notification-btn"
+              />
+            </Badge>
+            
+            <Dropdown
+              menu={{ items: userMenuItems }}
+              placement="bottomRight"
+              arrow
+            >
+              <div className="user-info">
+                <Avatar 
+                  src={user?.avatar} 
+                  icon={<UserOutlined />}
+                  size="large"
+                />
+                <div className="user-details">
+                  <span className="user-name">{user?.fullName}</span>
+                  <span className="user-role">Bác sĩ</span>
+                </div>
+              </div>
+            </Dropdown>
+          </div>
+        </Header>
+        
+        <Content className="doctor-content">
+          {children}
+        </Content>
+      </Layout>
+    </Layout>
   );
 };
 
 export default DoctorLayout;
-
-
