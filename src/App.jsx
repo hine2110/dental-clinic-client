@@ -4,7 +4,7 @@ import { AuthProvider } from "./context/authContext";
 import Home from "./pages/Home";
 import AuthSuccess from "./pages/AuthSuccess";
 import { CreateAccount, AdminDashboard } from "./pages/AdminPage";
-import { DoctorRoute } from "./pages/DoctorPage";
+import DoctorRoute from "./pages/DoctorPage/DoctorRoute";
 import ProfilePage from "./pages/patient/ProfilePage";
 import ProfileGuard from "./components/ProfileGuard";
 import ProtectedRoute from "./components/ProtectedRoute";

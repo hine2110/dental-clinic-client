@@ -1,52 +1,126 @@
-.doctor-app {
-  display: grid;
-  grid-template-columns: 240px 1fr;
-  min-height: 100vh;
+.doctor-sider {
+  background: #001529;
 }
 
-.doctor-sidebar {
-  border-right: 1px solid #eee;
-  padding: 16px;
-  background: #fafafa;
-}
-
-.brand {
-  font-weight: 700;
-  font-size: 18px;
-  margin-bottom: 16px;
-}
-
-.nav {
+.doctor-logo {
+  height: 64px;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.nav a {
-  padding: 10px 12px;
-  border-radius: 8px;
-  text-decoration: none;
-  color: #333;
-}
-
-.nav a.active {
-  background: #1977cc;
-  color: #fff;
-}
-
-.doctor-main {
-  display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #002140;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
 }
 
 .doctor-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid #eee;
   background: #fff;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.notification-btn {
+  border: none;
+  box-shadow: none;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.3s;
+}
+
+.user-info:hover {
+  background-color: #f5f5f5;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.user-name {
+  font-weight: 500;
+  color: #262626;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.user-role {
+  color: #8c8c8c;
+  font-size: 12px;
+  line-height: 1.2;
 }
 
 .doctor-content {
-  padding: 20px;
+  margin: 24px;
+  padding: 24px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-height: calc(100vh - 112px);
 }
 
+/* Responsive */
+@media (max-width: 768px) {
+  .doctor-content {
+    margin: 16px;
+    padding: 16px;
+  }
+  
+  .user-details {
+    display: none;
+  }
+  
+  .header-right {
+    gap: 8px;
+  }
+}
 
+/* Menu styling */
+.ant-menu-dark.ant-menu-inline .ant-menu-item-selected {
+  background-color: #1890ff;
+}
+
+.ant-menu-dark.ant-menu-inline .ant-menu-item:hover {
+  background-color: #1890ff;
+  opacity: 0.8;
+}
+
+/* Content animations */
+.doctor-content {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
