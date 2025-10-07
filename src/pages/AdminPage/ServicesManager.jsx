@@ -29,7 +29,6 @@ import {
 } from "@ant-design/icons";
 import { adminService } from "../../services/adminService";
 
-
 const { Search } = Input;
 const { Option } = Select;
 
