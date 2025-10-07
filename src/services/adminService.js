@@ -142,10 +142,40 @@ export const adminService = {
 
   getServiceCategories: () => adminAPI.get(`/admin/services/categories`),
   getServiceById: (id) => adminAPI.get(`/admin/services/${id}`),
-  createService: (payload) => adminAPI.post(`/admin/services`, payload),
-  updateService: (id, payload) =>
-    adminAPI.put(`/admin/services/${id}`, payload),
+
+  // Create service with image upload
+  createService: (formData) => {
+    const config = {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    };
+    return adminAPI.post(`/admin/services`, formData, config);
+  },
+
+  // Update service with image upload
+  updateService: (id, formData) => {
+    const config = {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    };
+    return adminAPI.put(`/admin/services/${id}`, formData, config);
+  },
+
   toggleServiceStatus: (id) => adminAPI.patch(`/admin/services/${id}/toggle`),
   deleteService: (id) => adminAPI.delete(`/admin/services/${id}`),
   hardDeleteService: (id) => adminAPI.delete(`/admin/services/${id}/hard`),
+
+  // Upload Management
+  uploadImage: (formData) => {
+    const config = {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    };
+    return adminAPI.post(`/admin/upload/image`, formData, config);
+  },
+
+  deleteImage: (filename) => adminAPI.delete(`/admin/upload/image/${filename}`),
 };

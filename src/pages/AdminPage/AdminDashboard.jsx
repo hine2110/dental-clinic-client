@@ -207,6 +207,30 @@ const AdminDashboard = () => {
       key: "createdAt",
       render: (date) => new Date(date).toLocaleDateString(),
     },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_, record) => (
+        <Space>
+          <Button
+            type={record.isActive ? "default" : "primary"}
+            onClick={async () => {
+              try {
+                await adminService.toggleUserStatus(record._id || record.id);
+                message.success(
+                  record.isActive ? "User banned" : "User unbanned"
+                );
+                fetchUsers();
+              } catch (error) {
+                message.error(error.message || "Failed to toggle status");
+              }
+            }}
+          >
+            {record.isActive ? "Ban" : "Unban"}
+          </Button>
+        </Space>
+      ),
+    },
   ];
 
   // Dashboard statistics
