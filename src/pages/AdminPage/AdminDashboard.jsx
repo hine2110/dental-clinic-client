@@ -37,6 +37,7 @@ import { useAuth } from "../../context/authContext";
 import { useNavigate } from "react-router-dom";
 import CreateAccountModal from "./CreateAccountModal";
 import { adminService } from "../../services/adminService";
+import ServicesManager from "./ServicesManager";
 import "./AdminDashboard.css";
 
 const { Header, Content } = Layout;
@@ -206,6 +207,30 @@ const AdminDashboard = () => {
       key: "createdAt",
       render: (date) => new Date(date).toLocaleDateString(),
     },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_, record) => (
+        <Space>
+          <Button
+            type={record.isActive ? "default" : "primary"}
+            onClick={async () => {
+              try {
+                await adminService.toggleUserStatus(record._id || record.id);
+                message.success(
+                  record.isActive ? "User banned" : "User unbanned"
+                );
+                fetchUsers();
+              } catch (error) {
+                message.error(error.message || "Failed to toggle status");
+              }
+            }}
+          >
+            {record.isActive ? "Ban" : "Unban"}
+          </Button>
+        </Space>
+      ),
+    },
   ];
 
   // Dashboard statistics
@@ -269,7 +294,6 @@ const AdminDashboard = () => {
         <Col span={24}>
           <Card title="Quick Actions" className="actions-card">
             <Row gutter={[16, 16]}>
-          
               <Col xs={12} sm={8} md={6}>
                 <Button
                   block
@@ -301,6 +325,7 @@ const AdminDashboard = () => {
         <Table
           columns={columns.slice(0, 4)}
           dataSource={users.slice(0, 5)}
+          rowKey={(record) => record.id || record._id || record.email}
           pagination={false}
           size="small"
         />
@@ -363,7 +388,7 @@ const AdminDashboard = () => {
           columns={columns}
           dataSource={filteredUsers}
           loading={loading}
-          rowKey="id"
+          rowKey={(record) => record.id || record._id || record.email}
           pagination={{
             pageSize: 10,
             showSizeChanger: true,
@@ -406,6 +431,8 @@ const AdminDashboard = () => {
         return renderDashboard();
       case "users":
         return renderUserManagement();
+      case "services":
+        return <ServicesManager />;
       case "analytics":
         return renderAnalytics();
       case "settings":
@@ -444,6 +471,14 @@ const AdminDashboard = () => {
               className="nav-btn"
             >
               Users
+            </Button>
+            <Button
+              type={activeTab === "services" ? "primary" : "default"}
+              icon={<SettingOutlined />}
+              onClick={() => setActiveTab("services")}
+              className="nav-btn"
+            >
+              Services
             </Button>
             <Button
               type={activeTab === "analytics" ? "primary" : "default"}

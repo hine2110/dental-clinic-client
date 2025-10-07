@@ -1,0 +1,456 @@
+/* Services Manager Styles - Matching Users Page Format */
+.services-manager {
+  padding: 24px;
+  background: #f0f2f5;
+  min-height: 100vh;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+}
+
+/* Header Section - Clean white background like Users page */
+.services-header {
+  background: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+.services-title {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #262626;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.services-subtitle {
+  margin: 0 0 20px 0;
+  color: #8c8c8c;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.services-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #1890ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+}
+
+/* Filters Section - Matching Users page toolbar */
+.filters-grid {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+}
+
+.filter-label {
+  display: none; /* Hide labels to match Users page style */
+}
+
+/* Action Buttons - Matching Users page style */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-primary-custom {
+  height: 36px;
+  border-radius: 6px;
+  font-weight: 500;
+  background: #1890ff;
+  border-color: #1890ff;
+  box-shadow: 0 2px 4px rgba(24, 144, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.btn-primary-custom:hover {
+  background: #40a9ff;
+  border-color: #40a9ff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+}
+
+.btn-secondary-custom {
+  height: 36px;
+  border-radius: 6px;
+  font-weight: 500;
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  color: #262626;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary-custom:hover {
+  background: #f0f2f5;
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+/* Table Styles - Matching Users page format */
+.services-table-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: none;
+  background: white;
+  overflow: hidden;
+}
+
+.table-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #262626;
+  font-size: 14px;
+}
+
+.table-header i {
+  color: #1890ff;
+  font-size: 14px;
+}
+
+.table-cell-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-preview {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #f0f0f0;
+}
+
+.image-placeholder {
+  width: 40px;
+  height: 40px;
+  background: #f5f5f5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8c8c8c;
+  font-size: 16px;
+}
+
+.service-name {
+  font-weight: 600;
+  color: #262626;
+  font-size: 14px;
+}
+
+.category-tag {
+  border-radius: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border: none;
+  background: #e6f7ff;
+  color: #1890ff;
+  font-size: 12px;
+}
+
+.price-display {
+  font-weight: 600;
+  color: #52c41a;
+  font-size: 14px;
+}
+
+.status-tag {
+  border-radius: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border: none;
+  font-size: 12px;
+}
+
+.action-buttons-group {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.action-btn {
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Modal Styles - Matching Users page format */
+.service-modal .ant-modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.service-modal .ant-modal-header {
+  background: #fafafa;
+  border-bottom: 2px solid #e8e8e8;
+  padding: 16px 24px;
+}
+
+.service-modal .ant-modal-title {
+  color: #1890ff;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.service-modal .ant-modal-body {
+  padding: 24px;
+  background: #fff;
+}
+
+.service-modal .ant-modal-footer {
+  border-top: 1px solid #e8e8e8;
+  padding: 16px 24px;
+  text-align: right;
+  background: #fafafa;
+}
+
+/* Form Sections - Matching Users page format */
+.form-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  margin: 0 0 16px 0;
+  color: #262626;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 8px;
+}
+
+.section-title i {
+  font-size: 16px;
+  color: #1890ff;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-grid-single {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+/* Upload Section - Matching Users page format */
+.upload-section {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.upload-button {
+  flex: 1;
+}
+
+.upload-button .ant-btn {
+  width: 100%;
+  height: 100px;
+  border-style: dashed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 6px;
+  border-color: #d9d9d9;
+  background: #fafafa;
+  transition: all 0.3s ease;
+}
+
+.upload-button .ant-btn:hover {
+  border-color: #1890ff;
+  background: #f0f2f5;
+}
+
+.upload-icon {
+  font-size: 24px;
+  margin-bottom: 4px;
+  color: #1890ff;
+}
+
+.upload-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #262626;
+}
+
+.upload-hint {
+  font-size: 12px;
+  color: #8c8c8c;
+  margin-top: 2px;
+}
+
+.image-preview-container {
+  position: relative;
+  flex: 1;
+}
+
+.image-preview-wrapper {
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  padding: 12px;
+  text-align: center;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.image-preview-wrapper:hover {
+  border-color: #1890ff;
+}
+
+.preview-label {
+  font-size: 12px;
+  color: #8c8c8c;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.preview-image {
+  width: 100px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ff4d4f;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* Status Section - Matching Users page format */
+.status-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 6px;
+  border: 1px solid #e8e8e8;
+  transition: all 0.3s ease;
+}
+
+.status-section:hover {
+  border-color: #1890ff;
+  background: #f0f2f5;
+}
+
+.status-checkbox {
+  transform: scale(1.2);
+  accent-color: #1890ff;
+}
+
+.status-info {
+  flex: 1;
+}
+
+.status-title {
+  font-weight: 500;
+  font-size: 14px;
+  margin: 0;
+  color: #262626;
+}
+
+.status-description {
+  font-size: 12px;
+  color: #8c8c8c;
+  margin: 2px 0 0 0;
+}
+
+/* Responsive Design - Matching Users page format */
+@media (max-width: 768px) {
+  .services-manager {
+    padding: 16px;
+  }
+
+  .services-header {
+    padding: 16px;
+  }
+
+  .filters-grid {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .upload-section {
+    flex-direction: column;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .action-buttons-group {
+    flex-direction: column;
+  }
+}
+
+/* Animation - Subtle like Users page */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.services-manager {
+  animation: fadeIn 0.6s ease-out;
+}
