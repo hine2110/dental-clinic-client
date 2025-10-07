@@ -121,4 +121,61 @@ export const adminService = {
 
   markAllNotificationsRead: () =>
     adminAPI.patch("/admin/notifications/read-all"),
+
+  // Services Management (Admin)
+  getServices: (params = {}) => {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append("page", params.page);
+    if (params.limit) queryParams.append("limit", params.limit);
+    if (params.category) queryParams.append("category", params.category);
+    if (params.isActive !== undefined)
+      queryParams.append("isActive", params.isActive);
+    if (params.search) queryParams.append("search", params.search);
+    if (params.sortBy) queryParams.append("sortBy", params.sortBy);
+    if (params.sortOrder) queryParams.append("sortOrder", params.sortOrder);
+
+    const url = `/admin/services${
+      queryParams.toString() ? `?${queryParams.toString()}` : ""
+    }`;
+    return adminAPI.get(url);
+  },
+
+  getServiceCategories: () => adminAPI.get(`/admin/services/categories`),
+  getServiceById: (id) => adminAPI.get(`/admin/services/${id}`),
+
+  // Create service with image upload
+  createService: (formData) => {
+    const config = {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    };
+    return adminAPI.post(`/admin/services`, formData, config);
+  },
+
+  // Update service with image upload
+  updateService: (id, formData) => {
+    const config = {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    };
+    return adminAPI.put(`/admin/services/${id}`, formData, config);
+  },
+
+  toggleServiceStatus: (id) => adminAPI.patch(`/admin/services/${id}/toggle`),
+  deleteService: (id) => adminAPI.delete(`/admin/services/${id}`),
+  hardDeleteService: (id) => adminAPI.delete(`/admin/services/${id}/hard`),
+
+  // Upload Management
+  uploadImage: (formData) => {
+    const config = {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    };
+    return adminAPI.post(`/admin/upload/image`, formData, config);
+  },
+
+  deleteImage: (filename) => adminAPI.delete(`/admin/upload/image/${filename}`),
 };

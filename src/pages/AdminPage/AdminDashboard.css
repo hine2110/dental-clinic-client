@@ -1,3 +1,69 @@
+.admin-layout {
+  min-height: 100vh;
+  background: #f5f7fb;
+}
+
+.admin-header {
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #1890ff;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  margin-right: 10px;
+}
+
+.admin-brand {
+  margin: 0;
+}
+
+.nav-btn {
+  margin: 0 6px;
+}
+
+.admin-content {
+  padding: 24px;
+}
+
+.stat-card {
+  border-radius: 12px;
+}
+
+.actions-card {
+  border-radius: 12px;
+}
+
+.recent-users-card {
+  border-radius: 12px;
+}
+
+.services-toolbar {
+  margin-bottom: 16px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.service-form-item {
+  margin-bottom: 12px;
+}
 /* Admin Dashboard Styles */
 .admin-layout {
   min-height: 100vh;

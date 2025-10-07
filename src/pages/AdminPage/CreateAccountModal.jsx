@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   Form,
@@ -26,11 +26,26 @@ const CreateAccountModal = ({ visible, onCancel, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [successData, setSuccessData] = useState(null);
   const [step, setStep] = useState(1); // 1: form, 2: success
+  const selectedRole = Form.useWatch("role", form);
 
-  // Role options - Admin can only create doctor and staff accounts
+  // When switching to Staff, set default staffType if not selected yet
+  useEffect(() => {
+    if (selectedRole === "staff") {
+      const current = form.getFieldValue("staffType");
+      if (!current) {
+        form.setFieldsValue({ staffType: "receptionist" });
+      }
+    } else if (selectedRole !== "staff") {
+      // Clear staffType when not staff
+      form.setFieldsValue({ staffType: undefined });
+    }
+  }, [selectedRole, form]);
+
+  // Role options - Admin can create doctor, staff, management
   const roleOptions = [
     { value: "doctor", label: "Doctor", color: "#1890ff" },
     { value: "staff", label: "Staff", color: "#52c41a" },
+    { value: "management", label: "Management", color: "#722ed1" },
   ];
 
   // Handle form submission
@@ -38,8 +53,18 @@ const CreateAccountModal = ({ visible, onCancel, onSuccess }) => {
     setLoading(true);
     try {
       console.log("🔄 Submitting form with values:", values);
-
-      const response = await adminService.createStaffAccount(values);
+      const payload = { ...values };
+      // Normalize doctor specializations string -> array
+      if (
+        payload.role === "doctor" &&
+        typeof payload.specializations === "string"
+      ) {
+        payload.specializations = payload.specializations
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+      const response = await adminService.createStaffAccount(payload);
       console.log("📤 Server response:", response);
 
       if (response.success) {
@@ -192,6 +217,60 @@ const CreateAccountModal = ({ visible, onCancel, onSuccess }) => {
         </Select>
       </Form.Item>
 
+      {/* Staff-only fields */}
+      {form.getFieldValue("role") === "staff" && (
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              name="staffType"
+              label="Staff Type"
+              rules={[{ required: true, message: "Please select staff type" }]}
+            >
+              <Select placeholder="Select staff type">
+                <Option value="receptionist">Receptionist</Option>
+                <Option value="storeKepper">Store Keeper</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
+      )}
+
+      {/* Doctor-only fields (optional) */}
+      {form.getFieldValue("role") === "doctor" && (
+        <>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="doctorId" label="Doctor ID (optional)">
+                <Input placeholder="Enter doctor ID or leave blank" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="specializations"
+                label="Specializations (comma-separated)"
+              >
+                <Input placeholder="e.g. Orthodontics, Endodontics" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="medicalLicense"
+                label="Medical License (optional)"
+              >
+                <Input placeholder="Enter medical license" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="dentalLicense" label="Dental License (optional)">
+                <Input placeholder="Enter dental license" />
+              </Form.Item>
+            </Col>
+          </Row>
+        </>
+      )}
+
       <Form.Item
         name="phone"
         label="Phone Number"
@@ -210,14 +289,14 @@ const CreateAccountModal = ({ visible, onCancel, onSuccess }) => {
         name="temporaryPassword"
         label="Temporary Password"
         rules={[
-          { required: true, message: "Please enter temporary password" },
+          { required: false },
           { min: 6, message: "Password must be at least 6 characters" },
         ]}
-        extra="This password will be used for first login. User should change it after login."
+        extra="If left blank, the system will generate a temporary password."
       >
         <Input
           prefix={<LockOutlined />}
-          placeholder="Enter temporary password"
+          placeholder="Enter temporary password (optional)"
           addonAfter={
             <Button type="link" onClick={generatePassword}>
               Generate
