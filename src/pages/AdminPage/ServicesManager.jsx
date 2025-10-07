@@ -28,7 +28,6 @@ import {
   EyeOutlined,
 } from "@ant-design/icons";
 import { adminService } from "../../services/adminService";
-import "./ServicesManager.css";
 
 const { Search } = Input;
 const { Option } = Select;
