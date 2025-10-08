@@ -2,7 +2,7 @@
 
 // ID của bệnh viện hiện tại (vì chỉ có 1 bệnh viện)
 // Thay đổi giá trị này theo ID thực tế của bệnh viện trong database
-export const CURRENT_LOCATION_ID = '68d21edd35da0285bcf6ba82';
+export const CURRENT_LOCATION_ID = '68e53659a4db69563d9ba14b';
 
 // Tên bệnh viện hiện tại
 export const CURRENT_LOCATION_NAME = 'Nha Khoa ABC';
