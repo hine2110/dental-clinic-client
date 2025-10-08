@@ -197,7 +197,7 @@ function AppointmentSection() {
       }
       setIsLoggedIn(true);
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/patient/profile/status`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/patient/profile/status`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
