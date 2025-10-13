@@ -140,6 +140,84 @@ class AppointmentService {
       throw error;
     }
   }
+
+  static async getDoctorAvailableSlots(doctorId, date) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/reschedule/available-slots?doctorId=${doctorId}&date=${date}`);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Lỗi khi lấy giờ trống của bác sĩ.');
+      }
+      return data;
+    } catch (error) {
+      console.error('Error fetching doctor available slots:', error);
+      throw error;
+    }
+  }
+  // Thêm hàm mới này vào file services/appointmentService.js
+
+  /**
+   * Yêu cầu backend tạo token để đổi lịch hẹn.
+   * @param {string} appointmentId - ID của lịch hẹn cần tạo link
+   * @returns {Promise<object>} Dữ liệu trả về từ API, chứa token
+   */
+  static async generateRescheduleLink(appointmentId) {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Vui lòng đăng nhập');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/staff/receptionist/appointments/${appointmentId}/generate-reschedule-link`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Lỗi khi tạo link đổi lịch');
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Error generating reschedule link:', error);
+      throw error;
+    }
+  }
+  static async verifyRescheduleToken(token) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/reschedule/verify?token=${token}`);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Token không hợp lệ hoặc đã hết hạn.');
+      }
+      return data;
+    } catch (error) {
+      console.error('Error verifying reschedule token:', error);
+      throw error;
+    }
+  }
+    static async updateRescheduledAppointment(token, newDate, newTime) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/reschedule/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, newDate, newTime })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Lỗi khi cập nhật lịch hẹn.');
+      }
+      return data;
+    } catch (error) {
+      console.error('Error updating appointment:', error);
+      throw error;
+    }
+  }
+
 }
 
 export default AppointmentService;
