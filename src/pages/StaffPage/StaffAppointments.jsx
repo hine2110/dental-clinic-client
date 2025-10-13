@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/authContext';
+import AppointmentService from '../../services/appointmentService'; 
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -8,6 +9,7 @@ function StaffAppointments() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [appointments, setAppointments] = useState([]);
+  const [activeFilter, setActiveFilter] = useState('upcoming');
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -15,14 +17,21 @@ function StaffAppointments() {
         setLoading(true);
         setError('');
         const token = localStorage.getItem('token');
-        const res = await fetch(`${API_BASE}/staff/receptionist/appointments`, {
+        
+        let apiUrl = `${API_BASE}/staff/receptionist/appointments`;
+        if (activeFilter !== 'upcoming') {
+          apiUrl += `?status=${activeFilter}`;
+        }
+
+        const res = await fetch(apiUrl, {
           headers: { Authorization: `Bearer ${token}` },
         });
+
         const data = await res.json();
         if (!res.ok || !data.success) {
           throw new Error(data.message || 'Failed to load appointments');
         }
-        setAppointments(data.data); // Backend đã sort sẵn, không cần sort lại ở client
+        setAppointments(data.data);
       } catch (e) {
         setError(e.message);
       } finally {
@@ -30,19 +39,81 @@ function StaffAppointments() {
       }
     };
     if (user && user.role === 'staff') fetchAppointments();
-  }, [user]);
+  }, [user, activeFilter]);
+  
+  const updateAppointmentStatus = async (id, newStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/staff/receptionist/appointments/${id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
 
-  if (!user || user.role !== 'staff') {
-    return (
-      <div className="container" style={{ padding: 24 }}>
-        <div className="alert alert-warning">Bạn không có quyền truy cập trang này.</div>
-      </div>
-    );
-  }
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Cập nhật thất bại');
+      }
+
+      setAppointments(prev => prev.filter(apt => apt._id !== id));
+      alert('Thao tác thành công!');
+    } catch (e) {
+      setError(e.message);
+      alert(`Lỗi: ${e.message}`);
+    }
+  };
+
+  const handleCheckIn = (id) => {
+    updateAppointmentStatus(id, 'checked-in');
+  };
+
+  const handleReschedule = async (appointmentId) => {
+    if (!window.confirm('Bạn có muốn tạo link để bệnh nhân tự đổi lịch hẹn này không?')) {
+      return;
+    }
+
+    try {
+      // Giả định AppointmentService đã có hàm này
+      const response = await AppointmentService.generateRescheduleLink(appointmentId);
+      
+      if (response.success && response.token) {
+        const rescheduleUrl = `${window.location.origin}/reschedule?token=${response.token}`;
+        
+        window.prompt(
+          "Tạo link thành công! Hãy sao chép và gửi link này cho bệnh nhân:", 
+          rescheduleUrl
+        );
+      }
+    } catch (err) {
+      alert(`Lỗi khi tạo link: ${err.message}`);
+    }
+  };
 
   return (
     <div className="container" style={{ padding: 24 }}>
       <h2 className="mb-3">Danh sách lịch hẹn</h2>
+      
+      <div className="mb-3">
+        <button 
+          className={`btn ${activeFilter === 'upcoming' ? 'btn-primary' : 'btn-outline-primary'} me-2`}
+          onClick={() => setActiveFilter('upcoming')}>
+          Lịch hẹn sắp tới
+        </button>
+        <button 
+          className={`btn ${activeFilter === 'checked-in' ? 'btn-success' : 'btn-outline-success'} me-2`}
+          onClick={() => setActiveFilter('checked-in')}>
+          Đã Check-in
+        </button>
+        <button 
+          className={`btn ${activeFilter === 'no-show' ? 'btn-warning' : 'btn-outline-warning'}`}
+          onClick={() => setActiveFilter('no-show')}>
+          Vắng mặt
+        </button>
+      </div>
+
       {loading && <div>Loading...</div>}
       {error && <div className="alert alert-danger">{error}</div>}
       {!loading && !error && (
@@ -55,23 +126,51 @@ function StaffAppointments() {
                 <th>Giờ</th>
                 <th>Bệnh nhân</th>
                 <th>Bác sĩ</th>
-                <th>Trạng thái</th>
+                <th>Hành động</th>
               </tr>
             </thead>
             <tbody>
-              {appointments.map((a, idx) => (
+              {appointments.length > 0 ? appointments.map((a, idx) => (
                 <tr key={a._id || idx}>
                   <td>{idx + 1}</td>
                   <td>{a.appointmentDate ? new Date(a.appointmentDate).toLocaleDateString('vi-VN') : '-'}</td>
                   <td>{a.startTime || '-'}</td>
-                  
-                  {/* === DÒNG NÀY ĐÃ ĐƯỢC SỬA LẠI === */}
-                  <td>{a.patient?.basicInfo?.fullName || '-'}</td>
-                  
+                  <td>{a.patient?.basicInfo?.fullName || 'Không có tên'}</td>
                   <td>{a.doctor?.user?.fullName || '-'}</td>
-                  <td>{a.status}</td>
+                  <td>
+                    {/* --- CẬP NHẬT LOGIC HIỂN THỊ NÚT BẤM --- */}
+                    {activeFilter === 'upcoming' && (
+                      <>
+                        <button 
+                          className="btn btn-success btn-sm me-2" 
+                          onClick={() => handleCheckIn(a._id)}>
+                          Check-in
+                        </button>
+                        
+                        {/* NÚT TẠO LINK MỚI: Chỉ hiển thị khi lịch hẹn đã được xác nhận */}
+                        {a.status === 'confirmed' && (
+                           <button 
+                              className="btn btn-info btn-sm"
+                              onClick={() => handleReschedule(a._id)}>
+                              Đổi lịch
+                           </button>
+                        )}
+                      </>
+                    )}
+                    
+                    {activeFilter === 'checked-in' && (
+                       <span className="badge bg-success">Đã Check-in</span>
+                    )}
+                    {activeFilter === 'no-show' && (
+                       <span className="badge bg-warning text-dark">Vắng mặt</span>
+                    )}
+                  </td>
                 </tr>
-              ))}
+              )) : (
+                <tr>
+                  <td colSpan="6" className="text-center">Không có dữ liệu</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
