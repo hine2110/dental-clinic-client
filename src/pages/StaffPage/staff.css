@@ -1,0 +1,173 @@
+/* css/staff.css (Đã hoàn tác font chữ) */
+
+:root {
+  --font-sans: 'Poppins', sans-serif; /* Chỉ còn 1 biến font */
+  --header-purple: #7571f9;
+  --header-beige-blur: rgba(255, 255, 255, 0.6);
+  --sidebar-bg-blur: rgba(52, 57, 87, 0.75);
+  --card-bg-blur: rgba(255, 255, 255, 0.5);
+  --text-light: #f8f9fa;
+  --text-dark: #333;
+  --shadow-soft: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.05);
+  --shadow-hover: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--text-dark);
+  /* Dòng overflow: hidden đã được chuyển đi */
+}
+
+/* THÊM QUY TẮC MỚI NÀY */
+/* Lệnh này chỉ áp dụng cho body KHI nó có class 'dashboard-active' */
+body.dashboard-active {
+  overflow: hidden;
+}
+
+.staff-layout {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.background-glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(125% 125% at 50% 100%, #ffffff 40%, #14b8a6 100%);
+  background-size: 100% 100%;
+}
+
+a, .content-card, .user-profile i {
+  transition: all 0.3s ease-in-out;
+}
+
+/* --- CSS CHO HEADER --- */
+.staff-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-soft);
+}
+
+.header-main {
+  background-color: var(--header-beige-blur);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(221, 221, 221, 0.5);
+}
+
+.header-brand h3 {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 1.5rem;
+}
+
+.header-main .user-profile {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-weight: 500;
+}
+.user-profile i {
+    cursor: pointer;
+}
+.user-profile i:hover {
+    color: var(--header-purple);
+    transform: scale(1.1) rotate(5deg);
+}
+.user-profile img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--header-purple);
+}
+
+.layout-body {
+  display: flex;
+  flex-grow: 1;
+  overflow: hidden;
+  position: relative;
+  z-index: 5;
+}
+
+.staff-sidebar {
+  width: 250px;
+  flex-shrink: 0;
+  background-color: var(--sidebar-bg-blur);
+  color: var(--text-light);
+  padding-top: 1rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: slideInLeft 0.6s ease-out forwards;
+}
+
+.staff-sidebar-nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.staff-sidebar-nav li a {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  color: #a7abc3;
+  text-decoration: none;
+  font-weight: 500;
+  border-left: 4px solid transparent;
+}
+.staff-sidebar-nav li a:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  transform: translateX(5px);
+}
+.staff-sidebar-nav li a.active {
+  background-color: rgba(0, 0, 0, 0.2);
+  color: #fff;
+  border-left-color: var(--header-purple);
+}
+.staff-sidebar-nav .nav-icon {
+  margin-right: 15px;
+  width: 20px;
+  text-align: center;
+}
+
+.staff-main-content {
+  flex-grow: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  background-color: transparent;
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out forwards;
+  animation-delay: 0.2s;
+}
+
+.content-card {
+    background-color: var(--card-bg-blur);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow-soft);
+    margin-top: 1.5rem;
+}
+.content-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}

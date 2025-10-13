@@ -5,6 +5,9 @@ import Home from "./pages/Home";
 import AuthSuccess from "./pages/AuthSuccess";
 import { CreateAccount, AdminDashboard } from "./pages/AdminPage";
 import DoctorRoute from "./pages/DoctorPage/DoctorRoute";
+import StaffLayout from "./pages/StaffPage/StaffLayout";
+import StaffHome from "./pages/StaffPage/StaffHome";
+import StaffAppointments from "./pages/StaffPage/StaffAppointments";
 import ProfilePage from "./pages/patient/ProfilePage";
 import ProfileGuard from "./components/ProfileGuard";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -22,6 +25,13 @@ function App() {
             <Route path="/auth-success" element={<AuthSuccess />} />
             <Route path="/create-account" element={<CreateAccount />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/staff" element={<StaffLayout />}>
+              <Route index element={<StaffHome />} />
+              <Route path="appointments" element={<StaffAppointments />} />
+              {/* Placeholders for future */}
+              <Route path="patients" element={<StaffHome />} />
+              <Route path="invoices" element={<StaffHome />} />
+            </Route>
             <Route path="/doctor/*" element={<DoctorRoute />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />

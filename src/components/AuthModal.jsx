@@ -70,6 +70,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }) {
         navigate("/doctor");
       } else if (role === "admin") {
         navigate("/admin");
+      } else if (role === "staff") {
+        navigate("/staff");
       } else if (role === "patient") {
         navigate("/");
       } else if (role === "receptionist") {
