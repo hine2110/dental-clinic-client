@@ -17,6 +17,7 @@ import ProfilePage from "./pages/patient/ProfilePage";
 import ProfileGuard from "./components/ProfileGuard";
 import ForgotPasswordPage from "./pages/ForgotPassword";
 import PaymentStatusPage from "./pages/patient/PaymentStatusPage";
+import ReschedulePage from './pages/patient/ReschedulePage';
 import "./App.css";
 
 function App() {
@@ -57,6 +58,7 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ForgotPasswordPage />} />
             <Route path="/payment" element={<PaymentStatusPage />} />
+            <Route path="/reschedule" element={<ReschedulePage />} />
           </Routes>
         </ProfileGuard>
       </Router>
