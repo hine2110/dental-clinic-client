@@ -2,14 +2,14 @@ import React, { useEffect } from "react";
 import { useAuth } from "../../context/authContext";
 import { useNavigate, Outlet } from "react-router-dom";
 import Sidebar from "../../components/sidebar";
-import "./staff.css";
+import "./management.css";
 
-function StaffLayout() {
+function ManagementLayout() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user || user.role !== "staff") {
+    if (!user || user.role !== "management") {
       navigate("/");
     }
     document.body.classList.add("dashboard-active");
@@ -18,13 +18,13 @@ function StaffLayout() {
     };
   }, [user, navigate]);
 
-  if (!user || user.role !== "staff") return null;
+  if (!user || user.role !== "management") return null;
 
   return (
-    <div className="staff-layout">
+    <div className="management-layout">
       <div className="background-glow"></div>
 
-      <header className="staff-header">
+      <header className="management-header">
         <div className="header-main">
           <div className="header-brand">
             <h3>Beauty Smile</h3>
@@ -32,7 +32,7 @@ function StaffLayout() {
           <div className="user-profile">
             <i className="fas fa-envelope fa-lg"></i>
             <i className="fas fa-bell fa-lg"></i>
-            <span>Xin chào, Staff!</span>
+            <span>Xin chào, Management!</span>
             <img src="https://via.placeholder.com/40" alt="User Avatar" />
           </div>
         </div>
@@ -41,7 +41,7 @@ function StaffLayout() {
       <div className="layout-body">
         <Sidebar />
 
-        <main className="staff-main-content">
+        <main className="management-main-content">
           <Outlet />
         </main>
       </div>
@@ -49,6 +49,4 @@ function StaffLayout() {
   );
 }
 
-export default StaffLayout;
-
-
+export default ManagementLayout;

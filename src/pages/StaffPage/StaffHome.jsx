@@ -3,7 +3,7 @@ import React from 'react';
 function StaffHome() {
   return (
     <>
-      <h1>Dashboard</h1>
+      {/* <h1>Dashboard</h1>
       <p>
         Nội dung chính của trang sẽ được đặt ở đây. Bạn có thể thêm các card, bảng biểu, và biểu đồ vào khu vực này để xem trước.
       </p>
@@ -14,7 +14,7 @@ function StaffHome() {
       <div className="content-card">
         <h3>Công việc cần làm</h3>
         <p>Danh sách các công việc...</p>
-      </div>
+      </div> */}
     </>
   );
 }
