@@ -1,7 +1,7 @@
-/* css/staff.css (Đã hoàn tác font chữ) */
+/* css/management.css (Dựa trên staff.css) */
 
 :root {
-  --font-sans: 'Poppins', sans-serif; /* Chỉ còn 1 biến font */
+  --font-sans: 'Poppins', sans-serif;
   --header-purple: #7571f9;
   --header-beige-blur: rgba(255, 255, 255, 0.6);
   --sidebar-bg-blur: rgba(52, 57, 87, 0.75);
@@ -16,16 +16,14 @@ body {
   margin: 0;
   font-family: var(--font-sans);
   color: var(--text-dark);
-  /* Dòng overflow: hidden đã được chuyển đi */
 }
 
-/* THÊM QUY TẮC MỚI NÀY */
 /* Lệnh này chỉ áp dụng cho body KHI nó có class 'dashboard-active' */
 body.dashboard-active {
   overflow: hidden;
 }
 
-.staff-layout {
+.management-layout {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -45,7 +43,7 @@ a, .content-card, .user-profile i {
 }
 
 /* --- CSS CHO HEADER --- */
-.staff-header {
+.management-header {
   position: sticky;
   top: 0;
   z-index: 10;
@@ -100,7 +98,7 @@ a, .content-card, .user-profile i {
 
 /* Sidebar styles moved to Sidebar.css component */
 
-.staff-main-content {
+.management-main-content {
   flex-grow: 1;
   padding: 2rem;
   overflow-y: auto;
@@ -121,6 +119,62 @@ a, .content-card, .user-profile i {
 .content-card:hover {
   transform: translateY(-5px);
   box-shadow: var(--shadow-hover);
+}
+
+/* Override for ScheduleCreator */
+.schedule-creator {
+  margin: -1.5rem;
+  padding: 0;
+  background: transparent;
+  height: calc(100vh - 120px);
+}
+
+/* Dashboard stats styling */
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.stat-card {
+  background-color: var(--card-bg-blur);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow-soft);
+  text-align: center;
+  transition: all 0.3s ease-in-out;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+}
+
+.stat-card h3 {
+  color: var(--header-purple);
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.stat-card p {
+  color: var(--text-dark);
+  margin: 0;
+  opacity: 0.8;
+}
+
+/* Calendar styling */
+.calendar-container {
+  margin-top: 1rem;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+}
+
+.calendar-container .schedule-x-calendar {
+  background-color: white;
+  border-radius: 12px;
 }
 
 @keyframes fadeInUp {
