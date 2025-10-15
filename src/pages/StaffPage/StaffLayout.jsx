@@ -75,6 +75,12 @@ function StaffLayout() {
               </NavLink>
             </li>
             <li>
+              <NavLink to="contacts">
+                <i className="fas fa-inbox nav-icon"></i>
+                Hộp thư
+              </NavLink>
+            </li>
+            <li>
               <NavLink to="patients">
                 <i className="fas fa-user-injured nav-icon"></i>
                 Bệnh nhân

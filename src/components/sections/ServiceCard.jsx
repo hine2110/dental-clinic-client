@@ -2,21 +2,12 @@ import React from 'react';
 import thumbnailFallback from '../../assets/thumbnail.jpg';
 
 const ServiceCard = ({ service, index, onServiceClick }) => {
-  // Function to get thumbnail or fallback
-  const getThumbnail = (thumbnail) => {
-    if (thumbnail && thumbnail !== '') {
-      return thumbnail;
-    }
-    // Fallback to imported thumbnail from assets
-    return thumbnailFallback;
-  };
-
-  // Function to handle image error
+  // Hàm xử lý lỗi nếu URL ảnh bị hỏng
   const handleImageError = (e) => {
     e.target.src = thumbnailFallback;
   };
 
-  // Function to format price
+  // Hàm format giá tiền
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -24,12 +15,15 @@ const ServiceCard = ({ service, index, onServiceClick }) => {
     }).format(price);
   };
 
+  // SỬA LẠI: Lấy ảnh trực tiếp từ service.thumbnail, nếu không có thì mới dùng ảnh fallback
+  const imageUrl = service.thumbnail || thumbnailFallback;
+
   return (
     <div className="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay={`${(index + 1) * 100}`}>
       <div className="service-item position-relative">
         <div className="service-thumbnail">
           <img 
-            src={getThumbnail(service.thumbnail)} 
+            src={imageUrl} 
             alt={service.name}
             onError={handleImageError}
             className="service-image"

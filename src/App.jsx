@@ -10,10 +10,10 @@ import StaffHome from "./pages/StaffPage/StaffHome";
 import StaffAppointments from "./pages/StaffPage/StaffAppointments";
 import ProfilePage from "./pages/patient/ProfilePage";
 import ProfileGuard from "./components/ProfileGuard";
-import ProtectedRoute from "./components/ProtectedRoute";
 import ForgotPasswordPage from "./pages/ForgotPassword";
 import PaymentStatusPage from "./pages/patient/PaymentStatusPage";
 import ReschedulePage from './pages/patient/ReschedulePage';
+import StaffContacts from "./pages/StaffPage/StaffContacts";
 import "./App.css";
 
 function App() {
@@ -29,6 +29,7 @@ function App() {
             <Route path="/staff" element={<StaffLayout />}>
               <Route index element={<StaffHome />} />
               <Route path="appointments" element={<StaffAppointments />} />
+              <Route path="contacts" element={<StaffContacts />} />
               {/* Placeholders for future */}
               <Route path="patients" element={<StaffHome />} />
               <Route path="invoices" element={<StaffHome />} />

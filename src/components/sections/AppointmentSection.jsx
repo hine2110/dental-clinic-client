@@ -7,6 +7,29 @@ import {
   MESSAGES,
   VALIDATION_RULES
 } from '../../config/appointment';
+import './AppointmentSection.css';
+
+const Notification = ({ message, type, onDismiss }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => onDismiss(), 5000);
+    return () => clearTimeout(timer);
+  }, [onDismiss]);
+
+  const isError = type === 'error';
+  const icon = isError ? 'bi-exclamation-triangle-fill' : 'bi-check-circle-fill';
+  const backgroundColor = isError ? '#f8d7da' : '#d1e7dd';
+  const color = isError ? '#58151c' : '#0f5132';
+  const borderColor = isError ? '#f5c2c7' : '#badbcc';
+
+  return (
+    <div className="custom-notification" style={{ backgroundColor, color, borderColor }}>
+      <i className={`bi ${icon}`} style={{ marginRight: '10px', fontSize: '1.2rem' }}></i>
+      {message}
+      <button className="dismiss-button" onClick={onDismiss} style={{ color }}>&times;</button>
+      <div className="progress-bar" style={{ backgroundColor: color }}></div>
+    </div>
+  );
+};
 
 // --- Bắt đầu Component TimeSlotModal (Tích hợp trực tiếp) ---
 function TimeSlotModal({
@@ -134,6 +157,7 @@ function AppointmentSection() {
   const [availableDoctors, setAvailableDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [notification, setNotification] = useState({ message: '', type: '' });
   const [success, setSuccess] = useState(false);
   const [profileComplete, setProfileComplete] = useState(false);
   const [checkingProfile, setCheckingProfile] = useState(true);
@@ -261,15 +285,14 @@ function AppointmentSection() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!isLoggedIn) {
-      setError("Vui lòng đăng nhập để đặt lịch hẹn.");
+    if (!isLoggedIn) {  
+      setNotification({ message: "Please log in to make an appointment.", type: 'error' });  
       window.dispatchEvent(new CustomEvent('openLoginModal'));
       return;
     }
 
     if (!profileComplete) {
-      setError("Vui lòng hoàn thành hồ sơ của bạn trước khi đặt lịch.");
+      setError("Please complete your profile before making an appointment.");
       return;
     }
     
@@ -278,7 +301,7 @@ function AppointmentSection() {
 
     try {
       if (!formData.date || !formData.timeSlot || !formData.doctor) {
-        throw new Error("Vui lòng điền đầy đủ thông tin ngày, giờ và bác sĩ.");
+        throw new Error("Please fill in all required fields: date, time, and doctor.");
       }
 
       const response = await AppointmentService.createStripeCheckoutSession({
@@ -293,10 +316,10 @@ function AppointmentSection() {
         return; 
       }
 
-      throw new Error(response.message || 'Không nhận được URL thanh toán');
+      throw new Error(response.message || 'Could not retrieve payment URL.');
 
     } catch (err) {
-      setError(err.message || "Đã có lỗi xảy ra. Vui lòng thử lại.");
+      setError(err.message || "An error occurred. Please try again.");
       setLoading(false);
     }
   };
@@ -338,6 +361,14 @@ function AppointmentSection() {
 
   return (
     <>
+      {notification.message && (
+        <Notification 
+          message={notification.message}
+          type={notification.type}
+          onDismiss={() => setNotification({ message: '', type: '' })}
+        />
+      )}
+      
       <section id="appointment" className="appointment section">
         <div className="container section-title" data-aos="fade-up">
           <h2>Make an Appointment</h2>
