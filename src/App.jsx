@@ -41,14 +41,19 @@ function App() {
             {/* Placeholders for future */}
             <Route path="/management" element={<ManagementLayout />}>
               <Route index element={<ManagementDashboard />} />
+
               <Route path="doctor/information" element={<ManagementScheduleDoctor />} />
               <Route path="doctor/schedule" element={<ManagementScheduleDoctor />} />
+              
+              <Route path="location/:locationId/doctor/schedule/fulltime" element={<ManagementScheduleDoctor />} />
+              <Route path="location/:locationId/doctor/schedule/parttime" element={<ManagementScheduleDoctor />} />
+  
               <Route path="staff/information" element={<ManagementScheduleStaff />} />
               <Route path="staff/schedule" element={<ManagementScheduleStaff />} />
-              <Route path="staff/information/receptionist" element={<ManagementScheduleStaff />} />
-              <Route path="staff/information/storekeeper" element={<ManagementScheduleStaff />} />
-              <Route path="staff/schedule/receptionist" element={<ManagementScheduleStaff />} />
-              <Route path="staff/schedule/storekeeper" element={<ManagementScheduleStaff />} />
+
+              <Route path="location/:locationId/staff/schedule/fulltime" element={<ManagementScheduleStaff />} />
+              <Route path="location/:locationId/staff/schedule/parttime" element={<ManagementScheduleStaff />} />
+  
               <Route path="reports" element={<ManagementDashboard />} />
               <Route path="revenue" element={<ManagementDashboard />} />
             </Route>

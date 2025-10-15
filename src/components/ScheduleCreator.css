@@ -365,3 +365,137 @@
   }
 }
 
+/* Thêm vào cuối file ScheduleCreator.css */
+
+.schedule-person-name {
+  font-weight: bold;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 2px 4px 0; /* Thêm khoảng đệm nhỏ */
+}
+
+.schedule-timeframe {
+  font-size: 0.75rem;
+  padding: 0 4px 2px;
+}
+
+/* Thêm vào cuối file ScheduleCreator.css */
+
+.calendar-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 8px 8px 0 0;
+}
+
+.calendar-navigation h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.nav-button {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 4px;
+}
+
+.nav-button:hover {
+  background-color: #eee;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #ddd;
+}
+
+.weekday {
+  text-align: center;
+  padding: 8px 0;
+  font-weight: bold;
+  color: #666;
+  font-size: 0.8rem;
+}
+
+/* Sửa lại calendar-day một chút */
+.calendar-day {
+  border: 1px solid #eee;
+  min-height: 100px;
+  padding: 4px;
+  transition: background-color 0.2s;
+}
+
+/* Style cho các ngày không thuộc tháng hiện tại */
+.calendar-day.not-current-month {
+  background-color: #f7f7f7;
+}
+
+.calendar-day.not-current-month .day-number {
+  color: #ccc;
+}
+
+/* Trong file ScheduleCreator.css */
+
+.schedule-item {
+  /* Thêm position: relative để định vị các nút con */
+  position: relative; 
+  overflow: hidden; /* Ẩn đi phần bị tràn ra ngoài nếu có */
+}
+
+.schedule-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  
+  /* Mặc định ẩn đi */
+  opacity: 0; 
+  
+  /* Thêm hiệu ứng chuyển động mượt mà */
+  transition: opacity 0.2s ease-in-out; 
+  
+  /* Đảm bảo người dùng có thể click vào */
+  pointer-events: none; 
+}
+
+/* Khi di chuột vào .schedule-item, lớp phủ sẽ hiện ra */
+.schedule-item:hover .schedule-overlay {
+  opacity: 1;
+  pointer-events: auto; /* Cho phép click vào các nút bên trong */
+}
+
+.schedule-action-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px; /* Kích thước icon */
+  cursor: pointer;
+  padding: 5px;
+  transition: transform 0.2s ease;
+}
+
+.schedule-action-btn:hover {
+  transform: scale(1.2); /* Phóng to icon khi di chuột vào */
+}
+
