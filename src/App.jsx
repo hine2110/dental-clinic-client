@@ -18,6 +18,7 @@ import ProfileGuard from "./components/ProfileGuard";
 import ForgotPasswordPage from "./pages/ForgotPassword";
 import PaymentStatusPage from "./pages/patient/PaymentStatusPage";
 import ReschedulePage from './pages/patient/ReschedulePage';
+import StaffContacts from "./pages/StaffPage/StaffContacts";
 import "./App.css";
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
             <Route path="/staff" element={<StaffLayout />}>
               <Route index element={<StaffHome />} />
               <Route path="appointments" element={<StaffAppointments />} />
+              <Route path="contacts" element={<StaffContacts />} />
               {/* Placeholders for future */}
               <Route path="patients" element={<StaffHome />} />
               <Route path="invoices" element={<StaffHome />} />

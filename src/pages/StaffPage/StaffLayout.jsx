@@ -61,8 +61,40 @@ function StaffLayout() {
       </header>
 
       <div className="layout-body">
-        <Sidebar />
-
+        <aside className="staff-sidebar">
+          <ul className="staff-sidebar-nav">
+            <li>
+              <NavLink to="." end>
+                <i className="fas fa-tachometer-alt nav-icon"></i>
+                Dashboard
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="appointments">
+                <i className="fas fa-table nav-icon"></i>
+                Lịch hẹn
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="contacts">
+                <i className="fas fa-inbox nav-icon"></i>
+                Hộp thư
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="patients">
+                <i className="fas fa-user-injured nav-icon"></i>
+                Bệnh nhân
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="invoices">
+                <i className="fas fa-file-invoice nav-icon"></i>
+                Hóa đơn
+              </NavLink>
+            </li>
+          </ul>
+        </aside>
         <main className="staff-main-content">
           <Outlet />
         </main>
