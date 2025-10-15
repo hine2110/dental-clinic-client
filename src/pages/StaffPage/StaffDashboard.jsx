@@ -44,9 +44,9 @@ function StaffDashboard() {
         <aside className="staff-sidebar">
           <ul className="staff-sidebar-nav">
             <li>
-              <NavLink to="/staff/dashboard">
+              <NavLink to="/staff/work-schedule">
                 <i className="fas fa-tachometer-alt nav-icon"></i>
-                Dashboard
+                Lịch làm việc
               </NavLink>
             </li>
             <li>
@@ -67,24 +67,22 @@ function StaffDashboard() {
                 Hóa đơn
               </NavLink>
             </li>
+            <li>
+              <NavLink to="/staff/inventory">
+                <i className="fas fa-file-invoice nav-icon"></i>
+                Quản lý kho thuốc
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/staff/equipment">
+                <i className="fas fa-file-invoice nav-icon"></i>
+                Quản lý thiết bị
+              </NavLink>
+            </li>
           </ul>
         </aside>
 
-        <main className="staff-main-content">
-          <h1>Dashboard</h1>
-          <p>
-            Nội dung chính của trang sẽ được đặt ở đây. Bạn có thể thêm các card, bảng biểu, và
-            biểu đồ vào khu vực này để xem trước.
-          </p>
-          <div className="content-card">
-            <h3>Thống kê tuần</h3>
-            <p>Biểu đồ thống kê tuần sẽ nằm ở đây.</p>
-          </div>
-          <div className="content-card">
-            <h3>Công việc cần làm</h3>
-            <p>Danh sách các công việc...</p>
-          </div>
-        </main>
+        
       </div>
     </div>
   );
