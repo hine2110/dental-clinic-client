@@ -38,6 +38,7 @@ import { useNavigate } from "react-router-dom";
 import CreateAccountModal from "./CreateAccountModal";
 import { adminService } from "../../services/adminService";
 import ServicesManager from "./ServicesManager";
+import DiscountsManager from "./DiscountsManager"; 
 import "./AdminDashboard.css";
 
 const { Header, Content } = Layout;
@@ -288,38 +289,6 @@ const AdminDashboard = () => {
           </Card>
         </Col>
       </Row>
-
-      {/* Quick Actions */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col span={24}>
-          <Card title="Quick Actions" className="actions-card">
-            <Row gutter={[16, 16]}>
-              <Col xs={12} sm={8} md={6}>
-                <Button
-                  block
-                  icon={<TeamOutlined />}
-                  size="large"
-                  onClick={() => setActiveTab("users")}
-                >
-                  Manage Users
-                </Button>
-              </Col>
-              <Col xs={12} sm={8} md={6}>
-                <Button
-                  block
-                  icon={<BarChartOutlined />}
-                  size="large"
-                  onClick={() => setActiveTab("analytics")}
-                >
-                  View Analytics
-                </Button>
-              </Col>
-              <Col xs={12} sm={8} md={6}></Col>
-            </Row>
-          </Card>
-        </Col>
-      </Row>
-
       {/* Recent Users */}
       <Card title="Recent Users" className="recent-users-card">
         <Table
@@ -374,7 +343,7 @@ const AdminDashboard = () => {
             >
               Create Account
             </Button>
-            <Button icon={<ExportOutlined />}>Export</Button>
+          
             <Button icon={<ReloadOutlined />} onClick={fetchUsers}>
               Refresh
             </Button>
@@ -433,6 +402,8 @@ const AdminDashboard = () => {
         return renderUserManagement();
       case "services":
         return <ServicesManager />;
+      case "discounts":
+      return <DiscountsManager />;
       case "analytics":
         return renderAnalytics();
       case "settings":
@@ -479,6 +450,14 @@ const AdminDashboard = () => {
               className="nav-btn"
             >
               Services
+            </Button>
+            <Button
+              type={activeTab === "discounts" ? "primary" : "default"}
+              icon={<SettingOutlined />}
+              onClick={() => setActiveTab("discounts")}
+              className="nav-btn"
+            >
+              Discount 
             </Button>
             <Button
               type={activeTab === "analytics" ? "primary" : "default"}

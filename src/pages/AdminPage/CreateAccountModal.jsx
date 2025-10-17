@@ -235,35 +235,44 @@ const CreateAccountModal = ({ visible, onCancel, onSuccess }) => {
         </Row>
       )}
 
-      {/* Doctor-only fields (optional) */}
+      {/* Doctor-only fields (NOW REQUIRED) */}
       {form.getFieldValue("role") === "doctor" && (
         <>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item name="doctorId" label="Doctor ID (optional)">
-                <Input placeholder="Enter doctor ID or leave blank" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="specializations"
-                label="Specializations (comma-separated)"
-              >
-                <Input placeholder="e.g. Orthodontics, Endodontics" />
-              </Form.Item>
-            </Col>
-          </Row>
+          <Form.Item
+            name="specializations"
+            label="Specializations (comma-separated)"
+            rules={[
+              {
+                required: true,
+                message: "Please enter doctor's specializations",
+              },
+            ]}
+          >
+            <Input placeholder="e.g. Orthodontics, Endodontics" />
+          </Form.Item>
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
                 name="medicalLicense"
-                label="Medical License (optional)"
+                label="Medical License"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter medical license",
+                  },
+                ]}
               >
                 <Input placeholder="Enter medical license" />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="dentalLicense" label="Dental License (optional)">
+              <Form.Item
+                name="dentalLicense"
+                label="Dental License"
+                rules={[
+                  { required: true, message: "Please enter dental license" },
+                ]}
+              >
                 <Input placeholder="Enter dental license" />
               </Form.Item>
             </Col>
