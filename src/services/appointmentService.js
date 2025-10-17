@@ -2,6 +2,22 @@
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 class AppointmentService {
+
+  static async getLocations() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/patient/locations`);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Lỗi khi lấy danh sách cơ sở');
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Error fetching locations:', error);
+      throw error;
+    }
+  }
   /**
    * Lấy danh sách các khung giờ có thể đặt lịch trong một ngày cụ thể.
    * @param {string} date - Ngày theo định dạng YYYY-MM-DD
