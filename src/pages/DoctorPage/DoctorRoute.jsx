@@ -7,6 +7,7 @@ import Appointments from './Appointments';
 import Patients from './Patients';
 import Prescriptions from './Prescriptions';
 import MedicalRecords from './MedicalRecords';
+import MedicalRecord from './MedicalRecord';
 import Schedule from './Schedule';
 import Profile from './Profile';
 
@@ -20,6 +21,7 @@ const DoctorRoute = () => {
           <Route path="patients" element={<Patients />} />
           <Route path="prescriptions" element={<Prescriptions />} />
           <Route path="medical-records" element={<MedicalRecords />} />
+          <Route path="medical-records/examination/:appointmentId" element={<MedicalRecord />} />
           <Route path="schedule" element={<Schedule />} />
           <Route path="profile" element={<Profile />} />
         </Routes>

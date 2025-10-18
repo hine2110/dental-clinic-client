@@ -6,7 +6,8 @@ import {
   FileTextOutlined, 
   ClockCircleOutlined,
   CheckCircleOutlined,
-  CloseCircleOutlined
+  CloseCircleOutlined,
+  PlayCircleOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/authContext';
@@ -28,8 +29,11 @@ const DoctorDashboard = () => {
   const [doctorProfile, setDoctorProfile] = useState(null);
   const [stats, setStats] = useState({
     totalAppointments: 0,
-    pendingAppointments: 0,
-    confirmedAppointments: 0,
+    checkedInAppointments: 0,
+    onHoldAppointments: 0,
+    inProgressAppointments: 0,
+    completedAppointments: 0,
+    noShowAppointments: 0,
     cancelledAppointments: 0
   });
   const [dateFilter, setDateFilter] = useState('today');
@@ -82,8 +86,11 @@ const DoctorDashboard = () => {
       const allAppointments = appointmentsResponse.data.appointments;
       const stats = {
         totalAppointments: allAppointments.length,
-        pendingAppointments: allAppointments.filter(apt => apt.status === 'pending').length,
-        confirmedAppointments: allAppointments.filter(apt => apt.status === 'confirmed').length,
+        checkedInAppointments: allAppointments.filter(apt => apt.status === 'checked-in').length,
+        onHoldAppointments: allAppointments.filter(apt => apt.status === 'on-hold').length,
+        inProgressAppointments: allAppointments.filter(apt => apt.status === 'in-progress').length,
+        completedAppointments: allAppointments.filter(apt => apt.status === 'completed').length,
+        noShowAppointments: allAppointments.filter(apt => apt.status === 'no-show').length,
         cancelledAppointments: allAppointments.filter(apt => apt.status === 'cancelled').length
       };
       setStats(stats);
@@ -245,20 +252,50 @@ const DoctorDashboard = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Chờ xác nhận"
-              value={stats.pendingAppointments}
-              prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#faad14' }}
+              title="Đã check-in"
+              value={stats.checkedInAppointments}
+              prefix={<UserOutlined />}
+              valueStyle={{ color: '#52c41a' }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Đã xác nhận"
-              value={stats.confirmedAppointments}
+              title="Tạm hoãn"
+              value={stats.onHoldAppointments}
+              prefix={<ClockCircleOutlined />}
+              valueStyle={{ color: '#fa8c16' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic
+              title="Đang khám"
+              value={stats.inProgressAppointments}
+              prefix={<PlayCircleOutlined />}
+              valueStyle={{ color: '#13c2c2' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic
+              title="Đã hoàn thành"
+              value={stats.completedAppointments}
               prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              valueStyle={{ color: '#722ed1' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic
+              title="Không đến"
+              value={stats.noShowAppointments}
+              prefix={<CloseCircleOutlined />}
+              valueStyle={{ color: '#8c8c8c' }}
             />
           </Card>
         </Col>

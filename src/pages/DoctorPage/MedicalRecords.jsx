@@ -16,7 +16,9 @@ import {
   Col,
   Descriptions,
   Divider,
-  Badge
+  Badge,
+  Statistic,
+  Typography
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -26,27 +28,20 @@ import {
   CheckCircleOutlined,
   SearchOutlined,
   FilterOutlined,
-  FileTextOutlined
+  FileTextOutlined,
+  UserOutlined,
+  CalendarOutlined,
+  MedicineBoxOutlined,
+  HeartOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { 
-  getDoctorMedicalRecords, 
-  getMedicalRecordById,
-  deleteMedicalRecord,
-  completeMedicalRecord,
-  formatDateForDisplay,
-  formatDateTimeForDisplay,
-  getMedicalRecordStatusColor,
-  getMedicalRecordStatusText,
-  formatClinicalExamination,
-  formatDiagnosis,
-  formatTreatmentPlan
-} from '../../services/medicalRecordService';
 import { getDoctorAppointments } from '../../services/doctorService';
+import './MedicalRecords.css';
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 const { TextArea } = Input;
+const { Title, Text } = Typography;
 
 const MedicalRecords = () => {
   const [medicalRecords, setMedicalRecords] = useState([]);
@@ -64,27 +59,31 @@ const MedicalRecords = () => {
   });
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
-  const [appointments, setAppointments] = useState([]);
 
   useEffect(() => {
     fetchMedicalRecords();
-    fetchAppointments();
   }, [pagination.current, pagination.pageSize, filters]);
 
   const fetchMedicalRecords = async () => {
     try {
       setLoading(true);
-      const params = {
-        page: pagination.current,
-        limit: pagination.pageSize,
-        ...filters
-      };
-
-      const response = await getDoctorMedicalRecords(params);
-      setMedicalRecords(response.data.medicalRecords);
+      
+      // Lấy tất cả appointments đã hoàn thành
+      const response = await getDoctorAppointments({ 
+        status: 'completed',
+        limit: 1000 
+      });
+      
+      // Lọc và format dữ liệu thành medical records
+      const completedAppointments = response.data.appointments.filter(apt => 
+        apt.status === 'completed' && 
+        (apt.finalDiagnosis || apt.clinicalDiagnosis || apt.physicalExamination)
+      );
+      
+      setMedicalRecords(completedAppointments);
       setPagination(prev => ({
         ...prev,
-        total: response.data.pagination.totalItems
+        total: completedAppointments.length
       }));
     } catch (error) {
       console.error('Error fetching medical records:', error);
@@ -94,31 +93,14 @@ const MedicalRecords = () => {
     }
   };
 
-  const fetchAppointments = async () => {
-    try {
-      const response = await getDoctorAppointments({ limit: 100 });
-      setAppointments(response.data.appointments);
-    } catch (error) {
-      console.error('Error fetching appointments:', error);
-    }
-  };
-
-  const handleViewDetails = async (recordId) => {
-    try {
-      const response = await getMedicalRecordById(recordId);
-      setSelectedRecord(response.data);
-      setDetailModalVisible(true);
-    } catch (error) {
-      console.error('Error fetching medical record details:', error);
-      message.error('Lỗi khi tải chi tiết hồ sơ bệnh án');
-    }
+  const handleViewDetails = (record) => {
+    setSelectedRecord(record);
+    setDetailModalVisible(true);
   };
 
   const handleDelete = async (recordId) => {
     try {
-      await deleteMedicalRecord(recordId);
-      message.success('Xóa hồ sơ bệnh án thành công');
-      fetchMedicalRecords();
+      message.info('Hồ sơ bệnh án đã hoàn thành không thể xóa');
     } catch (error) {
       console.error('Error deleting medical record:', error);
       message.error('Lỗi khi xóa hồ sơ bệnh án');
@@ -127,9 +109,7 @@ const MedicalRecords = () => {
 
   const handleComplete = async (recordId) => {
     try {
-      await completeMedicalRecord(recordId);
-      message.success('Hoàn thành hồ sơ bệnh án thành công');
-      fetchMedicalRecords();
+      message.info('Hồ sơ bệnh án đã hoàn thành');
     } catch (error) {
       console.error('Error completing medical record:', error);
       message.error('Lỗi khi hoàn thành hồ sơ bệnh án');
@@ -153,9 +133,9 @@ const MedicalRecords = () => {
 
   const columns = [
     {
-      title: 'Mã hồ sơ',
-      dataIndex: 'recordId',
-      key: 'recordId',
+      title: 'Mã lịch hẹn',
+      dataIndex: 'appointmentId',
+      key: 'appointmentId',
       render: (text) => (
         <Tag color="blue">{text}</Tag>
       ),
@@ -165,24 +145,24 @@ const MedicalRecords = () => {
       key: 'patient',
       render: (_, record) => (
         <div>
-          <div style={{ fontWeight: 500 }}>{record.patient?.user?.fullName}</div>
+          <div style={{ fontWeight: 500 }}>{record.patient?.user?.fullName || 'N/A'}</div>
           <div style={{ fontSize: '12px', color: '#8c8c8c' }}>
-            {record.patient?.contactInfo?.phone}
+            {record.patient?.contactInfo?.phone || 'N/A'}
           </div>
         </div>
       ),
     },
     {
       title: 'Ngày khám',
-      dataIndex: 'visitDate',
-      key: 'visitDate',
-      render: (date) => formatDateForDisplay(date),
-      sorter: (a, b) => new Date(a.visitDate) - new Date(b.visitDate),
+      dataIndex: 'appointmentDate',
+      key: 'appointmentDate',
+      render: (date) => dayjs(date).format('DD/MM/YYYY'),
+      sorter: (a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate),
     },
     {
-      title: 'Triệu chứng chính',
-      dataIndex: 'chiefComplaint',
-      key: 'chiefComplaint',
+      title: 'Lý do khám',
+      dataIndex: 'reasonForVisit',
+      key: 'reasonForVisit',
       ellipsis: {
         showTitle: false,
       },
@@ -197,10 +177,12 @@ const MedicalRecords = () => {
       key: 'diagnosis',
       render: (_, record) => (
         <div>
-          <div style={{ fontWeight: 500 }}>{record.diagnosis?.primary || 'Chưa chẩn đoán'}</div>
-          {record.diagnosis?.secondary?.length > 0 && (
+          <div style={{ fontWeight: 500 }}>
+            {record.finalDiagnosis || record.clinicalDiagnosis || 'Chưa chẩn đoán'}
+          </div>
+          {record.differentialDiagnosis && (
             <div style={{ fontSize: '12px', color: '#8c8c8c' }}>
-              +{record.diagnosis.secondary.length} chẩn đoán phụ
+              Chẩn đoán phân biệt: {record.differentialDiagnosis}
             </div>
           )}
         </div>
@@ -211,244 +193,126 @@ const MedicalRecords = () => {
       dataIndex: 'status',
       key: 'status',
       render: (status) => (
-        <Tag color={getMedicalRecordStatusColor(status)}>
-          {getMedicalRecordStatusText(status)}
-        </Tag>
+        <Tag color="green">Đã hoàn thành</Tag>
       ),
-      filters: [
-        { text: 'Bản nháp', value: 'draft' },
-        { text: 'Hoàn thành', value: 'completed' },
-        { text: 'Đã lưu trữ', value: 'archived' },
-      ],
-      onFilter: (value, record) => record.status === value,
     },
     {
       title: 'Hành động',
       key: 'actions',
       render: (_, record) => (
-        <Space>
+        <div className="action-buttons">
           <Button 
-            type="primary" 
+            className="btn-view"
             size="small"
             icon={<EyeOutlined />}
-            onClick={() => handleViewDetails(record._id)}
+            onClick={() => handleViewDetails(record)}
           >
             Xem
           </Button>
-          {record.status === 'draft' && (
-            <>
-              <Button 
-                size="small"
-                icon={<EditOutlined />}
-                onClick={() => {
-                  message.info('Tính năng chỉnh sửa đang được phát triển');
-                }}
-              >
-                Sửa
-              </Button>
-              <Button 
-                danger 
-                size="small"
-                icon={<DeleteOutlined />}
-                onClick={() => handleDelete(record._id)}
-              >
-                Xóa
-              </Button>
-              <Button 
-                type="primary" 
-                size="small"
-                icon={<CheckCircleOutlined />}
-                onClick={() => handleComplete(record._id)}
-              >
-                Hoàn thành
-              </Button>
-            </>
-          )}
-        </Space>
+        </div>
       ),
     },
   ];
 
-  const renderClinicalExamination = (examination) => {
-    if (!examination) return <div>Chưa có thông tin khám lâm sàng</div>;
-    
-    const formatted = formatClinicalExamination(examination);
-    
-    return (
-      <div>
-        <h4>Khám tổng quát</h4>
-        <p><strong>Ngoại hình:</strong> {formatted.general.appearance}</p>
-        
-        {formatted.general.vitalSigns && Object.keys(formatted.general.vitalSigns).length > 0 && (
-          <div>
-            <h5>Dấu hiệu sinh tồn:</h5>
-            <ul>
-              {formatted.general.vitalSigns.bloodPressure && (
-                <li>Huyết áp: {formatted.general.vitalSigns.bloodPressure}</li>
-              )}
-              {formatted.general.vitalSigns.heartRate && (
-                <li>Nhịp tim: {formatted.general.vitalSigns.heartRate} bpm</li>
-              )}
-              {formatted.general.vitalSigns.temperature && (
-                <li>Nhiệt độ: {formatted.general.vitalSigns.temperature}°C</li>
-              )}
-              {formatted.general.vitalSigns.respiratoryRate && (
-                <li>Nhịp thở: {formatted.general.vitalSigns.respiratoryRate} lần/phút</li>
-              )}
-            </ul>
-          </div>
-        )}
 
-        <h4>Khám răng miệng</h4>
-        <Row gutter={16}>
-          <Col span={12}>
-            <h5>Răng:</h5>
-            <p><strong>Tình trạng:</strong> {formatted.oral.teeth.condition || 'N/A'}</p>
-            {formatted.oral.teeth.missingTeeth?.length > 0 && (
-              <p><strong>Răng mất:</strong> {formatted.oral.teeth.missingTeeth.join(', ')}</p>
-            )}
-            {formatted.oral.teeth.filledTeeth?.length > 0 && (
-              <p><strong>Răng trám:</strong> {formatted.oral.teeth.filledTeeth.join(', ')}</p>
-            )}
-            {formatted.oral.teeth.decayedTeeth?.length > 0 && (
-              <p><strong>Răng sâu:</strong> {formatted.oral.teeth.decayedTeeth.join(', ')}</p>
-            )}
+  return (
+    <div className="medical-records-container">
+      {/* Header Section */}
+      <div className="medical-records-header fade-in">
+        <Row gutter={[24, 24]} align="middle">
+          <Col xs={24} sm={16} md={18}>
+            <Title level={2} style={{ color: 'white', margin: 0 }}>
+              Hồ sơ bệnh án
+            </Title>
+            <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: '16px' }}>
+              Quản lý và theo dõi hồ sơ bệnh án của bệnh nhân
+            </Text>
           </Col>
-          <Col span={12}>
-            <h5>Nướu:</h5>
-            <p><strong>Tình trạng:</strong> {formatted.oral.gums.condition || 'N/A'}</p>
-            <p><strong>Chảy máu:</strong> {formatted.oral.gums.bleeding ? 'Có' : 'Không'}</p>
-            <p><strong>Sưng:</strong> {formatted.oral.gums.swelling ? 'Có' : 'Không'}</p>
+          <Col xs={24} sm={8} md={6}>
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />}
+              size="large"
+              onClick={() => {
+                message.info('Tính năng tạo hồ sơ bệnh án đang được phát triển');
+              }}
+              style={{
+                background: 'rgba(255,255,255,0.2)',
+                border: '1px solid rgba(255,255,255,0.3)',
+                color: 'white',
+                fontWeight: 600
+              }}
+            >
+              Tạo hồ sơ mới
+            </Button>
           </Col>
         </Row>
       </div>
-    );
-  };
 
-  const renderDiagnosis = (diagnosis) => {
-    if (!diagnosis) return <div>Chưa có chẩn đoán</div>;
-    
-    const formatted = formatDiagnosis(diagnosis);
-    
-    return (
-      <div>
-        <h4>Chẩn đoán chính</h4>
-        <p>{formatted.primary}</p>
-        
-        {formatted.secondary.length > 0 && (
-          <div>
-            <h4>Chẩn đoán phụ</h4>
-            <ul>
-              {formatted.secondary.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
+      {/* Statistics Cards */}
+      <div className="stats-cards fade-in">
+        <div className="stat-card">
+          <div className="stat-icon">
+            <FileTextOutlined />
           </div>
-        )}
-        
-        {formatted.differential.length > 0 && (
-          <div>
-            <h4>Chẩn đoán phân biệt</h4>
-            <ul>
-              {formatted.differential.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
+          <div className="stat-value">{medicalRecords.length}</div>
+          <div className="stat-label">Tổng hồ sơ</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">
+            <CheckCircleOutlined />
           </div>
-        )}
+          <div className="stat-value">{medicalRecords.filter(r => r.status === 'completed').length}</div>
+          <div className="stat-label">Đã hoàn thành</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">
+            <UserOutlined />
+          </div>
+          <div className="stat-value">{new Set(medicalRecords.map(r => r.patient?._id)).size}</div>
+          <div className="stat-label">Bệnh nhân</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">
+            <CalendarOutlined />
+          </div>
+          <div className="stat-value">{medicalRecords.filter(r => dayjs(r.appointmentDate).isSame(dayjs(), 'day')).length}</div>
+          <div className="stat-label">Hôm nay</div>
+        </div>
       </div>
-    );
-  };
 
-  const renderTreatmentPlan = (plan) => {
-    if (!plan) return <div>Chưa có kế hoạch điều trị</div>;
-    
-    const formatted = formatTreatmentPlan(plan);
-    
-    return (
-      <div>
-        {formatted.immediate.length > 0 && (
-          <div>
-            <h4>Điều trị ngay</h4>
-            <ul>
-              {formatted.immediate.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-        
-        {formatted.shortTerm.length > 0 && (
-          <div>
-            <h4>Điều trị ngắn hạn</h4>
-            <ul>
-              {formatted.shortTerm.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-        
-        {formatted.longTerm.length > 0 && (
-          <div>
-            <h4>Điều trị dài hạn</h4>
-            <ul>
-              {formatted.longTerm.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-        
-        {formatted.followUp.nextVisit && (
-          <div>
-            <h4>Lịch tái khám</h4>
-            <p><strong>Ngày tái khám:</strong> {formatDateForDisplay(formatted.followUp.nextVisit)}</p>
-            <p><strong>Khoảng cách:</strong> {formatted.followUp.interval || 'N/A'}</p>
-            <p><strong>Hướng dẫn:</strong> {formatted.followUp.instructions || 'N/A'}</p>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  return (
-    <div>
-      <Card 
-        title="Quản lý hồ sơ bệnh án" 
-        extra={
-          <Button 
-            type="primary" 
-            icon={<PlusOutlined />}
-            onClick={() => {
-              message.info('Tính năng tạo hồ sơ bệnh án đang được phát triển');
-            }}
-          >
-            Tạo hồ sơ mới
-          </Button>
-        }
-      >
-        {/* Filters */}
-        <div style={{ marginBottom: '16px' }}>
-          <Space wrap>
+      {/* Filters Section */}
+      <div className="filters-section fade-in">
+        <div className="filters-title">
+          <FilterOutlined />
+          Bộ lọc và tìm kiếm
+        </div>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} md={8}>
             <Input
               placeholder="Tìm kiếm bệnh nhân..."
               prefix={<SearchOutlined />}
-              style={{ width: 200 }}
+              className="search-input"
+              onChange={(e) => handleFilterChange('patientId', e.target.value)}
             />
+          </Col>
+          <Col xs={24} sm={12} md={8}>
             <Select
               placeholder="Trạng thái"
               value={filters.status}
               onChange={(value) => handleFilterChange('status', value)}
-              style={{ width: 150 }}
+              className="search-input"
               allowClear
             >
               <Option value="draft">Bản nháp</Option>
               <Option value="completed">Hoàn thành</Option>
               <Option value="archived">Đã lưu trữ</Option>
             </Select>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
             <RangePicker
               placeholder={['Từ ngày', 'Đến ngày']}
+              className="search-input"
               onChange={(dates) => {
                 if (dates) {
                   handleFilterChange('startDate', dates[0]?.format('YYYY-MM-DD'));
@@ -459,26 +323,48 @@ const MedicalRecords = () => {
                 }
               }}
             />
-          </Space>
+          </Col>
+        </Row>
+      </div>
+
+      {/* Table Section */}
+      <div className="table-container fade-in">
+        <div className="table-header">
+          <div className="table-title">
+            <FileTextOutlined />
+            Danh sách hồ sơ bệnh án
+          </div>
         </div>
 
-        {/* Table */}
-        <Table
-          columns={columns}
-          dataSource={medicalRecords}
-          rowKey="_id"
-          loading={loading}
-          pagination={{
-            ...pagination,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) => 
-              `${range[0]}-${range[1]} của ${total} hồ sơ`,
-          }}
-          onChange={handleTableChange}
-          scroll={{ x: 1000 }}
-        />
-      </Card>
+        {medicalRecords.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-state-icon">
+              <FileTextOutlined />
+            </div>
+            <div className="empty-state-title">Chưa có hồ sơ bệnh án</div>
+            <div className="empty-state-description">
+              Bắt đầu tạo hồ sơ bệnh án đầu tiên cho bệnh nhân
+            </div>
+          </div>
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={medicalRecords}
+            rowKey="_id"
+            loading={loading}
+            pagination={{
+              ...pagination,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: (total, range) => 
+                `${range[0]}-${range[1]} của ${total} hồ sơ`,
+            }}
+            onChange={handleTableChange}
+            scroll={{ x: 1000 }}
+            className="enhanced-table"
+          />
+        )}
+      </div>
 
       {/* Detail Modal */}
       <Modal
@@ -491,54 +377,115 @@ const MedicalRecords = () => {
           </Button>
         ]}
         width={1000}
+        className="modal-enhanced"
       >
         {selectedRecord && (
           <div>
-            <Descriptions title="Thông tin cơ bản" bordered column={2}>
-              <Descriptions.Item label="Mã hồ sơ" span={2}>
-                <Tag color="blue">{selectedRecord.recordId}</Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="Bệnh nhân" span={2}>
-                {selectedRecord.patient?.user?.fullName}
-              </Descriptions.Item>
-              <Descriptions.Item label="Ngày khám">
-                {formatDateForDisplay(selectedRecord.visitDate)}
-              </Descriptions.Item>
-              <Descriptions.Item label="Trạng thái">
-                <Tag color={getMedicalRecordStatusColor(selectedRecord.status)}>
-                  {getMedicalRecordStatusText(selectedRecord.status)}
-                </Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="Triệu chứng chính" span={2}>
-                {selectedRecord.chiefComplaint || 'Chưa có'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Tiền sử bệnh hiện tại" span={2}>
-                {selectedRecord.presentIllness || 'Chưa có'}
-              </Descriptions.Item>
-            </Descriptions>
+            <div className="detail-section">
+              <h3>Thông tin cơ bản</h3>
+              <Descriptions bordered column={2}>
+                <Descriptions.Item label="Mã lịch hẹn" span={2}>
+                  <Tag color="blue">{selectedRecord.appointmentId}</Tag>
+                </Descriptions.Item>
+                <Descriptions.Item label="Bệnh nhân" span={2}>
+                  {selectedRecord.patient?.user?.fullName || 'N/A'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Ngày khám">
+                  {dayjs(selectedRecord.appointmentDate).format('DD/MM/YYYY')}
+                </Descriptions.Item>
+                <Descriptions.Item label="Trạng thái">
+                  <Tag color="green">Đã hoàn thành</Tag>
+                </Descriptions.Item>
+                <Descriptions.Item label="Lý do khám" span={2}>
+                  {selectedRecord.reasonForVisit || 'Chưa có'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Ghi chú" span={2}>
+                  {selectedRecord.notes || 'Chưa có'}
+                </Descriptions.Item>
+              </Descriptions>
+            </div>
 
-            <Divider />
+            <div className="detail-section">
+              <h3>Khám lâm sàng</h3>
+              {selectedRecord.physicalExamination ? (
+                <div>
+                  <p><strong>Dấu hiệu sinh tồn:</strong> {selectedRecord.physicalExamination.vitalSigns || 'Chưa có'}</p>
+                  <p><strong>Ngoại hình:</strong> {selectedRecord.physicalExamination.generalAppearance || 'Chưa có'}</p>
+                  <p><strong>Khám răng miệng:</strong> {selectedRecord.physicalExamination.oralExamination || 'Chưa có'}</p>
+                  <p><strong>Phát hiện khác:</strong> {selectedRecord.physicalExamination.otherFindings || 'Chưa có'}</p>
+                </div>
+              ) : (
+                <div>Chưa có thông tin khám lâm sàng</div>
+              )}
+            </div>
 
-            <h3>Khám lâm sàng</h3>
-            {renderClinicalExamination(selectedRecord.clinicalExamination)}
+            <div className="detail-section">
+              <h3>Xét nghiệm</h3>
+              {selectedRecord.labTests && selectedRecord.labTests.length > 0 && (
+                <div>
+                  <h4>Xét nghiệm nha khoa:</h4>
+                  <ul>
+                    {selectedRecord.labTests.map((test, index) => (
+                      <li key={index}>{test}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {selectedRecord.imagingTests && selectedRecord.imagingTests.length > 0 && (
+                <div>
+                  <h4>Chẩn đoán hình ảnh:</h4>
+                  <ul>
+                    {selectedRecord.imagingTests.map((test, index) => (
+                      <li key={index}>{test}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {selectedRecord.testResults && (
+                <div>
+                  <h4>Kết quả xét nghiệm:</h4>
+                  <p>{selectedRecord.testResults}</p>
+                </div>
+              )}
+            </div>
 
-            <Divider />
+            <div className="detail-section">
+              <h3>Chẩn đoán</h3>
+              <div>
+                <p><strong>Chẩn đoán chính:</strong> {selectedRecord.finalDiagnosis || selectedRecord.clinicalDiagnosis || 'Chưa có'}</p>
+                {selectedRecord.preliminaryDiagnosis && (
+                  <p><strong>Chẩn đoán sơ bộ:</strong> {selectedRecord.preliminaryDiagnosis}</p>
+                )}
+                {selectedRecord.differentialDiagnosis && (
+                  <p><strong>Chẩn đoán phân biệt:</strong> {selectedRecord.differentialDiagnosis}</p>
+                )}
+              </div>
+            </div>
 
-            <h3>Chẩn đoán</h3>
-            {renderDiagnosis(selectedRecord.diagnosis)}
-
-            <Divider />
-
-            <h3>Kế hoạch điều trị</h3>
-            {renderTreatmentPlan(selectedRecord.treatmentPlan)}
-
-            {selectedRecord.notes && (
-              <>
-                <Divider />
-                <h3>Ghi chú bổ sung</h3>
-                <p>{selectedRecord.notes}</p>
-              </>
-            )}
+            <div className="detail-section">
+              <h3>Điều trị</h3>
+              <div>
+                {selectedRecord.treatment && (
+                  <p><strong>Phương pháp điều trị:</strong> {selectedRecord.treatment}</p>
+                )}
+                {selectedRecord.procedures && selectedRecord.procedures.length > 0 && (
+                  <div>
+                    <h4>Thủ thuật:</h4>
+                    <ul>
+                      {selectedRecord.procedures.map((procedure, index) => (
+                        <li key={index}>{procedure}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {selectedRecord.followUpInstructions && (
+                  <p><strong>Hướng dẫn theo dõi:</strong> {selectedRecord.followUpInstructions}</p>
+                )}
+                {selectedRecord.followUpDate && (
+                  <p><strong>Lịch tái khám:</strong> {dayjs(selectedRecord.followUpDate).format('DD/MM/YYYY')}</p>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </Modal>
