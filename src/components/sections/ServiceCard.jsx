@@ -1,42 +1,46 @@
+// components/sections/ServiceCard.jsx
+
 import React from 'react';
+import Atropos from 'atropos/react';
+import 'atropos/css';
 import thumbnailFallback from '../../assets/thumbnail.jpg';
 
-const ServiceCard = ({ service, index, onServiceClick }) => {
-  // Function to get thumbnail or fallback
-  const getThumbnail = (thumbnail) => {
-    if (thumbnail && thumbnail !== '') {
-      return thumbnail;
-    }
-    // Fallback to imported thumbnail from assets
-    return thumbnailFallback;
-  };
+// Import file CSS của bạn
+import './ServicesSection.css'; 
 
-  // Function to handle image error
+const ServiceCard = ({ service, index, onServiceClick }) => {
   const handleImageError = (e) => {
     e.target.src = thumbnailFallback;
   };
 
-  // Function to format price
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
-      currency: 'VND'
+      currency: 'VND',
     }).format(price);
   };
 
+  const imageUrl = service.thumbnail || thumbnailFallback;
+
   return (
     <div className="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay={`${(index + 1) * 100}`}>
-      <div className="service-item position-relative">
-        <div className="service-thumbnail">
+      <div onClick={() => onServiceClick(service)}>
+        <Atropos
+          className="service-item-glass" 
+          shadowScale={0.8}
+          highlight={true}
+        >
+          {/* Lớp ảnh nền: được đẩy vào sâu */}
           <img 
-            src={getThumbnail(service.thumbnail)} 
+            src={imageUrl} 
             alt={service.name}
             onError={handleImageError}
-            className="service-image"
+            className="service-image-background"
+            data-atropos-offset="-4" 
           />
-        </div>
-        <div className="service-content">
-          <div className="service-clickable" onClick={() => onServiceClick(service)}>
+          
+          {/* Lớp "Kính mờ" chứa nội dung: được đẩy nổi lên trên */}
+          <div className="service-content-glass" data-atropos-offset="5">
             <h3>{service.name}</h3>
             <div className="service-price">
               <strong>{formatPrice(service.price)}</strong>
@@ -45,7 +49,7 @@ const ServiceCard = ({ service, index, onServiceClick }) => {
               <span className="badge bg-primary">{service.category}</span>
             </div>
           </div>
-        </div>
+        </Atropos>
       </div>
     </div>
   );

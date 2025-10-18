@@ -7,6 +7,29 @@ import {
   MESSAGES,
   VALIDATION_RULES
 } from '../../config/appointment';
+import './AppointmentSection.css';
+
+const Notification = ({ message, type, onDismiss }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => onDismiss(), 5000);
+    return () => clearTimeout(timer);
+  }, [onDismiss]);
+
+  const isError = type === 'error';
+  const icon = isError ? 'bi-exclamation-triangle-fill' : 'bi-check-circle-fill';
+  const backgroundColor = isError ? '#f8d7da' : '#d1e7dd';
+  const color = isError ? '#58151c' : '#0f5132';
+  const borderColor = isError ? '#f5c2c7' : '#badbcc';
+
+  return (
+    <div className="custom-notification" style={{ backgroundColor, color, borderColor }}>
+      <i className={`bi ${icon}`} style={{ marginRight: '10px', fontSize: '1.2rem' }}></i>
+      {message}
+      <button className="dismiss-button" onClick={onDismiss} style={{ color }}>&times;</button>
+      <div className="progress-bar" style={{ backgroundColor: color }}></div>
+    </div>
+  );
+};
 
 // --- Bắt đầu Component TimeSlotModal (Tích hợp trực tiếp) ---
 function TimeSlotModal({
@@ -118,11 +141,13 @@ function TimeSlotModal({
 
 
 function AppointmentSection() {
+  const [locations, setLocations] = useState([]);
   // State management
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
+    location: '',
     date: '',
     timeSlot: '',
     doctor: '',
@@ -134,12 +159,12 @@ function AppointmentSection() {
   const [availableDoctors, setAvailableDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [notification, setNotification] = useState({ message: '', type: '' });
   const [success, setSuccess] = useState(false);
   const [profileComplete, setProfileComplete] = useState(false);
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [isTimeModalOpen, setIsTimeModalOpen] = useState(false); // State cho modal
 
-  const currentLocationId = CURRENT_LOCATION_ID;
   const staticTimeSlots = AVAILABLE_TIME_SLOTS;
   const [displayableTimeSlots, setDisplayableTimeSlots] = useState(staticTimeSlots);
 
@@ -186,6 +211,25 @@ function AppointmentSection() {
     };
   }, []);
 
+  useEffect(() => {
+    // Hàm fetchLocations
+    const fetchLocations = async () => {
+      try {
+        // Giả sử bạn có một service function để gọi API này
+        const response = await AppointmentService.getLocations(); 
+        if (response.success) {
+          setLocations(response.data);
+        }
+      } catch (err) {
+        console.error('Error fetching locations:', err);
+        // Có thể set lỗi ở đây
+      }
+    };
+
+    fetchLocations();
+    checkProfileStatus();
+  }, []);
+
   const checkProfileStatus = async () => {
     setCheckingProfile(true);
     try {
@@ -216,9 +260,10 @@ function AppointmentSection() {
     }
   };
 
-  const fetchAvailableTimeSlots = async (date) => {
+  const fetchAvailableTimeSlots = async (date, locationId) => {
+    if (!date || !locationId) return;
     try {
-      const data = await AppointmentService.getAvailableTimeSlots(date, currentLocationId);
+      const data = await AppointmentService.getAvailableTimeSlots(date, locationId);
       setApiTimeSlots(data.data.timeSlots || []);
     } catch (err) {
       console.error('Error fetching time slots:', err);
@@ -227,11 +272,16 @@ function AppointmentSection() {
     }
   };
 
-  const fetchAvailableDoctors = async (date, time) => {
+  const fetchAvailableDoctors = async (date, time, locationId) => {
+    if (!date || !time || !locationId) {
+      setAvailableDoctors([]);
+      return;
+    }
     try {
-      const data = await AppointmentService.getAvailableDoctors(date, time, currentLocationId);
+      const data = await AppointmentService.getAvailableDoctors(date, time, locationId);
       setAvailableDoctors(data.data.doctors || []);
     } catch (err) {
+      console.error('Error fetching available doctors:', err);
       setError(err.message || 'Lỗi kết nối server');
       setAvailableDoctors([]);
     }
@@ -241,35 +291,37 @@ function AppointmentSection() {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
 
-    if (error) setError('');
-
-    if (name === 'date' && value) {
-      fetchAvailableTimeSlots(value);
-      setFormData(prev => ({ ...prev, date: value, timeSlot: '', doctor: '' }));
+    if (name === 'location') {
+      setFormData(prev => ({ ...prev, date: '', timeSlot: '', doctor: '' }));
+      setApiTimeSlots([]);
+      setAvailableDoctors([]);
+    }
+    
+    if (name === 'date') {
+      fetchAvailableTimeSlots(value, formData.location);
+      setFormData(prev => ({ ...prev, timeSlot: '', doctor: '' }));
       setAvailableDoctors([]);
     }
   };
   
-  // Hàm mới để xử lý việc chọn giờ từ Modal
   const handleSelectTime = (timeValue) => {
-    setFormData(prev => ({ ...prev, timeSlot: timeValue, doctor: '' })); // Reset doctor
-    if (formData.date) {
-      fetchAvailableDoctors(formData.date, timeValue);
+    setFormData(prev => ({ ...prev, timeSlot: timeValue, doctor: '' }));
+    if (formData.date && formData.location) { 
+      fetchAvailableDoctors(formData.date, timeValue, formData.location);
     }
   };
 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!isLoggedIn) {
-      setError("Vui lòng đăng nhập để đặt lịch hẹn.");
+    if (!isLoggedIn) {  
+      setNotification({ message: "Please log in to make an appointment.", type: 'error' });  
       window.dispatchEvent(new CustomEvent('openLoginModal'));
       return;
     }
 
     if (!profileComplete) {
-      setError("Vui lòng hoàn thành hồ sơ của bạn trước khi đặt lịch.");
+      setError("Please complete your profile before making an appointment.");
       return;
     }
     
@@ -277,12 +329,13 @@ function AppointmentSection() {
     setError('');
 
     try {
-      if (!formData.date || !formData.timeSlot || !formData.doctor) {
-        throw new Error("Vui lòng điền đầy đủ thông tin ngày, giờ và bác sĩ.");
+      if (!formData.date || !formData.timeSlot || !formData.doctor || !formData.location) {
+        throw new Error("Please fill in all required fields: date, time, doctor, and location.");
       }
 
       const response = await AppointmentService.createStripeCheckoutSession({
         doctorId: formData.doctor,
+        locationId: formData.location,
         date: formData.date,
         time: formData.timeSlot,
         reasonForVisit: formData.reasonForVisit
@@ -293,10 +346,10 @@ function AppointmentSection() {
         return; 
       }
 
-      throw new Error(response.message || 'Không nhận được URL thanh toán');
+      throw new Error(response.message || 'Could not retrieve payment URL.');
 
     } catch (err) {
-      setError(err.message || "Đã có lỗi xảy ra. Vui lòng thử lại.");
+      setError(err.message || "An error occurred. Please try again.");
       setLoading(false);
     }
   };
@@ -338,6 +391,14 @@ function AppointmentSection() {
 
   return (
     <>
+      {notification.message && (
+        <Notification 
+          message={notification.message}
+          type={notification.type}
+          onDismiss={() => setNotification({ message: '', type: '' })}
+        />
+      )}
+      
       <section id="appointment" className="appointment section">
         <div className="container section-title" data-aos="fade-up">
           <h2>Make an Appointment</h2>
@@ -346,6 +407,7 @@ function AppointmentSection() {
 
         <div className="container" data-aos="fade-up" data-aos-delay="100">
           <form onSubmit={handleSubmit} className="php-email-form">
+            {/* Hàng 1: Thông tin cá nhân */}
             <div className="row">
               <div className="col-md-4 form-group">
                 <input type="text" name="name" className="form-control" placeholder="Your Name" value={formData.name} onChange={handleInputChange} required />
@@ -357,33 +419,64 @@ function AppointmentSection() {
                 <input type="tel" className="form-control" name="phone" placeholder="Your Phone" value={formData.phone} onChange={handleInputChange} required />
               </div>
             </div>
+            
+            {/* Hàng 2: Lựa chọn Cơ sở, Ngày và Giờ */}
             <div className="row">
               <div className="col-md-4 form-group mt-3">
-                <input type="date" name="date" className="form-control" placeholder="Select Date" value={formData.date} onChange={handleInputChange} min={new Date().toISOString().split('T')[0]} required />
+                <select name="location" className="form-select" value={formData.location} onChange={handleInputChange} required>
+                  <option value="">Select a Location</option>
+                  {locations.map(loc => (
+                    <option key={loc._id} value={loc._id}>{loc.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-md-4 form-group mt-3">
+                <input 
+                  type="date" 
+                  name="date" 
+                  className="form-control" 
+                  placeholder="Select Date" 
+                  value={formData.date} 
+                  onChange={handleInputChange} 
+                  min={new Date().toISOString().split('T')[0]} 
+                  required 
+                  disabled={!formData.location} // Vô hiệu hóa cho đến khi chọn cơ sở
+                />
               </div>
               <div className="col-md-4 form-group mt-3">
                 <div 
                   className="form-control" 
-                  onClick={() => formData.date && setIsTimeModalOpen(true)}
-                  style={{ cursor: formData.date ? 'pointer' : 'not-allowed', color: formData.timeSlot ? '#333' : '#6c757d' }}
+                  onClick={() => formData.location && formData.date && setIsTimeModalOpen(true)}
+                  style={{ 
+                    cursor: (formData.location && formData.date) ? 'pointer' : 'not-allowed', 
+                    color: formData.timeSlot ? '#333' : '#6c757d' 
+                  }}
                 >
                   {formData.timeSlot ? staticTimeSlots.find(s => s.value === formData.timeSlot)?.label : 'Select Time Slot'}
                 </div>
               </div>
-              <div className="col-md-4 form-group mt-3">
-                <select name="doctor" className="form-select" value={formData.doctor} onChange={handleInputChange} required disabled={!formData.timeSlot}>
-                  <option value="">Select Doctor</option>
-                  {availableDoctors.map(doctor => (
-                    <option key={doctor._id} value={doctor._id}>
-                      {doctor.user?.fullName || 'Doctor'} - {doctor.specializations?.join(', ') || 'General Dentistry'}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
+
+            {/* Hàng 3: Lựa chọn Bác sĩ */}
+            <div className="row">
+                <div className="col-md-12 form-group mt-3">
+                    <select name="doctor" className="form-select" value={formData.doctor} onChange={handleInputChange} required disabled={!formData.timeSlot}>
+                        <option value="">Select Doctor</option>
+                        {availableDoctors.map(doctor => (
+                            <option key={doctor._id} value={doctor._id}>
+                                {doctor.user?.fullName || 'Doctor'} - {doctor.specializations?.join(', ') || 'General Dentistry'}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            {/* Hàng 4: Lời nhắn */}
             <div className="form-group mt-3">
               <textarea className="form-control" name="reasonForVisit" rows="5" placeholder="Message (Optional)" value={formData.reasonForVisit} onChange={handleInputChange}></textarea>
             </div>
+
+            {/* Hàng 5: Nút bấm và thông báo */}
             <div className="mt-3">
               {loading && <div className="loading">{MESSAGES.LOADING}</div>}
               {error && <div className="error-message">{error}</div>}

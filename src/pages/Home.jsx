@@ -8,6 +8,7 @@ import AboutSection from "../components/sections/AboutSection";
 import StatsSection from "../components/sections/StatsSection";
 import ServicesSection from "../components/sections/ServicesSection";
 import AppointmentSection from "../components/sections/AppointmentSection";
+import DoctorsSection from "../components/sections/DoctorsSection";
 import ContactSection from "../components/sections/ContactSection";
 import AuthModal from "../components/AuthModal";
 import PatientInfoModal from "../components/PatientInfoModal";
@@ -128,6 +129,7 @@ function Home() {
         <AboutSection />
         <StatsSection />
         <ServicesSection />
+        <DoctorsSection />
         <AppointmentSection />
         <ContactSection />
         

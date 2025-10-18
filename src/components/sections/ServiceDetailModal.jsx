@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import './ServiceDetailModal.css';
+import thumbnailFallback from '../../assets/thumbnail.jpg'; // Đảm bảo đường dẫn này đúng
 
 const ServiceDetailModal = ({ isOpen, onClose, service }) => {
+  const [activeStep, setActiveStep] = useState(1);
   if (!isOpen || !service) return null;
 
-  // Function to format price
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -13,110 +14,95 @@ const ServiceDetailModal = ({ isOpen, onClose, service }) => {
     }).format(price);
   };
 
-  // Function to get category icon
-  const getCategoryIcon = (category) => {
-    const iconMap = {
-      'Examination': 'fas fa-stethoscope',
-      'Hygiene': 'fas fa-tooth',
-      'Cosmetic': 'fas fa-gem',
-      'Treatment': 'fas fa-medkit',
-      'Restoration': 'fas fa-tools',
-      'Orthodontics': 'fas fa-align-center',
-      'Surgery': 'fas fa-cut'
-    };
-    return iconMap[category] || 'fas fa-tooth';
-  };
+  const imageUrl = service.thumbnail || thumbnailFallback;
 
   return createPortal(
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content service-detail-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <div className="service-title-section">
-            <div className="service-icon">
-              <i className={getCategoryIcon(service.category)}></i>
-            </div>
-            <div className="service-title-info">
-              <h2>{service.name}</h2>
-              <div className="service-category">
-                <span className="badge bg-primary">{service.category}</span>
-              </div>
-            </div>
-          </div>
-          <button className="close-button" onClick={onClose}>×</button>
-        </div>
-
+      <div className="service-detail-modal" onClick={(e) => e.stopPropagation()}>
+        
+        <button className="close-button" onClick={onClose}>×</button>
+        
         <div className="modal-body">
-          <div className="service-price-section">
-            <div className="price-label">Service Price:</div>
-            <div className="price-value">{formatPrice(service.price)}</div>
-          </div>
-
-          <div className="service-description-section">
-            <h3>Service Description</h3>
-            <div className="description-content">
-              {service.description}
+          {/* --- Panel thông tin chính --- */}
+          <div className="service-main-info">
+            <div className="service-thumbnail-container">
+              <img src={imageUrl} alt={service.name} className="service-thumbnail-image" />
+            </div>
+            <div className="service-details-container">
+              <span className="badge service-category-badge">{service.category || 'Phẫu thuật'}</span>
+              <h2 className="service-main-title">{service.name}</h2>
+              <p className="service-short-description">{service.description}</p>
+              <div className="service-main-price">{formatPrice(service.price)}</div>
             </div>
           </div>
 
+          {/* --- Panel quy trình Accordion --- */}
           <div className="service-process-section">
             <h3>Treatment Process</h3>
-            <div className="process-steps">
-              {service.process && service.process.length > 0 ? (
-                service.process
-                  .sort((a, b) => a.step - b.step)
-                  .map((processStep) => (
-                    <div key={processStep.step} className="process-step">
-                      <div className="step-number">{processStep.step}</div>
-                      <div className="step-content">
-                        <h4>{processStep.title}</h4>
-                        <p>{processStep.description}</p>
+            <div className="process-timeline">
+                <>
+                  {/* --- Quy trình mặc định --- */}
+                  <div className={`timeline-item ${activeStep === 1 ? 'active' : ''}`} onClick={() => setActiveStep(activeStep === 1 ? null : 1)}>
+                    <div className="timeline-content">
+                      <div className="timeline-title-wrapper">
+                        <h4>Khám và chụp X-quang</h4>
+                        <span className="timeline-chevron"></span>
+                      </div>
+                      <div className="timeline-description-wrapper">
+                        <p>Đánh giá vị trí răng khôn. Bác sĩ sẽ kiểm tra sức khỏe răng miệng tổng quát và tư vấn chi tiết về tình trạng của bạn.</p>
                       </div>
                     </div>
-                  ))
-              ) : (
-                <div className="default-process">
-                  <div className="process-step">
-                    <div className="step-number">1</div>
-                    <div className="step-content">
-                      <h4>Consultation & Examination</h4>
-                      <p>Our dentist will examine your oral health and provide detailed consultation about your dental condition</p>
+                  </div>
+                  <div className={`timeline-item ${activeStep === 2 ? 'active' : ''}`} onClick={() => setActiveStep(activeStep === 2 ? null : 2)}>
+                    <div className="timeline-content">
+                      <div className="timeline-title-wrapper">
+                        <h4>Gây tê</h4>
+                        <span className="timeline-chevron"></span>
+                      </div>
+                      <div className="timeline-description-wrapper">
+                        <p>Tiến hành gây tê tại chỗ để đảm bảo bạn không cảm thấy đau trong suốt quá trình thực hiện.</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="process-step">
-                    <div className="step-number">2</div>
-                    <div className="step-content">
-                      <h4>Treatment Planning</h4>
-                      <p>Develop a personalized treatment plan that suits your needs and dental condition</p>
+                  <div className={`timeline-item ${activeStep === 3 ? 'active' : ''}`} onClick={() => setActiveStep(activeStep === 3 ? null : 3)}>
+                    <div className="timeline-content">
+                      <div className="timeline-title-wrapper">
+                        <h4>Nhổ răng</h4>
+                        <span className="timeline-chevron"></span>
+                      </div>
+                      <div className="timeline-description-wrapper">
+                        <p>Thực hiện nhổ răng khôn theo quy trình chuẩn quốc tế, an toàn và nhanh chóng.</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="process-step">
-                    <div className="step-number">3</div>
-                    <div className="step-content">
-                      <h4>Treatment Execution</h4>
-                      <p>Perform the treatment following international standard procedures</p>
+                  <div className={`timeline-item ${activeStep === 4 ? 'active' : ''}`} onClick={() => setActiveStep(activeStep === 4 ? null : 4)}>
+                    <div className="timeline-content">
+                      <div className="timeline-title-wrapper">
+                        <h4>Khâu vết thương</h4>
+                        <span className="timeline-chevron"></span>
+                      </div>
+                      <div className="timeline-description-wrapper">
+                        <p>Khâu lại vết thương bằng chỉ tự tiêu và hướng dẫn chăm sóc sau điều trị để đảm bảo quá trình lành thương tốt nhất.</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="process-step">
-                    <div className="step-number">4</div>
-                    <div className="step-content">
-                      <h4>Follow-up & Care</h4>
-                      <p>Provide post-treatment care instructions and monitor treatment results</p>
-                    </div>
-                  </div>
-                </div>
-              )}
+                </>
             </div>
           </div>
-        </div>
 
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>
-            Close
-          </button>
-          <button className="btn btn-primary">
-            <i className="fas fa-calendar-plus me-2"></i>
-            Book Appointment
-          </button>
+          {/* --- Panel Footer --- */}
+          <div className="modal-footer">
+            <button className="btn btn-secondary" onClick={onClose}>
+              Close
+            </button>
+            <a 
+              href="#appointment" 
+              className="btn btn-primary" 
+              onClick={onClose}
+            >
+              Book Appointment
+            </a>
+          </div>
         </div>
       </div>
     </div>,

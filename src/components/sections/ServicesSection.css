@@ -96,3 +96,106 @@
 .btn-outline-primary:hover i {
   transform: scale(1.1);
 }
+
+.service-item {
+  /* Đảm bảo Atropos có chiều cao và không bị xẹp */
+  aspect-ratio: 4 / 3; /* Tỷ lệ khung hình, có thể thay đổi */
+  overflow: hidden; /* Ẩn các phần tử con bị tràn ra ngoài */
+  display: block; /* Cần thiết cho Atropos */
+}
+
+/* Định dạng cho ảnh nền bên trong Atropos */
+.service-item .service-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Đảm bảo ảnh luôn vừa vặn và không bị méo */
+  z-index: 1; /* Nằm dưới cùng */
+}
+
+/* Định dạng cho lớp nội dung */
+.service-item .service-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2; /* Nằm trên ảnh nền */
+  
+  /* Căn chỉnh lại nội dung để đẹp hơn (tùy chọn) */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* Đẩy nội dung xuống dưới */
+  padding: 20px;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%); /* Thêm lớp màu mờ để chữ dễ đọc */
+  color: white; /* Đổi màu chữ nếu cần */
+}
+
+.service-item .service-content h3 {
+    color: white; /* Đảm bảo tiêu đề dễ đọc trên nền ảnh */
+}
+
+.service-item-glass {
+  width: 100%;
+  aspect-ratio: 16 / 11; /* <--- Điều chỉnh tỷ lệ khung hình cho ngắn hơn */
+  border-radius: 15px; /* <--- Bo góc tròn */
+  cursor: pointer;
+  display: block; 
+  /* Bóng đổ tổng thể của card */
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08); /* <--- Bóng đổ nhạt hơn và nhỏ hơn */
+  transition: all 0.3s ease;
+  overflow: hidden; /* Đảm bảo nội dung bo góc theo cha */
+}
+
+.service-item-glass:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12); /* Bóng đổ khi hover cũng nhạt */
+  transform: translateY(-5px);
+}
+
+/* Ảnh nền */
+.service-image-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 15px; /* <--- Bo góc cho ảnh nền */
+}
+
+/* Khối nội dung "Kính mờ" */
+.service-content-glass {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  width: auto;
+  max-width: calc(100% - 40px);
+  text-align: left;
+  padding: 15px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+.service-content-glass h3 {
+  font-size: 1.15rem; /* <--- Giảm cỡ chữ một chút */
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2); /* <--- Bóng chữ nhạt hơn */
+  margin-bottom: 8px; /* <--- Giảm khoảng cách dưới */
+}
+
+.service-content-glass .service-price {
+  font-size: 1rem; /* <--- Giảm cỡ chữ */
+  margin: 5px 0 10px; /* <--- Điều chỉnh margin */
+}
+
+.service-content-glass .service-category .badge {
+    font-size: 0.8rem; /* <--- Giảm cỡ chữ badge */
+    padding: 5px 10px; /* <--- Điều chỉnh padding badge */
+}
