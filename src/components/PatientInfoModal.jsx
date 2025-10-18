@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../context/authContext';
+import { 
+  UserOutlined, 
+  PhoneOutlined, 
+  MailOutlined, 
+  CalendarOutlined, 
+  IdcardOutlined,
+  HomeOutlined,
+  HeartOutlined,
+  ExclamationCircleOutlined
+} from '@ant-design/icons';
 import './PatientInfoModal.css';
 
 const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
@@ -163,14 +173,25 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
       <div className="patient-modal">
         {/* Modal header */}
         <div className="patient-modal-header">
-          <h2>Complete Personal Information</h2>
+          <div className="header-content">
+            <div className="header-icon">
+              <UserOutlined />
+            </div>
+            <div>
+              <h2>Thông tin cá nhân</h2>
+              <p>Vui lòng hoàn thiện thông tin cá nhân của bạn</p>
+            </div>
+          </div>
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
         
         <form onSubmit={handleSubmit} className="patient-modal-form">
           {/* Phần thông tin cơ bản */}
           <div className="form-section">
-            <h3>Basic Information</h3>
+            <div className="section-header">
+              <UserOutlined className="section-icon" />
+              <h3>Thông tin cá nhân</h3>
+            </div>
             <div className="form-row">
               <div className="form-group">
                 <label>Full Name *</label>
@@ -227,7 +248,10 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
 
           {/* Phần thông tin liên hệ */}
           <div className="form-section">
-            <h3>Contact Information</h3>
+            <div className="section-header">
+              <PhoneOutlined className="section-icon" />
+              <h3>Thông tin liên hệ</h3>
+            </div>
             <div className="form-row">
               <div className="form-group">
                 <label>Phone Number *</label>
@@ -300,7 +324,10 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
 
           {/* Phần liên hệ khẩn cấp */}
           <div className="form-section">
-            <h3>Emergency Contact (Optional)</h3>
+            <div className="section-header">
+              <ExclamationCircleOutlined className="section-icon" />
+              <h3>Liên hệ khẩn cấp (Tùy chọn)</h3>
+            </div>
             <div className="form-row">
               <div className="form-group">
                 <label>Emergency Contact Name</label>
@@ -333,7 +360,10 @@ const PatientInfoModal = ({ isOpen, onClose, onSave }) => {
 
           {/* Phần thông tin y tế */}
           <div className="form-section">
-            <h3>Medical Information (Optional)</h3>
+            <div className="section-header">
+              <HeartOutlined className="section-icon" />
+              <h3>Thông tin y tế (Tùy chọn)</h3>
+            </div>
             <div className="form-group">
               <label>Medical History</label>
               <textarea

@@ -71,33 +71,54 @@ export const getDoctorAppointments = async (filters = {}) => {
  * @param {string} appointmentId - ID của lịch hẹn
  * @returns {Promise<object>} Kết quả xác nhận
  */
-export const confirmAppointment = async (appointmentId) => {
+export const completeAppointment = async (appointmentId) => {
   try {
-    const response = await axios.put(`${API_BASE_URL}/doctor/appointments/${appointmentId}/confirm`, {}, {
+    const response = await axios.patch(`${API_BASE_URL}/doctor/appointments/${appointmentId}/complete`, {}, {
       headers: getAuthHeaders()
     });
     return response.data;
   } catch (error) {
-    console.error('Error confirming appointment:', error);
+    console.error('Error completing appointment:', error);
     throw error;
   }
 };
 
 /**
- * Hủy lịch hẹn
+ * Đánh dấu bệnh nhân không đến
  * @param {string} appointmentId - ID của lịch hẹn
- * @param {string} reason - Lý do hủy (optional)
- * @returns {Promise<object>} Kết quả hủy
+ * @param {string} reason - Lý do không đến (optional)
+ * @returns {Promise<object>} Kết quả đánh dấu
  */
-export const cancelAppointment = async (appointmentId, reason = '') => {
+export const markNoShow = async (appointmentId, reason = '') => {
   try {
-    const response = await axios.delete(`${API_BASE_URL}/doctor/appointments/${appointmentId}/cancel`, {
-      headers: getAuthHeaders(),
-      data: { reason }
+    const response = await axios.patch(`${API_BASE_URL}/doctor/appointments/${appointmentId}/no-show`, {
+      reason
+    }, {
+      headers: getAuthHeaders()
     });
     return response.data;
   } catch (error) {
-    console.error('Error canceling appointment:', error);
+    console.error('Error marking no-show:', error);
+    throw error;
+  }
+};
+
+/**
+ * Tạm hoãn khám bệnh
+ * @param {string} appointmentId - ID của lịch hẹn
+ * @param {string} reason - Lý do tạm hoãn (optional)
+ * @returns {Promise<object>} Kết quả tạm hoãn
+ */
+export const putOnHold = async (appointmentId, reason = '') => {
+  try {
+    const response = await axios.patch(`${API_BASE_URL}/doctor/appointments/${appointmentId}/on-hold`, {
+      reason
+    }, {
+      headers: getAuthHeaders()
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error putting on hold:', error);
     throw error;
   }
 };
@@ -227,7 +248,19 @@ export const getAppointmentStatusColor = (status) => {
     case 'pending':
       return 'orange';
     case 'confirmed':
+      return 'blue';
+    case 'checked-in':
       return 'green';
+    case 'on-hold':
+      return 'orange';
+    case 'in-progress':
+      return 'cyan';
+    case 'waiting-for-results':
+      return 'gold';
+    case 'completed':
+      return 'purple';
+    case 'no-show':
+      return 'gray';
     case 'cancelled':
       return 'red';
     default:
@@ -246,10 +279,75 @@ export const getAppointmentStatusText = (status) => {
       return 'Chờ xác nhận';
     case 'confirmed':
       return 'Đã xác nhận';
+    case 'checked-in':
+      return 'Đã check-in';
+    case 'on-hold':
+      return 'Tạm hoãn';
+    case 'in-progress':
+      return 'Đang khám';
+    case 'waiting-for-results':
+      return 'Chờ kết quả xét nghiệm';
+    case 'completed':
+      return 'Đã hoàn thành';
+    case 'no-show':
+      return 'Không đến';
     case 'cancelled':
       return 'Đã hủy';
     default:
       return 'Không xác định';
+  }
+};
+
+// ==================== MEDICAL RECORDS ====================
+
+/**
+ * Lấy chi tiết lịch hẹn cho hồ sơ bệnh án
+ * @param {string} appointmentId - ID của lịch hẹn
+ * @returns {Promise<object>} Chi tiết lịch hẹn
+ */
+export const getAppointmentDetails = async (appointmentId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/doctor/appointments/${appointmentId}`, {
+      headers: getAuthHeaders()
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error getting appointment details:', error);
+    throw error;
+  }
+};
+
+/**
+ * Cập nhật trạng thái lịch hẹn và thông tin khám bệnh
+ * @param {string} appointmentId - ID của lịch hẹn
+ * @param {object} updateData - Dữ liệu cập nhật
+ * @returns {Promise<object>} Kết quả cập nhật
+ */
+export const updateAppointmentStatus = async (appointmentId, updateData) => {
+  try {
+    const response = await axios.put(`${API_BASE_URL}/doctor/appointments/${appointmentId}`, updateData, {
+      headers: getAuthHeaders()
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating appointment status:', error);
+    throw error;
+  }
+};
+
+/**
+ * Lấy danh sách thuốc
+ * @returns {Promise<object>} Danh sách thuốc
+ */
+export const getMedicines = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/doctor/medicines`, {
+      headers: getAuthHeaders()
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error getting medicines:', error);
+    throw error;
   }
 };
 
@@ -260,8 +358,11 @@ export default {
   
   // Appointments
   getDoctorAppointments,
-  confirmAppointment,
-  cancelAppointment,
+  completeAppointment,
+  markNoShow,
+  putOnHold,
+  getAppointmentDetails,
+  updateAppointmentStatus,
   
   // Patients
   getDoctorPatients,
@@ -270,6 +371,9 @@ export default {
   // Prescriptions
   createPrescription,
   getDoctorPrescriptions,
+  
+  // Medical Records
+  getMedicines,
   
   // Schedule
   getDoctorSchedule,

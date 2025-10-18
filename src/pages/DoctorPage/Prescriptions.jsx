@@ -52,14 +52,15 @@ const Prescriptions = () => {
         page: pagination.current,
         limit: pagination.pageSize
       });
-      setPrescriptions(response.data.prescriptions);
+      setPrescriptions(response.data.prescriptions || []);
       setPagination(prev => ({
         ...prev,
-        total: response.data.pagination.totalItems
+        total: response.data.pagination?.totalItems || 0
       }));
     } catch (error) {
       console.error('Error fetching prescriptions:', error);
       message.error('Lỗi khi tải danh sách đơn thuốc');
+      setPrescriptions([]);
     } finally {
       setLoading(false);
     }
@@ -68,9 +69,10 @@ const Prescriptions = () => {
   const fetchAppointments = async () => {
     try {
       const response = await getDoctorAppointments({ limit: 100 });
-      setAppointments(response.data.appointments);
+      setAppointments(response.data.appointments || []);
     } catch (error) {
       console.error('Error fetching appointments:', error);
+      setAppointments([]);
     }
   };
 
@@ -261,11 +263,18 @@ const Prescriptions = () => {
             rules={[{ required: true, message: 'Vui lòng chọn bệnh nhân' }]}
           >
             <Select placeholder="Chọn bệnh nhân">
-              {appointments.map(appointment => (
-                <Option key={appointment.patient._id} value={appointment.patient._id}>
-                  {appointment.patient.user?.fullName} - {appointment.patient.contactInfo?.phone}
+              {appointments
+                .filter(appointment => appointment.patient && appointment.patient._id)
+                .map(appointment => (
+                  <Option key={appointment.patient._id} value={appointment.patient._id}>
+                    {appointment.patient.user?.fullName} - {appointment.patient.contactInfo?.phone}
+                  </Option>
+                ))}
+              {appointments.filter(appointment => appointment.patient && appointment.patient._id).length === 0 && (
+                <Option disabled value="no-patients">
+                  Không có bệnh nhân nào
                 </Option>
-              ))}
+              )}
             </Select>
           </Form.Item>
 
@@ -274,11 +283,13 @@ const Prescriptions = () => {
             label="Lịch hẹn (tùy chọn)"
           >
             <Select placeholder="Chọn lịch hẹn" allowClear>
-              {appointments.map(appointment => (
-                <Option key={appointment._id} value={appointment._id}>
-                  {dayjs(appointment.appointmentDate).format('DD/MM/YYYY')} - {appointment.startTime}
-                </Option>
-              ))}
+              {appointments
+                .filter(appointment => appointment.patient && appointment.patient._id)
+                .map(appointment => (
+                  <Option key={appointment._id} value={appointment._id}>
+                    {dayjs(appointment.appointmentDate).format('DD/MM/YYYY')} - {appointment.startTime}
+                  </Option>
+                ))}
             </Select>
           </Form.Item>
 
