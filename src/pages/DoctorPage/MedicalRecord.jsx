@@ -700,7 +700,7 @@ const MedicalRecord = () => {
         <div className="step-content fade-in">
           <Card
             title={
-              <div className="section-header">
+              <div className="easection-hder">
                 <div className="section-icon">
                   {currentStep === 0 && <EyeOutlined />}
                   {currentStep === 1 && <ExperimentOutlined />}
@@ -709,7 +709,7 @@ const MedicalRecord = () => {
                   {currentStep === 4 && <ClockCircleOutlined />}
                 </div>
                 <div>
-                  <h3 className="section-title">
+                  <h3 className="step-title">
                     {currentStep === 0 && 'Khám lâm sàng'}
                     {currentStep === 1 && 'Chỉ định cận lâm sàng'}
                     {currentStep === 2 && 'Chẩn đoán'}
