@@ -106,4 +106,7 @@ export const adminService = {
 
   deleteDiscount: (id) => adminAPI.delete(`/admin/discounts/${id}`),
 
+
+  // h dasdadsassd
+  // dajdpsada
 };
