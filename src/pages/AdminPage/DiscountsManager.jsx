@@ -131,28 +131,25 @@ const DiscountsManager = () => {
     await checkCodeUniqueness(code);
   };
 
-  // =================================================================
-  // === HÀM HELPER MỚI: Dùng để kiểm tra tính duy nhất của mã      ===
-  // =================================================================
   const checkCodeUniqueness = async (code) => {
     try {
       const result = await adminService.checkDiscountCode(code);
       if (result.exists) {
         form.setFields([{ name: 'code', errors: [`Code '${code.toUpperCase()}' already exists.`] }]);
-        return false; // Mã đã tồn tại
+        return false;
       } else {
         form.setFields([{ name: 'code', errors: [] }]);
-        return true; // Mã là duy nhất
+        return true;
       }
     } catch (error) {
-      console.error("Error checking code:", error);
-      return false; // Mặc định là false nếu có lỗi
+      console.error("Error checking code:", { 
+          message: error.message, 
+          status: error.status
+      });
+      return false;
     }
   };
-  
-  // =================================================================
-  // === HÀM MỚI: Tạo mã ngẫu nhiên và tự động kiểm tra             ===
-  // =================================================================
+
   const handleGenerateCode = async () => {
     let isUnique = false;
     let newCode = '';
@@ -221,7 +218,6 @@ const DiscountsManager = () => {
         destroyOnClose
         confirmLoading={loading}>
         <Form form={form} layout="vertical" onFinish={onFinish} style={{ marginTop: 24 }}>
-          {/* ========== PHẦN CODE ĐÃ ĐƯỢC CẬP NHẬT ========== */}
           <Form.Item
             name="code"
             label="Discount Code"
