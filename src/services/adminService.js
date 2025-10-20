@@ -14,7 +14,7 @@ const adminAPI = axios.create({
 // Add auth token to requests
 adminAPI.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token"); // Đảm bảo key token của bạn là "token"
+    const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -31,7 +31,6 @@ adminAPI.interceptors.response.use(
   (error) => {
     console.error("🚨 AdminAPI Error:", error);
 
-    // Handle unauthorized access
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
@@ -95,18 +94,13 @@ export const adminService = {
   },
   toggleServiceStatus: (id) => adminAPI.patch(`/admin/services/${id}/toggle`),
   deleteService: (id) => adminAPI.delete(`/admin/services/${id}`),
+  
   // Discount Management
   getAllDiscounts: () => adminAPI.get("/admin/discounts"),
-
   createDiscount: (discountData) =>
     adminAPI.post("/admin/discounts", discountData),
-
   updateDiscount: (id, discountData) =>
     adminAPI.put(`/admin/discounts/${id}`, discountData),
-
   deleteDiscount: (id) => adminAPI.delete(`/admin/discounts/${id}`),
-
-
-  // h dasdadsassd
-  // dajdpsada
+  checkDiscountCode: (code) => adminAPI.get(`/admin/discounts/check-code/${code}`),
 };
