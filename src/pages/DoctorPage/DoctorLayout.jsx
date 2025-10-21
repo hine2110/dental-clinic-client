@@ -41,11 +41,6 @@ const DoctorLayout = ({ children }) => {
       label: 'Bệnh nhân',
     },
     {
-      key: '/doctor/prescriptions',
-      icon: <FileTextOutlined />,
-      label: 'Đơn thuốc',
-    },
-    {
       key: '/doctor/medical-records',
       icon: <FileSearchOutlined />,
       label: 'Hồ sơ bệnh án',

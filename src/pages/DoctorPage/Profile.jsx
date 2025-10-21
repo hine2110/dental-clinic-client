@@ -43,17 +43,24 @@ const Profile = () => {
     try {
       setLoading(true);
       const response = await getDoctorProfile();
-      setProfile(response.data);
+      const doctorData = response.data;
+      setProfile(doctorData);
       
-      // Set form values
+      // Set form values with proper structure
+      // Use array notation for nested fields in Ant Design Form
       form.setFieldsValue({
-        ...response.data,
-        dateOfBirth: response.data.user?.dateOfBirth ? dayjs(response.data.user.dateOfBirth) : null,
-        // Set work schedule
-        'workSchedule.monday.startTime': response.data.workSchedule?.monday?.startTime,
-        'workSchedule.monday.endTime': response.data.workSchedule?.monday?.endTime,
-        'workSchedule.monday.isWorking': response.data.workSchedule?.monday?.isWorking,
-        // ... other days
+        // User information - use array notation
+        'user.fullName': doctorData.user?.fullName,
+        'user.email': doctorData.user?.email,
+        'user.phone': doctorData.user?.phone,
+        // Doctor information
+        specializations: doctorData.specializations,
+        // Credentials - use array notation
+        'credentials.medicalLicense': doctorData.credentials?.medicalLicense,
+        'credentials.dentalLicense': doctorData.credentials?.dentalLicense,
+        // Status
+        isAcceptingNewPatients: doctorData.isAcceptingNewPatients,
+        isActive: doctorData.isActive,
       });
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -67,61 +74,20 @@ const Profile = () => {
     try {
       setSaving(true);
       
-      // Format work schedule
-      const workSchedule = {
-        monday: {
-          startTime: values['workSchedule.monday.startTime'],
-          endTime: values['workSchedule.monday.endTime'],
-          isWorking: values['workSchedule.monday.isWorking'] || false
-        },
-        tuesday: {
-          startTime: values['workSchedule.tuesday.startTime'],
-          endTime: values['workSchedule.tuesday.endTime'],
-          isWorking: values['workSchedule.tuesday.isWorking'] || false
-        },
-        wednesday: {
-          startTime: values['workSchedule.wednesday.startTime'],
-          endTime: values['workSchedule.wednesday.endTime'],
-          isWorking: values['workSchedule.wednesday.isWorking'] || false
-        },
-        thursday: {
-          startTime: values['workSchedule.thursday.startTime'],
-          endTime: values['workSchedule.thursday.endTime'],
-          isWorking: values['workSchedule.thursday.isWorking'] || false
-        },
-        friday: {
-          startTime: values['workSchedule.friday.startTime'],
-          endTime: values['workSchedule.friday.endTime'],
-          isWorking: values['workSchedule.friday.isWorking'] || false
-        },
-        saturday: {
-          startTime: values['workSchedule.saturday.startTime'],
-          endTime: values['workSchedule.saturday.endTime'],
-          isWorking: values['workSchedule.saturday.isWorking'] || false
-        },
-        sunday: {
-          startTime: values['workSchedule.sunday.startTime'],
-          endTime: values['workSchedule.sunday.endTime'],
-          isWorking: values['workSchedule.sunday.isWorking'] || false
-        }
-      };
-
+      // Doctor không cập nhật workSchedule - do Admin/Staff quản lý
       const updateData = {
-        ...values,
-        workSchedule,
-        // Remove form field prefixes
-        'workSchedule.monday.startTime': undefined,
-        'workSchedule.monday.endTime': undefined,
-        'workSchedule.monday.isWorking': undefined,
-        // ... other days
+        phone: values['user.phone'],
+        specializations: values.specializations,
+        isAcceptingNewPatients: values.isAcceptingNewPatients,
+        isActive: values.isActive
       };
 
       await updateDoctorProfile(updateData);
       message.success('Cập nhật hồ sơ thành công');
-      fetchProfile();
+      await fetchProfile();
     } catch (error) {
-      console.error('Error updating profile:', error);
-      message.error('Lỗi khi cập nhật hồ sơ');
+      console.error('❌ Error updating profile:', error);
+      message.error('Lỗi khi cập nhật hồ sơ: ' + (error.response?.data?.message || error.message));
     } finally {
       setSaving(false);
     }
@@ -156,7 +122,7 @@ const Profile = () => {
                   label="Họ và tên"
                   rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}
                 >
-                  <Input prefix={<UserOutlined />} />
+                  <Input prefix={<UserOutlined />} disabled />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -171,24 +137,20 @@ const Profile = () => {
             </Row>
             
             <Row gutter={16}>
-              <Col span={12}>
+              <Col span={24}>
                 <Form.Item
                   name="user.phone"
                   label="Số điện thoại"
+                  tooltip="Bạn có thể cập nhật số điện thoại"
+                  rules={[
+                    { required: true, message: 'Vui lòng nhập số điện thoại' },
+                    { 
+                      pattern: /^[0-9]{10}$/,
+                      message: 'Số điện thoại phải có đúng 10 chữ số' 
+                    }
+                  ]}
                 >
-                  <Input prefix={<PhoneOutlined />} />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="consultationFee"
-                  label="Phí khám (VNĐ)"
-                >
-                  <InputNumber 
-                    style={{ width: '100%' }}
-                    formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                  />
+                  <Input prefix={<PhoneOutlined />} placeholder="Nhập 10 chữ số" maxLength={10} />
                 </Form.Item>
               </Col>
             </Row>
@@ -202,7 +164,7 @@ const Profile = () => {
                   name="credentials.medicalLicense"
                   label="Giấy phép hành nghề y"
                 >
-                  <Input />
+                  <Input disabled />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -210,7 +172,7 @@ const Profile = () => {
                   name="credentials.dentalLicense"
                   label="Giấy phép hành nghề nha khoa"
                 >
-                  <Input />
+                  <Input disabled />
                 </Form.Item>
               </Col>
             </Row>
@@ -225,57 +187,6 @@ const Profile = () => {
                 style={{ width: '100%' }}
               />
             </Form.Item>
-
-            <Form.Item
-              name="experience.yearsOfPractice"
-              label="Số năm kinh nghiệm"
-            >
-              <InputNumber min={0} max={50} style={{ width: '100%' }} />
-            </Form.Item>
-
-            <Form.Item
-              name="biography"
-              label="Tiểu sử"
-            >
-              <TextArea rows={4} placeholder="Nhập tiểu sử của bạn..." />
-            </Form.Item>
-          </Card>
-
-          {/* Work Schedule */}
-          <Card title="Lịch làm việc định kỳ" size="small" style={{ marginBottom: '16px' }}>
-            {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
-              <Row key={day} gutter={16} style={{ marginBottom: '8px' }}>
-                <Col span={4}>
-                  <div style={{ paddingTop: '6px', fontWeight: 500 }}>
-                    {day === 'monday' && 'Thứ 2'}
-                    {day === 'tuesday' && 'Thứ 3'}
-                    {day === 'wednesday' && 'Thứ 4'}
-                    {day === 'thursday' && 'Thứ 5'}
-                    {day === 'friday' && 'Thứ 6'}
-                    {day === 'saturday' && 'Thứ 7'}
-                    {day === 'sunday' && 'Chủ nhật'}
-                  </div>
-                </Col>
-                <Col span={4}>
-                  <Form.Item name={`workSchedule.${day}.isWorking`} valuePropName="checked">
-                    <Switch />
-                  </Form.Item>
-                </Col>
-                <Col span={7}>
-                  <Form.Item name={`workSchedule.${day}.startTime`}>
-                    <Input placeholder="08:00" />
-                  </Form.Item>
-                </Col>
-                <Col span={1} style={{ textAlign: 'center', paddingTop: '6px' }}>
-                  -
-                </Col>
-                <Col span={7}>
-                  <Form.Item name={`workSchedule.${day}.endTime`}>
-                    <Input placeholder="17:00" />
-                  </Form.Item>
-                </Col>
-              </Row>
-            ))}
           </Card>
 
           {/* Status */}
@@ -302,14 +213,20 @@ const Profile = () => {
             </Row>
           </Card>
 
-          <Form.Item>
+          <Form.Item style={{ marginTop: '24px', textAlign: 'center' }}>
             <Button 
               type="primary" 
               htmlType="submit" 
               loading={saving}
               size="large"
+              style={{ 
+                minWidth: '200px',
+                height: '45px',
+                fontSize: '16px',
+                fontWeight: 500
+              }}
             >
-              Cập nhật hồ sơ
+              {saving ? 'Đang lưu...' : 'Cập nhật hồ sơ'}
             </Button>
           </Form.Item>
         </Form>

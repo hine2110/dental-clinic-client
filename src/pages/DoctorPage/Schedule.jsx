@@ -3,24 +3,26 @@ import {
   Card, 
   Calendar, 
   Badge, 
-  List, 
   Tag, 
-  Button, 
-  DatePicker, 
   message,
   Spin,
-  Empty
+  Empty,
+  Row,
+  Col
 } from 'antd';
 import { 
   ClockCircleOutlined, 
   EnvironmentOutlined,
-  CalendarOutlined
+  CalendarOutlined,
+  CheckCircleOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { getDoctorSchedule } from '../../services/doctorService';
+import './Schedule.css';
 
 const Schedule = () => {
   const [schedules, setSchedules] = useState([]);
+  const [workSchedule, setWorkSchedule] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [selectedDateSchedules, setSelectedDateSchedules] = useState([]);
@@ -43,10 +45,13 @@ const Schedule = () => {
         startDate,
         endDate
       });
-      setSchedules(response.data.schedules);
+      setSchedules(response.data.schedules || []);
+      setWorkSchedule(response.data.doctor?.workSchedule || null);
     } catch (error) {
       console.error('Error fetching schedule:', error);
-      message.error('Lỗi khi tải lịch làm việc');
+      if (error.response?.status !== 404) {
+        message.error('Lỗi khi tải lịch làm việc');
+      }
     } finally {
       setLoading(false);
     }
@@ -81,9 +86,8 @@ const Schedule = () => {
             <Badge 
               status={item.type} 
               text={
-                <div style={{ fontSize: '12px' }}>
-                  <div>{item.content}</div>
-                  <div style={{ color: '#8c8c8c' }}>{item.location}</div>
+                <div style={{ fontSize: '11px' }}>
+                  <div style={{ fontWeight: 500 }}>{item.content}</div>
                 </div>
               } 
             />
@@ -97,88 +101,146 @@ const Schedule = () => {
     setSelectedDate(date);
   };
 
-  const getStatusColor = (isAvailable) => {
-    return isAvailable ? 'green' : 'red';
+  const getDayName = (day) => {
+    const names = {
+      monday: 'Thứ Hai',
+      tuesday: 'Thứ Ba',
+      wednesday: 'Thứ Tư',
+      thursday: 'Thứ Năm',
+      friday: 'Thứ Sáu',
+      saturday: 'Thứ Bảy',
+      sunday: 'Chủ Nhật'
+    };
+    return names[day] || day;
   };
 
-  const getStatusText = (isAvailable) => {
-    return isAvailable ? 'Có lịch' : 'Nghỉ';
-  };
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '100px' }}>
+        <Spin size="large" tip="Đang tải lịch làm việc..." />
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <Card title="Lịch làm việc">
-        <div style={{ display: 'flex', gap: '24px' }}>
-          {/* Calendar */}
-          <div style={{ flex: 2 }}>
-            <Calendar
-              dateCellRender={dateCellRender}
-              onSelect={onDateChange}
-              value={selectedDate}
-            />
+    <div className="schedule-container">
+      {/* Header */}
+      <div className="schedule-header">
+        <h1><CalendarOutlined /> Lịch làm việc</h1>
+        <p>Xem lịch làm việc và ca trực của bạn</p>
+      </div>
+
+      {/* Main Content */}
+      <div className="schedule-content">
+        {/* Calendar Section */}
+        <div className="calendar-section">
+          <Calendar
+            cellRender={(current, info) => {
+              if (info.type === 'date') {
+                return dateCellRender(current);
+              }
+              return info.originNode;
+            }}
+            onSelect={onDateChange}
+            value={selectedDate}
+          />
+        </div>
+
+        {/* Sidebar Section */}
+        <div className="sidebar-section">
+          {/* Work Schedule Card */}
+          <div className="work-schedule-card">
+            <h3>
+              <ClockCircleOutlined /> Lịch làm việc định kỳ
+            </h3>
+            <Tag 
+              color="orange" 
+              style={{ 
+                marginBottom: '16px', 
+                fontSize: '11px',
+                border: '1px solid rgba(255,255,255,0.3)'
+              }}
+            >
+              Do Admin/Staff quản lý
+            </Tag>
+            
+            {workSchedule ? (
+              <div>
+                {Object.entries(workSchedule).map(([day, schedule]) => (
+                  <div key={day} className={`schedule-day ${!schedule?.isWorking ? 'off' : ''}`}>
+                    <span className="schedule-day-name">{getDayName(day)}</span>
+                    <span className="schedule-day-time">
+                      {schedule?.isWorking ? (
+                        `${schedule.startTime} - ${schedule.endTime}`
+                      ) : (
+                        <Tag color="red" style={{ margin: 0, fontSize: '11px' }}>Nghỉ</Tag>
+                      )}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <Empty 
+                description={
+                  <span style={{ color: 'rgba(255,255,255,0.8)' }}>
+                    Chưa có lịch làm việc định kỳ
+                  </span>
+                }
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+              />
+            )}
           </div>
 
-          {/* Selected Date Details */}
-          <div style={{ flex: 1 }}>
-            <Card 
-              title={`Chi tiết ngày ${selectedDate.format('DD/MM/YYYY')}`}
-              size="small"
-            >
-              {selectedDateSchedules.length > 0 ? (
-                <List
-                  dataSource={selectedDateSchedules}
-                  renderItem={(schedule) => (
-                    <List.Item>
-                      <div style={{ width: '100%' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div>
-                            <div style={{ fontWeight: 500 }}>
-                              <ClockCircleOutlined /> {schedule.startTime} - {schedule.endTime}
-                            </div>
-                            <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px' }}>
-                              <EnvironmentOutlined /> {schedule.location?.name || 'Chưa xác định'}
-                            </div>
-                          </div>
-                          <Tag color={getStatusColor(schedule.isAvailable)}>
-                            {getStatusText(schedule.isAvailable)}
-                          </Tag>
-                        </div>
-                        {schedule.notes && (
-                          <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px' }}>
-                            Ghi chú: {schedule.notes}
-                          </div>
-                        )}
+          {/* Daily Schedule Card */}
+          <div className="daily-schedule-card">
+            <h3>
+              <CalendarOutlined /> {selectedDate.format('DD/MM/YYYY')}
+            </h3>
+            
+            {selectedDateSchedules.length > 0 ? (
+              <div>
+                {selectedDateSchedules.map((schedule, index) => (
+                  <div key={index} className="schedule-item">
+                    <div className="schedule-item-header">
+                      <div className="schedule-item-time">
+                        <ClockCircleOutlined />
+                        {schedule.startTime} - {schedule.endTime}
                       </div>
-                    </List.Item>
-                  )}
-                />
-              ) : (
-                <Empty 
-                  description="Không có lịch làm việc trong ngày này"
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                />
-              )}
-            </Card>
-
-            {/* Work Schedule Info */}
-            <Card 
-              title="Lịch làm việc định kỳ" 
-              size="small"
-              style={{ marginTop: '16px' }}
-            >
-              <div style={{ fontSize: '12px' }}>
-                <p><strong>Thứ 2:</strong> 08:00 - 17:00</p>
-                <p><strong>Thứ 3:</strong> 08:00 - 17:00</p>
-                <p><strong>Thứ 4:</strong> 08:00 - 17:00</p>
-                <p><strong>Thứ 5:</strong> 08:00 - 17:00</p>
-                <p><strong>Thứ 6:</strong> 08:00 - 17:00</p>
-                <p><strong>Thứ 7:</strong> 08:00 - 12:00</p>
-                <p><strong>Chủ nhật:</strong> Nghỉ</p>
+                      {schedule.isAvailable ? (
+                        <span className="status-available">
+                          <CheckCircleOutlined /> Sẵn sàng
+                        </span>
+                      ) : (
+                        <span className="status-unavailable">Bận</span>
+                      )}
+                    </div>
+                    <div className="schedule-item-location">
+                      <EnvironmentOutlined />
+                      {schedule.location?.name || 'Chưa xác định địa điểm'}
+                    </div>
+                    {schedule.notes && (
+                      <div className="schedule-item-notes">
+                        💬 {schedule.notes}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            </Card>
+            ) : (
+              <div className="empty-schedule">
+                <p>📅 Không có lịch làm việc trong ngày này</p>
+              </div>
+            )}
+          </div>
+
+          {/* Stats Card */}
+          <div className="stats-card">
+            <p>Tổng số ca làm việc tháng này</p>
+            <h2>{schedules.length}</h2>
+            <p>ca làm việc</p>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };

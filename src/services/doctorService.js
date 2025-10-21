@@ -160,43 +160,6 @@ export const getPatientDetails = async (patientId) => {
   }
 };
 
-// ==================== DOCTOR PRESCRIPTIONS ====================
-
-/**
- * Tạo đơn thuốc
- * @param {object} prescriptionData - Dữ liệu đơn thuốc
- * @returns {Promise<object>} Kết quả tạo đơn thuốc
- */
-export const createPrescription = async (prescriptionData) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/doctor/prescriptions`, prescriptionData, {
-      headers: getAuthHeaders()
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error creating prescription:', error);
-    throw error;
-  }
-};
-
-/**
- * Lấy danh sách đơn thuốc của bác sĩ
- * @param {object} filters - Bộ lọc (page, limit, status)
- * @returns {Promise<object>} Danh sách đơn thuốc
- */
-export const getDoctorPrescriptions = async (filters = {}) => {
-  try {
-    const queryParams = new URLSearchParams(filters).toString();
-    const response = await axios.get(`${API_BASE_URL}/doctor/prescriptions?${queryParams}`, {
-      headers: getAuthHeaders()
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error getting doctor prescriptions:', error);
-    throw error;
-  }
-};
-
 // ==================== DOCTOR SCHEDULE ====================
 
 /**
@@ -257,6 +220,8 @@ export const getAppointmentStatusColor = (status) => {
       return 'cyan';
     case 'waiting-for-results':
       return 'gold';
+    case 'in-treatment':
+      return 'blue';
     case 'completed':
       return 'purple';
     case 'no-show':
@@ -287,6 +252,8 @@ export const getAppointmentStatusText = (status) => {
       return 'Đang khám';
     case 'waiting-for-results':
       return 'Chờ kết quả xét nghiệm';
+    case 'in-treatment':
+      return 'Đang điều trị';
     case 'completed':
       return 'Đã hoàn thành';
     case 'no-show':
@@ -351,6 +318,24 @@ export const getMedicines = async () => {
   }
 };
 
+/**
+ * Lấy danh sách dịch vụ nha khoa
+ * @param {object} filters - Bộ lọc (category, search, page, limit)
+ * @returns {Promise<object>} Danh sách dịch vụ
+ */
+export const getServices = async (filters = {}) => {
+  try {
+    const queryParams = new URLSearchParams({ ...filters, limit: 'all', isActive: true }).toString();
+    const response = await axios.get(`${API_BASE_URL}/patient/services?${queryParams}`, {
+      headers: getAuthHeaders()
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error getting services:', error);
+    throw error;
+  }
+};
+
 export default {
   // Profile
   getDoctorProfile,
@@ -368,12 +353,9 @@ export default {
   getDoctorPatients,
   getPatientDetails,
   
-  // Prescriptions
-  createPrescription,
-  getDoctorPrescriptions,
-  
   // Medical Records
   getMedicines,
+  getServices,
   
   // Schedule
   getDoctorSchedule,

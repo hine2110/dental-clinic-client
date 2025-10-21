@@ -368,124 +368,351 @@ const MedicalRecords = () => {
 
       {/* Detail Modal */}
       <Modal
-        title="Chi tiết hồ sơ bệnh án"
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <FileTextOutlined style={{ fontSize: '24px', color: '#1890ff' }} />
+            <span style={{ fontSize: '18px', fontWeight: 600 }}>Chi tiết hồ sơ bệnh án</span>
+          </div>
+        }
         open={detailModalVisible}
         onCancel={() => setDetailModalVisible(false)}
         footer={[
-          <Button key="close" onClick={() => setDetailModalVisible(false)}>
+          <Button key="close" size="large" onClick={() => setDetailModalVisible(false)}>
             Đóng
           </Button>
         ]}
-        width={1000}
+        width={1200}
         className="modal-enhanced"
+        style={{ top: 20 }}
       >
         {selectedRecord && (
-          <div>
-            <div className="detail-section">
-              <h3>Thông tin cơ bản</h3>
-              <Descriptions bordered column={2}>
-                <Descriptions.Item label="Mã lịch hẹn" span={2}>
+          <div style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto', padding: '8px' }}>
+            {/* Thông tin bệnh nhân */}
+            <Card 
+              title={
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <UserOutlined style={{ color: '#1890ff' }} />
+                  <span>Thông tin bệnh nhân</span>
+                </div>
+              }
+              size="small" 
+              style={{ marginBottom: '16px' }}
+            >
+              <Descriptions bordered column={2} size="small">
+                <Descriptions.Item label="Họ và tên" span={1}>
+                  <strong>{selectedRecord.patient?.user?.fullName || 'N/A'}</strong>
+                </Descriptions.Item>
+                <Descriptions.Item label="Mã lịch hẹn" span={1}>
                   <Tag color="blue">{selectedRecord.appointmentId}</Tag>
                 </Descriptions.Item>
-                <Descriptions.Item label="Bệnh nhân" span={2}>
-                  {selectedRecord.patient?.user?.fullName || 'N/A'}
+                <Descriptions.Item label="Ngày sinh" span={1}>
+                  {selectedRecord.patient?.dateOfBirth ? dayjs(selectedRecord.patient.dateOfBirth).format('DD/MM/YYYY') : 'N/A'}
                 </Descriptions.Item>
-                <Descriptions.Item label="Ngày khám">
-                  {dayjs(selectedRecord.appointmentDate).format('DD/MM/YYYY')}
+                <Descriptions.Item label="Giới tính" span={1}>
+                  {selectedRecord.patient?.gender === 'male' ? 'Nam' : selectedRecord.patient?.gender === 'female' ? 'Nữ' : 'Khác'}
                 </Descriptions.Item>
-                <Descriptions.Item label="Trạng thái">
-                  <Tag color="green">Đã hoàn thành</Tag>
+                <Descriptions.Item label="Số điện thoại" span={1}>
+                  {selectedRecord.patient?.contactInfo?.phone || 'N/A'}
                 </Descriptions.Item>
-                <Descriptions.Item label="Lý do khám" span={2}>
-                  {selectedRecord.reasonForVisit || 'Chưa có'}
+                <Descriptions.Item label="Email" span={1}>
+                  {selectedRecord.patient?.user?.email || 'N/A'}
                 </Descriptions.Item>
-                <Descriptions.Item label="Ghi chú" span={2}>
-                  {selectedRecord.notes || 'Chưa có'}
+                <Descriptions.Item label="Địa chỉ" span={2}>
+                  {selectedRecord.patient?.contactInfo?.address 
+                    ? (typeof selectedRecord.patient.contactInfo.address === 'string' 
+                        ? selectedRecord.patient.contactInfo.address
+                        : [
+                            selectedRecord.patient.contactInfo.address.street,
+                            selectedRecord.patient.contactInfo.address.city,
+                            selectedRecord.patient.contactInfo.address.state,
+                            selectedRecord.patient.contactInfo.address.zipCode,
+                            selectedRecord.patient.contactInfo.address.country
+                          ].filter(Boolean).join(', '))
+                    : 'N/A'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Ngày khám" span={1}>
+                  <Tag color="green">{dayjs(selectedRecord.appointmentDate).format('DD/MM/YYYY HH:mm')}</Tag>
+                </Descriptions.Item>
+                <Descriptions.Item label="Trạng thái" span={1}>
+                  <Tag color="success">Đã hoàn thành</Tag>
                 </Descriptions.Item>
               </Descriptions>
-            </div>
+            </Card>
 
-            <div className="detail-section">
-              <h3>Khám lâm sàng</h3>
-              {selectedRecord.physicalExamination ? (
-                <div>
-                  <p><strong>Dấu hiệu sinh tồn:</strong> {selectedRecord.physicalExamination.vitalSigns || 'Chưa có'}</p>
-                  <p><strong>Ngoại hình:</strong> {selectedRecord.physicalExamination.generalAppearance || 'Chưa có'}</p>
-                  <p><strong>Khám răng miệng:</strong> {selectedRecord.physicalExamination.oralExamination || 'Chưa có'}</p>
-                  <p><strong>Phát hiện khác:</strong> {selectedRecord.physicalExamination.otherFindings || 'Chưa có'}</p>
+            {/* Lý do đến khám & Tiền sử */}
+            <Card 
+              title={
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <HeartOutlined style={{ color: '#ff4d4f' }} />
+                  <span>Lý do đến khám & Tiền sử bệnh</span>
                 </div>
+              }
+              size="small" 
+              style={{ marginBottom: '16px' }}
+            >
+              <Descriptions bordered column={1} size="small">
+                <Descriptions.Item label="Lý do đến khám">
+                  <div style={{ whiteSpace: 'pre-wrap' }}>
+                    {selectedRecord.chiefComplaint || selectedRecord.reasonForVisit || 'Chưa có thông tin'}
+                  </div>
+                </Descriptions.Item>
+                <Descriptions.Item label="Tiền sử bệnh">
+                  <div style={{ whiteSpace: 'pre-wrap' }}>
+                    {selectedRecord.medicalHistory || selectedRecord.patient?.medicalHistory?.conditions?.join(', ') || 'Không có tiền sử bệnh đặc biệt'}
+                  </div>
+                </Descriptions.Item>
+                <Descriptions.Item label="Dị ứng thuốc">
+                  {selectedRecord.patient?.medicalHistory?.allergies?.length > 0 
+                    ? selectedRecord.patient.medicalHistory.allergies.join(', ')
+                    : 'Không có'}
+                </Descriptions.Item>
+              </Descriptions>
+            </Card>
+
+            <Divider style={{ margin: '16px 0' }} />
+
+            {/* Khám lâm sàng */}
+            <Card 
+              title={
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <EyeOutlined style={{ color: '#52c41a' }} />
+                  <span>Khám lâm sàng</span>
+                </div>
+              }
+              size="small" 
+              style={{ marginBottom: '16px' }}
+            >
+              {selectedRecord.physicalExamination || selectedRecord.chiefComplaint ? (
+                <Descriptions bordered column={1} size="small">
+                  {selectedRecord.chiefComplaint && (
+                    <Descriptions.Item label="Lý do đến khám">
+                      <div style={{ whiteSpace: 'pre-wrap' }}>{selectedRecord.chiefComplaint}</div>
+                    </Descriptions.Item>
+                  )}
+                  {selectedRecord.medicalHistory && (
+                    <Descriptions.Item label="Tiền sử bệnh">
+                      <div style={{ whiteSpace: 'pre-wrap' }}>{selectedRecord.medicalHistory}</div>
+                    </Descriptions.Item>
+                  )}
+                  {selectedRecord.physicalExamination?.oralExamination && (
+                    <Descriptions.Item label="Khám răng miệng">
+                      <div style={{ whiteSpace: 'pre-wrap' }}>{selectedRecord.physicalExamination.oralExamination}</div>
+                    </Descriptions.Item>
+                  )}
+                  {selectedRecord.physicalExamination?.occlusionExamination && (
+                    <Descriptions.Item label="Khám khớp cắn">
+                      <div style={{ whiteSpace: 'pre-wrap' }}>{selectedRecord.physicalExamination.occlusionExamination}</div>
+                    </Descriptions.Item>
+                  )}
+                  {selectedRecord.physicalExamination?.otherFindings && (
+                    <Descriptions.Item label="Phát hiện khác">
+                      <div style={{ whiteSpace: 'pre-wrap' }}>{selectedRecord.physicalExamination.otherFindings}</div>
+                    </Descriptions.Item>
+                  )}
+                </Descriptions>
               ) : (
-                <div>Chưa có thông tin khám lâm sàng</div>
+                <Text type="secondary">Chưa có thông tin khám lâm sàng</Text>
               )}
-            </div>
+            </Card>
 
-            <div className="detail-section">
-              <h3>Xét nghiệm</h3>
-              {selectedRecord.labTests && selectedRecord.labTests.length > 0 && (
-                <div>
-                  <h4>Xét nghiệm nha khoa:</h4>
-                  <ul>
-                    {selectedRecord.labTests.map((test, index) => (
-                      <li key={index}>{test}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {selectedRecord.imagingTests && selectedRecord.imagingTests.length > 0 && (
-                <div>
-                  <h4>Chẩn đoán hình ảnh:</h4>
-                  <ul>
-                    {selectedRecord.imagingTests.map((test, index) => (
-                      <li key={index}>{test}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {selectedRecord.testResults && (
-                <div>
-                  <h4>Kết quả xét nghiệm:</h4>
-                  <p>{selectedRecord.testResults}</p>
-                </div>
-              )}
-            </div>
+            {/* Chỉ định cận lâm sàng */}
+            {((selectedRecord.labTests && selectedRecord.labTests.length > 0) || 
+              (selectedRecord.imagingTests && selectedRecord.imagingTests.length > 0) ||
+              selectedRecord.testResults) && (
+              <Card 
+                title={
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <MedicineBoxOutlined style={{ color: '#722ed1' }} />
+                    <span>Chỉ định cận lâm sàng</span>
+                  </div>
+                }
+                size="small" 
+                style={{ marginBottom: '16px' }}
+              >
+                <Descriptions bordered column={1} size="small">
+                  {selectedRecord.imagingTests && selectedRecord.imagingTests.length > 0 && (
+                    <Descriptions.Item label="Chẩn đoán hình ảnh">
+                      <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                        {selectedRecord.imagingTests.map((test, index) => (
+                          <li key={index}>{test}</li>
+                        ))}
+                      </ul>
+                    </Descriptions.Item>
+                  )}
+                  {selectedRecord.labTests && selectedRecord.labTests.length > 0 && (
+                    <Descriptions.Item label="Xét nghiệm">
+                      <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                        {selectedRecord.labTests.map((test, index) => (
+                          <li key={index}>{test}</li>
+                        ))}
+                      </ul>
+                    </Descriptions.Item>
+                  )}
+                  {selectedRecord.imagingResults && (
+                    <Descriptions.Item label="Kết quả chẩn đoán hình ảnh">
+                      <div style={{ whiteSpace: 'pre-wrap' }}>{selectedRecord.imagingResults}</div>
+                    </Descriptions.Item>
+                  )}
+                  {selectedRecord.labResults && (
+                    <Descriptions.Item label="Kết quả xét nghiệm">
+                      <div style={{ whiteSpace: 'pre-wrap' }}>{selectedRecord.labResults}</div>
+                    </Descriptions.Item>
+                  )}
+                  {selectedRecord.testResults && (
+                    <Descriptions.Item label="Kết quả tổng hợp">
+                      <div style={{ whiteSpace: 'pre-wrap' }}>{selectedRecord.testResults}</div>
+                    </Descriptions.Item>
+                  )}
+                </Descriptions>
+              </Card>
+            )}
 
-            <div className="detail-section">
-              <h3>Chẩn đoán</h3>
-              <div>
-                <p><strong>Chẩn đoán chính:</strong> {selectedRecord.finalDiagnosis || selectedRecord.clinicalDiagnosis || 'Chưa có'}</p>
+            {/* Chẩn đoán */}
+            <Card 
+              title={
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CheckCircleOutlined style={{ color: '#fa8c16' }} />
+                  <span>Chẩn đoán</span>
+                </div>
+              }
+              size="small" 
+              style={{ marginBottom: '16px' }}
+            >
+              <Descriptions bordered column={1} size="small">
+                <Descriptions.Item label="Chẩn đoán chính">
+                  <div style={{ whiteSpace: 'pre-wrap', fontWeight: 500, color: '#d4380d' }}>
+                    {selectedRecord.finalDiagnosis || selectedRecord.clinicalDiagnosis || 'Chưa có chẩn đoán'}
+                  </div>
+                </Descriptions.Item>
                 {selectedRecord.preliminaryDiagnosis && (
-                  <p><strong>Chẩn đoán sơ bộ:</strong> {selectedRecord.preliminaryDiagnosis}</p>
+                  <Descriptions.Item label="Chẩn đoán sơ bộ">
+                    <div style={{ whiteSpace: 'pre-wrap' }}>{selectedRecord.preliminaryDiagnosis}</div>
+                  </Descriptions.Item>
                 )}
                 {selectedRecord.differentialDiagnosis && (
-                  <p><strong>Chẩn đoán phân biệt:</strong> {selectedRecord.differentialDiagnosis}</p>
+                  <Descriptions.Item label="Chẩn đoán phân biệt">
+                    <div style={{ whiteSpace: 'pre-wrap' }}>{selectedRecord.differentialDiagnosis}</div>
+                  </Descriptions.Item>
                 )}
-              </div>
-            </div>
+                {selectedRecord.prognosis && (
+                  <Descriptions.Item label="Tiên lượng">
+                    <div style={{ whiteSpace: 'pre-wrap' }}>{selectedRecord.prognosis}</div>
+                  </Descriptions.Item>
+                )}
+              </Descriptions>
+            </Card>
 
-            <div className="detail-section">
-              <h3>Điều trị</h3>
-              <div>
-                {selectedRecord.treatment && (
-                  <p><strong>Phương pháp điều trị:</strong> {selectedRecord.treatment}</p>
-                )}
-                {selectedRecord.procedures && selectedRecord.procedures.length > 0 && (
-                  <div>
-                    <h4>Thủ thuật:</h4>
-                    <ul>
-                      {selectedRecord.procedures.map((procedure, index) => (
-                        <li key={index}>{procedure}</li>
+            {/* Điều trị */}
+            <Card 
+              title={
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <MedicineBoxOutlined style={{ color: '#13c2c2' }} />
+                  <span>Điều trị</span>
+                </div>
+              }
+              size="small" 
+              style={{ marginBottom: '16px' }}
+            >
+              <Descriptions bordered column={1} size="small">
+                {selectedRecord.selectedServices && selectedRecord.selectedServices.length > 0 && (
+                  <Descriptions.Item label="Dịch vụ đã thực hiện">
+                    <div>
+                      {selectedRecord.selectedServices.map((serviceId, index) => (
+                        <Tag key={index} color="blue" style={{ marginBottom: '4px' }}>{serviceId}</Tag>
                       ))}
-                    </ul>
+                    </div>
+                  </Descriptions.Item>
+                )}
+                {selectedRecord.treatment && (
+                  <Descriptions.Item label="Phương pháp điều trị">
+                    <div style={{ whiteSpace: 'pre-wrap' }}>{selectedRecord.treatment}</div>
+                  </Descriptions.Item>
+                )}
+                {selectedRecord.treatmentNotes && (
+                  <Descriptions.Item label="Ghi chú điều trị">
+                    <div style={{ whiteSpace: 'pre-wrap' }}>{selectedRecord.treatmentNotes}</div>
+                  </Descriptions.Item>
+                )}
+                {selectedRecord.procedures && (
+                  <Descriptions.Item label="Các thủ thuật">
+                    <div style={{ whiteSpace: 'pre-wrap' }}>{selectedRecord.procedures}</div>
+                  </Descriptions.Item>
+                )}
+                {selectedRecord.homeCare && (
+                  <Descriptions.Item label="Hướng dẫn chăm sóc tại nhà">
+                    <div style={{ whiteSpace: 'pre-wrap', backgroundColor: '#fff7e6', padding: '12px', borderRadius: '4px' }}>
+                      {selectedRecord.homeCare}
+                    </div>
+                  </Descriptions.Item>
+                )}
+              </Descriptions>
+            </Card>
+
+            {/* Đơn thuốc & Tái khám */}
+            {(selectedRecord.prescriptions?.length > 0 || selectedRecord.followUpDate || selectedRecord.followUpInstructions) && (
+              <Card 
+                title={
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <CalendarOutlined style={{ color: '#eb2f96' }} />
+                    <span>Đơn thuốc & Tái khám</span>
                   </div>
-                )}
-                {selectedRecord.followUpInstructions && (
-                  <p><strong>Hướng dẫn theo dõi:</strong> {selectedRecord.followUpInstructions}</p>
-                )}
-                {selectedRecord.followUpDate && (
-                  <p><strong>Lịch tái khám:</strong> {dayjs(selectedRecord.followUpDate).format('DD/MM/YYYY')}</p>
-                )}
-              </div>
-            </div>
+                }
+                size="small" 
+                style={{ marginBottom: '16px' }}
+              >
+                <Descriptions bordered column={1} size="small">
+                  {selectedRecord.prescriptions && selectedRecord.prescriptions.length > 0 && (
+                    <Descriptions.Item label="Đơn thuốc">
+                      <div>
+                        {selectedRecord.prescriptions.map((prescription, index) => (
+                          <div key={index} style={{ marginBottom: '8px', padding: '8px', backgroundColor: '#f0f5ff', borderRadius: '4px' }}>
+                            <strong>{prescription.medicine}</strong><br />
+                            Liều lượng: {prescription.dosage} | Tần suất: {prescription.frequency}<br />
+                            Thời gian: {prescription.duration} | {prescription.instructions}
+                          </div>
+                        ))}
+                      </div>
+                    </Descriptions.Item>
+                  )}
+                  {selectedRecord.followUpDate && (
+                    <Descriptions.Item label="Lịch tái khám">
+                      <Tag color="orange" style={{ fontSize: '14px', padding: '4px 12px' }}>
+                        {dayjs(selectedRecord.followUpDate).format('DD/MM/YYYY HH:mm')}
+                      </Tag>
+                    </Descriptions.Item>
+                  )}
+                  {selectedRecord.followUpType && (
+                    <Descriptions.Item label="Loại tái khám">
+                      {selectedRecord.followUpType}
+                    </Descriptions.Item>
+                  )}
+                  {selectedRecord.followUpInstructions && (
+                    <Descriptions.Item label="Hướng dẫn tái khám">
+                      <div style={{ whiteSpace: 'pre-wrap' }}>{selectedRecord.followUpInstructions}</div>
+                    </Descriptions.Item>
+                  )}
+                  {selectedRecord.warnings && (
+                    <Descriptions.Item label="Cảnh báo & Lưu ý">
+                      <div style={{ whiteSpace: 'pre-wrap', backgroundColor: '#fff1f0', padding: '12px', borderRadius: '4px', color: '#cf1322' }}>
+                        ⚠️ {selectedRecord.warnings}
+                      </div>
+                    </Descriptions.Item>
+                  )}
+                </Descriptions>
+              </Card>
+            )}
+
+            {/* Ghi chú khác */}
+            {selectedRecord.notes && (
+              <Card 
+                title="Ghi chú khác"
+                size="small"
+              >
+                <div style={{ whiteSpace: 'pre-wrap', padding: '8px', backgroundColor: '#fafafa', borderRadius: '4px' }}>
+                  {selectedRecord.notes}
+                </div>
+              </Card>
+            )}
           </div>
         )}
       </Modal>

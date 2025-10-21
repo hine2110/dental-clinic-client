@@ -51,13 +51,13 @@ import {
   MailOutlined,
   HomeOutlined
 } from '@ant-design/icons';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { 
   getAppointmentDetails, 
   updateAppointmentStatus,
-  createPrescription,
-  getMedicines
+  getMedicines,
+  getServices
 } from '../../services/doctorService';
 import './MedicalRecord.css';
 
@@ -100,14 +100,17 @@ class ErrorBoundary extends React.Component {
 
 const MedicalRecord = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { appointmentId } = useParams();
   const [form] = Form.useForm();
   const [prescriptionForm] = Form.useForm();
   
   const [appointment, setAppointment] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(location.state?.currentStep || 0);
   const [medicines, setMedicines] = useState([]);
+  const [services, setServices] = useState([]);
+  const [selectedServices, setSelectedServices] = useState([]);
   const [prescriptionItems, setPrescriptionItems] = useState([]);
   const [prescriptionModalVisible, setPrescriptionModalVisible] = useState(false);
   const [labTests, setLabTests] = useState([]);
@@ -158,13 +161,7 @@ const MedicalRecord = () => {
       try {
         fetchAppointmentDetails();
         fetchMedicines();
-        
-        // Check if we have currentStep from navigation state
-        const location = window.location;
-        if (location.state && location.state.currentStep !== undefined) {
-          setCurrentStep(location.state.currentStep);
-          console.log('🎯 Starting at step:', location.state.currentStep + 1);
-        }
+        fetchServices();
       } catch (err) {
         console.error('Error in useEffect:', err);
         setError(err.message || 'Unknown error');
@@ -178,20 +175,18 @@ const MedicalRecord = () => {
   const fetchAppointmentDetails = async () => {
     try {
       setLoading(true);
-      console.log('🔍 Fetching appointment details for ID:', appointmentId);
       const response = await getAppointmentDetails(appointmentId);
-      console.log('📋 API Response:', response);
       
       if (response && response.data) {
-        console.log('✅ Setting appointment data:', response.data);
         setAppointment(response.data);
         
         // Pre-fill form with existing data
         const formData = {
-          // Step 1: Physical Examination
-          vitalSigns: response.data.physicalExamination?.vitalSigns || '',
-          generalAppearance: response.data.physicalExamination?.generalAppearance || '',
+          // Step 1: Clinical Examination
+          chiefComplaint: response.data.chiefComplaint || '',
+          medicalHistory: response.data.medicalHistory || '',
           oralExamination: response.data.physicalExamination?.oralExamination || '',
+          occlusionExamination: response.data.physicalExamination?.occlusionExamination || '',
           otherFindings: response.data.physicalExamination?.otherFindings || '',
           
           // Step 2: Lab Tests
@@ -199,27 +194,39 @@ const MedicalRecord = () => {
           imagingTests: response.data.imagingTests || [],
           testInstructions: response.data.testInstructions || '',
           
-          // Step 3: Re-examination
+          // Step 3: Diagnosis
+          imagingResults: response.data.imagingResults || '',
+          labResults: response.data.labResults || '',
           testResults: response.data.testResults || '',
-          reExaminationFindings: response.data.reExaminationFindings || '',
-          preliminaryDiagnosis: response.data.preliminaryDiagnosis || '',
-          differentialDiagnosis: response.data.differentialDiagnosis || '',
           finalDiagnosis: response.data.finalDiagnosis || '',
+          prognosis: response.data.prognosis || '',
           
           // Step 4: Treatment
-          treatment: response.data.treatment || '',
-          procedures: response.data.procedures || [],
+          selectedServices: response.data.selectedServices || [],
+          treatmentNotes: response.data.treatmentNotes || '',
+          homeCare: response.data.homeCare || '',
           
           // Step 5: Follow-up
+          followUpDate: response.data.followUpDate ? dayjs(response.data.followUpDate) : null,
+          followUpType: response.data.followUpType || '',
           followUpInstructions: response.data.followUpInstructions || '',
-          
-          // Legacy fields
-          clinicalDiagnosis: response.data.clinicalDiagnosis || '',
-          notes: response.data.notes || ''
+          warnings: response.data.warnings || ''
         };
         
-        console.log('📝 Pre-filling form with data:', formData);
         form.setFieldsValue(formData);
+        
+        // Load prescriptions if exist
+        if (response.data.prescriptions && response.data.prescriptions.length > 0) {
+          const prescriptions = response.data.prescriptions.map((p, index) => ({
+            id: Date.now() + index,
+            medicine: p.medicine,
+            dosage: p.dosage,
+            frequency: p.frequency,
+            duration: p.duration,
+            instructions: p.instructions
+          }));
+          setPrescriptionItems(prescriptions);
+        }
       } else {
         console.error('❌ Invalid response format:', response);
         throw new Error('Invalid response format');
@@ -243,10 +250,19 @@ const MedicalRecord = () => {
     }
   };
 
+  const fetchServices = async () => {
+    try {
+      const response = await getServices();
+      setServices(response.data || []);
+    } catch (error) {
+      console.error('Error fetching services:', error);
+      message.error('Lỗi khi tải danh sách dịch vụ');
+    }
+  };
+
   const handleStepChange = (step) => {
     // Cho phép chuyển đến bước trước đó để xem dữ liệu
     if (step < currentStep) {
-      console.log(`📋 Viewing step ${step + 1} data`);
       setCurrentStep(step);
       return;
     }
@@ -264,7 +280,13 @@ const MedicalRecord = () => {
     try {
       setLoading(true);
       await updateAppointmentStatus(appointmentId, {
-        physicalExamination: values,
+        chiefComplaint: values.chiefComplaint,
+        medicalHistory: values.medicalHistory,
+        physicalExamination: {
+          oralExamination: values.oralExamination,
+          occlusionExamination: values.occlusionExamination,
+          otherFindings: values.otherFindings
+        },
         status: 'in-progress'
       });
       
@@ -282,8 +304,9 @@ const MedicalRecord = () => {
     try {
       setLoading(true);
       await updateAppointmentStatus(appointmentId, {
+        imagingTests: values.imagingTests,
         labTests: values.labTests,
-        imagingTests: values.imagingTests
+        testInstructions: values.testInstructions
       });
       
       message.success('Lưu cận lâm sàng thành công');
@@ -300,9 +323,11 @@ const MedicalRecord = () => {
     try {
       setLoading(true);
       await updateAppointmentStatus(appointmentId, {
-        preliminaryDiagnosis: values.preliminaryDiagnosis,
-        differentialDiagnosis: values.differentialDiagnosis,
-        finalDiagnosis: values.finalDiagnosis
+        imagingResults: values.imagingResults,
+        labResults: values.labResults,
+        testResults: values.testResults,
+        finalDiagnosis: values.finalDiagnosis,
+        prognosis: values.prognosis
       });
       
       message.success('Lưu chẩn đoán thành công');
@@ -319,12 +344,12 @@ const MedicalRecord = () => {
     try {
       setLoading(true);
       await updateAppointmentStatus(appointmentId, {
-        treatment: values.treatment,
-        procedures: values.procedures,
+        selectedServices: values.selectedServices,
+        treatmentNotes: values.treatmentNotes,
         homeCare: values.homeCare
       });
       
-      message.success('Lưu điều trị thành công');
+      message.success('Lưu dịch vụ & điều trị thành công');
       setCurrentStep(4);
     } catch (error) {
       console.error('Error saving treatment:', error);
@@ -337,17 +362,34 @@ const MedicalRecord = () => {
   const handleSaveFollowUp = async (values) => {
     try {
       setLoading(true);
+      
+      // Prepare prescription data
+      const prescriptionData = prescriptionItems.map(item => ({
+        medicine: item.medicine,
+        dosage: item.dosage,
+        frequency: item.frequency,
+        duration: item.duration,
+        instructions: item.instructions
+      }));
+      
       await updateAppointmentStatus(appointmentId, {
+        prescriptions: prescriptionData,
         followUpDate: values.followUpDate,
+        followUpType: values.followUpType,
         followUpInstructions: values.followUpInstructions,
-        warnings: values.warnings
+        warnings: values.warnings,
+        status: 'completed'
       });
       
-      message.success('Lưu theo dõi thành công');
-      setCurrentStep(4);
+      message.success('Lưu đơn thuốc & tái khám thành công! Hoàn thành khám bệnh.');
+      
+      // Navigate back to appointments after a short delay
+      setTimeout(() => {
+        navigate('/doctor/appointments');
+      }, 1500);
     } catch (error) {
       console.error('Error saving follow-up:', error);
-      message.error('Lỗi khi lưu theo dõi');
+      message.error('Lỗi khi lưu đơn thuốc & tái khám');
     } finally {
       setLoading(false);
     }
@@ -385,14 +427,8 @@ const MedicalRecord = () => {
 
     try {
       setLoading(true);
-      await createPrescription({
-        appointmentId: appointmentId,
-        patientId: appointment.patient._id,
-        doctorId: appointment.doctor._id,
-        medicines: prescriptionItems,
-        notes: form.getFieldValue('prescriptionNotes') || ''
-      });
-      
+      // Prescription data will be saved as part of the medical record
+      // when completing the examination
       message.success('Lưu đơn thuốc thành công');
       setCurrentStep(3);
     } catch (error) {
@@ -518,9 +554,6 @@ const MedicalRecord = () => {
   }
 
   try {
-    // Debug log
-    console.log('Rendering MedicalRecord with appointment:', appointment);
-    
     return (
       <div className="medical-record-container">
         {/* Header Section */}
@@ -682,8 +715,8 @@ const MedicalRecord = () => {
               icon={<CheckCircleOutlined />}
             />
             <Step 
-              title="Thực hiện điều trị" 
-              description="Thực hiện các dịch vụ răng (trám, nhổ, cạo vôi...)"
+              title="Dịch vụ & Điều trị" 
+              description="Chọn dịch vụ và thực hiện điều trị"
               status={appointment?.procedures ? "finish" : currentStep === 3 ? "process" : "wait"}
               icon={<MedicineBoxOutlined />}
             />
@@ -709,7 +742,7 @@ const MedicalRecord = () => {
                   {currentStep === 4 && <ClockCircleOutlined />}
                 </div>
                 <div>
-                  <h3 className="section-title">
+                  <h3 className="step-title">
                     {currentStep === 0 && 'Khám lâm sàng'}
                     {currentStep === 1 && 'Chỉ định cận lâm sàng'}
                     {currentStep === 2 && 'Chẩn đoán'}
@@ -734,34 +767,33 @@ const MedicalRecord = () => {
               {/* Step 1: Physical Examination */}
               {currentStep === 0 && (
                 <div className="form-section slide-in">
-                  <Row gutter={[24, 24]}>
-                    <Col xs={24} sm={12}>
-                      <Form.Item
-                        name="vitalSigns"
-                        label="Dấu hiệu sinh tồn"
-                        className="form-item-enhanced"
-                      >
-                        <TextArea
-                          rows={3}
-                          placeholder="Mạch, huyết áp, nhiệt độ, nhịp thở..."
-                          prefix={<HeartOutlined />}
-                        />
-                      </Form.Item>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                      <Form.Item
-                        name="generalAppearance"
-                        label="Tình trạng chung"
-                        className="form-item-enhanced"
-                      >
-                        <TextArea
-                          rows={3}
-                          placeholder="Tinh thần, da niêm mạc, dinh dưỡng..."
-                          prefix={<UserOutlined />}
-                        />
-                      </Form.Item>
-                    </Col>
-                  </Row>
+                    <Row gutter={[24, 24]}>
+                      <Col xs={24} sm={12}>
+                        <Form.Item
+                          name="chiefComplaint"
+                          label="Lý do đến khám"
+                          rules={[{ required: true, message: 'Vui lòng nhập lý do đến khám' }]}
+                          className="form-item-enhanced"
+                        >
+                          <TextArea
+                            rows={3}
+                            placeholder="Đau răng, sưng nướu, chảy máu chân răng, muốn làm răng sứ..."
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} sm={12}>
+                        <Form.Item
+                          name="medicalHistory"
+                          label="Tiền sử bệnh"
+                          className="form-item-enhanced"
+                        >
+                          <TextArea
+                            rows={3}
+                            placeholder="Tiểu đường, tim mạch, huyết áp, dị ứng thuốc, đang uống thuốc gì..."
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
 
                   <Form.Item
                     name="oralExamination"
@@ -919,10 +951,6 @@ const MedicalRecord = () => {
                         type="primary"
                         onClick={async () => {
                         try {
-                          console.log('=== DEBUG: Chuyển bệnh nhân đi xét nghiệm ===');
-                          console.log('AppointmentId:', appointmentId);
-                          console.log('Appointment object:', appointment);
-                          
                           // Validate appointmentId
                           if (!appointmentId) {
                             message.error('Không tìm thấy ID lịch hẹn');
@@ -931,7 +959,6 @@ const MedicalRecord = () => {
 
                           // Get form values
                           const formValues = form.getFieldsValue();
-                          console.log('Form values:', formValues);
 
                           // Validate required fields
                           if (!formValues.labTests || formValues.labTests.length === 0) {
@@ -951,16 +978,10 @@ const MedicalRecord = () => {
                             testInstructions: formValues.testInstructions || ''
                           };
 
-                          console.log('Update data to send:', updateData);
-                          console.log('Calling updateAppointmentStatus...');
-
                           // Call API
-                          const result = await updateAppointmentStatus(appointmentId, updateData);
-                          console.log('API response:', result);
+                          await updateAppointmentStatus(appointmentId, updateData);
                           
                           message.success('Bệnh nhân đã được chuyển sang phòng xét nghiệm. Lịch hẹn sẽ chuyển sang trạng thái "Chờ kết quả xét nghiệm". Bạn có thể khám bệnh nhân khác và quay lại sau khi có kết quả.');
-                          
-                          console.log('Navigating to appointments...');
                           navigate('/doctor/appointments');
                         } catch (error) {
                           console.error('=== ERROR: Chuyển bệnh nhân đi xét nghiệm ===');
@@ -1054,17 +1075,161 @@ const MedicalRecord = () => {
                 </div>
               )}
 
-              {/* Step 3: Treatment Execution */}
+              {/* Step 4: Service Selection & Treatment Execution */}
               {currentStep === 3 && (
                 <div className="form-section slide-in">
                   <Alert
-                    message="Thực hiện điều trị nha khoa"
-                    description="Ghi lại các dịch vụ răng đã thực hiện cho bệnh nhân (trám răng, nhổ răng, cạo vôi, chỉnh nha...)."
+                    message="Chọn dịch vụ và thực hiện điều trị"
+                    description="Sau khi chọn dịch vụ, bệnh nhân sẽ được chuyển sang phòng thực hiện dịch vụ. Bác sĩ có thể khám bệnh nhân khác trong thời gian chờ hoàn tất dịch vụ."
                     type="info"
                     showIcon
                     className="alert-enhanced"
                   />
 
+                  {/* Chọn dịch vụ */}
+                  <Form.Item
+                    name="selectedServices"
+                    label="Chọn dịch vụ điều trị"
+                    rules={[{ required: true, message: 'Vui lòng chọn ít nhất một dịch vụ' }]}
+                    className="form-item-enhanced"
+                  >
+                    <Select
+                      mode="multiple"
+                      placeholder="Chọn các dịch vụ nha khoa"
+                      style={{ width: '100%' }}
+                      showSearch
+                      filterOption={(input, option) => {
+                        // Find the service by value (service._id)
+                        const service = services.find(s => s._id === option.value);
+                        if (!service) return false;
+                        // Search by service name
+                        return service.name.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+                      }}
+                    >
+                      {services.map(service => (
+                        <Option key={service._id} value={service._id}>
+                          {service.name} - {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(service.price)}
+                        </Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item
+                    name="treatmentNotes"
+                    label="Ghi chú điều trị"
+                    className="form-item-enhanced"
+                  >
+                    <TextArea
+                      rows={3}
+                      placeholder="Ghi chú thêm về quá trình điều trị (nếu có)..."
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    name="homeCare"
+                    label="Hướng dẫn chăm sóc tại nhà"
+                    rules={[{ required: true, message: 'Vui lòng nhập hướng dẫn chăm sóc' }]}
+                    className="form-item-enhanced"
+                  >
+                    <TextArea
+                      rows={3}
+                      placeholder="Hướng dẫn bệnh nhân chăm sóc tại nhà (vệ sinh răng miệng, kiêng thức ăn, uống thuốc giảm đau...)..."
+                    />
+                  </Form.Item>
+                  
+                  <div className="action-buttons">
+                    <Space>
+                      <Button 
+                        type="primary" 
+                        icon={<SaveOutlined />}
+                        onClick={async () => {
+                          try {
+                            const values = await form.validateFields();
+                            await handleSaveTreatment(values);
+                          } catch (error) {
+                            if (error.errorFields) {
+                              message.error('Vui lòng điền đầy đủ thông tin bắt buộc');
+                            } else {
+                              console.error('Error validating form:', error);
+                              message.error('Lỗi khi xử lý form');
+                            }
+                          }
+                        }}
+                        loading={loading}
+                        className="btn-primary-enhanced"
+                      >
+                        Chỉ định dịch vụ
+                      </Button>
+                      <Button 
+                        type="primary"
+                        onClick={async () => {
+                          try {
+                            // Validate appointmentId
+                            if (!appointmentId) {
+                              message.error('Không tìm thấy ID lịch hẹn');
+                              return;
+                            }
+
+                            // Get form values
+                            const formValues = form.getFieldsValue();
+
+                            // Validate required fields
+                            if (!formValues.selectedServices || formValues.selectedServices.length === 0) {
+                              message.error('Vui lòng chọn ít nhất một dịch vụ');
+                              return;
+                            }
+
+                            if (!formValues.homeCare || formValues.homeCare.trim() === '') {
+                              message.error('Vui lòng nhập hướng dẫn chăm sóc tại nhà');
+                              return;
+                            }
+
+                            const updateData = {
+                              status: 'in-treatment',
+                              selectedServices: formValues.selectedServices,
+                              treatmentNotes: formValues.treatmentNotes || '',
+                              homeCare: formValues.homeCare
+                            };
+
+                            // Call API
+                            await updateAppointmentStatus(appointmentId, updateData);
+                            
+                            message.success('Bệnh nhân đã được chuyển sang phòng thực hiện dịch vụ. Lịch hẹn sẽ chuyển sang trạng thái "Đang điều trị". Bạn có thể khám bệnh nhân khác và quay lại sau khi hoàn tất dịch vụ.');
+                            navigate('/doctor/appointments');
+                          } catch (error) {
+                            console.error('Error details:', error);
+                            message.error('Lỗi khi cập nhật trạng thái lịch hẹn: ' + (error.response?.data?.message || error.message));
+                          }
+                        }}
+                        className="btn-primary-enhanced"
+                      >
+                        Chuyển bệnh nhân đi làm dịch vụ
+                      </Button>
+                      <Button 
+                        onClick={() => navigate('/doctor/appointments')}
+                        className="btn-secondary-enhanced"
+                      >
+                        Quay lại hồ sơ bệnh án
+                      </Button>
+                    </Space>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 5: Prescription & Follow-up */}
+              {currentStep === 4 && (
+                <div className="form-section slide-in">
+                  <Alert
+                    message="Kê đơn thuốc và lên lịch tái khám"
+                    description="Kê đơn thuốc cần thiết cho bệnh nhân sau điều trị và lên lịch tái khám phù hợp."
+                    type="success"
+                    showIcon
+                    className="alert-enhanced"
+                  />
+
+                  {/* Đơn thuốc */}
+                  <Divider orientation="left">💊 Đơn thuốc</Divider>
+                  
                   <div style={{ marginBottom: '24px' }}>
                     <Button 
                       type="dashed" 
@@ -1090,89 +1255,24 @@ const MedicalRecord = () => {
                     </div>
                   )}
 
-
-                  <Form.Item
-                    name="procedures"
-                    label="Thủ thuật/Phẫu thuật nha khoa"
-                    className="form-item-enhanced"
-                  >
-                    <TextArea
-                      rows={3}
-                      placeholder="Các thủ thuật nha khoa cần thực hiện (trám răng, nhổ răng, cạo vôi, chỉnh nha...)..."
-                    />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="homeCare"
-                    label="Hướng dẫn chăm sóc tại nhà"
-                    className="form-item-enhanced"
-                  >
-                    <TextArea
-                      rows={3}
-                      placeholder="Hướng dẫn bệnh nhân chăm sóc tại nhà..."
-                    />
-                  </Form.Item>
-                  
-                  <div className="action-buttons">
-                    <Space>
-                      <Button 
-                        type="primary" 
-                        icon={<SaveOutlined />}
-                        onClick={async () => {
-                          try {
-                            const values = await form.validateFields();
-                            await handleSaveTreatment(values);
-                          } catch (error) {
-                            if (error.errorFields) {
-                              message.error('Vui lòng điền đầy đủ thông tin bắt buộc');
-                            } else {
-                              console.error('Error validating form:', error);
-                              message.error('Lỗi khi xử lý form');
-                            }
-                          }
-                        }}
-                        loading={loading}
-                        className="btn-primary-enhanced"
-                      >
-                        Lưu kết quả điều trị
-                      </Button>
-                      <Button 
-                        onClick={() => navigate('/doctor/appointments')}
-                        className="btn-secondary-enhanced"
-                      >
-                        Quay lại hồ sơ bệnh án
-                      </Button>
-                    </Space>
-                  </div>
-                </div>
-              )}
-
-              {/* Step 4: Prescription & Follow-up */}
-              {currentStep === 4 && (
-                <div className="form-section slide-in">
-                  <Alert
-                    message="Kê đơn thuốc và lên lịch tái khám"
-                    description="Kê đơn thuốc cần thiết cho bệnh nhân và lên lịch tái khám phù hợp."
-                    type="success"
-                    showIcon
-                    className="alert-enhanced"
-                  />
+                  {/* Lịch tái khám */}
+                  <Divider orientation="left">📅 Lịch tái khám</Divider>
 
                   <Row gutter={[24, 24]}>
                     <Col xs={24} sm={12}>
                       <Form.Item
                         name="followUpDate"
-                        label="Lịch tái khám"
+                        label="Ngày tái khám"
                         rules={[{ required: true, message: 'Vui lòng chọn ngày tái khám' }]}
                         className="form-item-enhanced"
                       >
                         <DatePicker 
                           style={{ width: '100%' }}
                           placeholder="Chọn ngày tái khám"
-                      showTime={{ format: 'HH:mm' }}
-                    />
-                  </Form.Item>
-                </Col>
+                          showTime={{ format: 'HH:mm' }}
+                        />
+                      </Form.Item>
+                    </Col>
                     <Col xs={24} sm={12}>
                       <Form.Item
                         name="followUpType"
@@ -1198,18 +1298,18 @@ const MedicalRecord = () => {
                   >
                     <TextArea
                       rows={3}
-                      placeholder="Hướng dẫn chi tiết cho lần tái khám..."
+                      placeholder="Hướng dẫn chi tiết cho lần tái khám (mục đích, cần chuẩn bị gì...)..."
                     />
                   </Form.Item>
 
                   <Form.Item
                     name="warnings"
-                    label="Cảnh báo"
+                    label="Cảnh báo & Lưu ý"
                     className="form-item-enhanced"
                   >
                     <TextArea
                       rows={3}
-                      placeholder="Các dấu hiệu cần đến ngay bệnh viện..."
+                      placeholder="Các dấu hiệu bất thường cần đến ngay bệnh viện (chảy máu nhiều, sưng quá mức, đau dữ dội không giảm...)..."
                     />
                   </Form.Item>
                   
@@ -1234,7 +1334,7 @@ const MedicalRecord = () => {
                         loading={loading}
                         className="btn-primary-enhanced"
                       >
-                        Lưu theo dõi
+                        Lưu đơn thuốc & Tái khám
                       </Button>
                       <Button 
                         onClick={() => navigate('/doctor/appointments')}
@@ -1247,45 +1347,6 @@ const MedicalRecord = () => {
                 </div>
               )}
 
-              {/* Step 5: Complete */}
-              {currentStep === 4 && (
-                <div className="form-section slide-in">
-                  <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                    <Text style={{ fontSize: '16px', color: '#52c41a' }}>
-                      ✅ Đã hoàn thành tất cả các bước khám bệnh
-                    </Text>
-                    <br />
-                    <br />
-                    <Space size="large">
-                      <Button 
-                        type="primary" 
-                        size="large"
-                        onClick={handleCompleteExamination}
-                        loading={loading}
-                        className="btn-primary-enhanced"
-                        style={{
-                          background: 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)',
-                          border: 'none',
-                          boxShadow: '0 4px 12px rgba(82, 196, 26, 0.3)',
-                          fontWeight: '600',
-                          fontSize: '16px',
-                          height: '48px',
-                          padding: '0 32px'
-                        }}
-                      >
-                        ✅ Kết thúc khám bệnh
-                      </Button>
-                      <Button 
-                        size="large"
-                        onClick={() => navigate('/doctor/appointments')}
-                        className="btn-secondary-enhanced"
-                      >
-                        Quay lại hồ sơ bệnh án
-                      </Button>
-                    </Space>
-                  </div>
-                </div>
-              )}
 
             </Form>
           </Card>
@@ -1316,10 +1377,13 @@ const MedicalRecord = () => {
             <Select
               showSearch
               placeholder="Chọn thuốc"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
+              filterOption={(input, option) => {
+                // Find the medicine by value (medicine.name)
+                const medicine = medicines.find(m => m.name === option.value);
+                if (!medicine) return false;
+                // Search by medicine name
+                return medicine.name.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+              }}
             >
               {medicines.map(medicine => (
                 <Option key={medicine._id} value={medicine.name}>

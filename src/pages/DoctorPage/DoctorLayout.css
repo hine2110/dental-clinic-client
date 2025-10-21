@@ -14,15 +14,18 @@
 }
 
 .doctor-header {
-  background: #fff;
-  padding: 0 24px;
+  background: linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%);
+  padding: 0 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(24, 144, 255, 0.08);
   position: sticky;
   top: 0;
   z-index: 100;
+  border-bottom: 2px solid rgba(24, 144, 255, 0.1);
+  backdrop-filter: blur(10px);
+  height: 64px;
 }
 
 .header-left {
@@ -33,12 +36,22 @@
 .header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
 }
 
 .notification-btn {
   border: none;
   box-shadow: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.notification-btn:hover {
+  background: #e6f7ff !important;
+  color: #1890ff !important;
+  transform: scale(1.1);
 }
 
 .user-info {
@@ -46,32 +59,49 @@
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 6px;
-  transition: background-color 0.3s;
+  padding: 14px 16px;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  background: rgba(24, 144, 255, 0.05);
+  border: 1.5px solid rgba(24, 144, 255, 0.2);
+  height: 48px;
 }
 
 .user-info:hover {
-  background-color: #f5f5f5;
+  background: rgba(24, 144, 255, 0.1);
+  border-color: rgba(24, 144, 255, 0.4);
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.user-info .ant-avatar {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
 .user-details {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
 }
 
 .user-name {
-  font-weight: 500;
+  font-weight: 600;
   color: #262626;
   font-size: 14px;
-  line-height: 1.2;
+  line-height: 1;
 }
 
 .user-role {
-  color: #8c8c8c;
-  font-size: 12px;
-  line-height: 1.2;
+  background: #1890ff;
+  color: white;
+  font-size: 11px;
+  line-height: 1;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
 }
 
 .doctor-content {
