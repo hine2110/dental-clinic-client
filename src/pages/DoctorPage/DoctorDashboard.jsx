@@ -74,10 +74,9 @@ const DoctorDashboard = () => {
           endDate = today.format('YYYY-MM-DD');
       }
 
-      // Fetch appointments
+      // Fetch appointments - lấy tất cả appointments để tính thống kê
       const appointmentsResponse = await getDoctorAppointments({
-        date: startDate,
-        limit: 10
+        limit: 1000 // Lấy nhiều appointments để tính thống kê chính xác
       });
       
       setAppointments(appointmentsResponse.data.appointments);
@@ -333,17 +332,6 @@ const DoctorDashboard = () => {
             <UserOutlined style={{ fontSize: '32px', color: '#52c41a', marginBottom: '16px' }} />
             <h3>Bệnh nhân</h3>
             <p>Xem danh sách bệnh nhân</p>
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card 
-            hoverable
-            onClick={() => navigate('/doctor/prescriptions')}
-            style={{ textAlign: 'center' }}
-          >
-            <FileTextOutlined style={{ fontSize: '32px', color: '#faad14', marginBottom: '16px' }} />
-            <h3>Đơn thuốc</h3>
-            <p>Tạo và quản lý đơn thuốc</p>
           </Card>
         </Col>
       </Row>

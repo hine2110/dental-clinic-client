@@ -153,12 +153,48 @@ const Appointments = () => {
   // For in-progress appointments (already has test results)
   const handleContinueInProgress = async (appointment) => {
     try {
-      // Navigate directly to Step 3 (Re-examination) since data already exists
+      // Fetch fresh appointment data to determine the next step
+      const appointmentResponse = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/doctor/appointments/${appointment._id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      let appointmentData = appointment;
+      if (appointmentResponse.ok) {
+        const data = await appointmentResponse.json();
+        appointmentData = data.data;
+      }
+      
+      // Determine which step to navigate to based on completed data
+      let targetStep = 0; // Default to Step 1
+      
+      // Check Step 1: Clinical Examination
+      if (appointmentData.chiefComplaint || appointmentData.medicalHistory || appointmentData.physicalExamination?.oralExamination) {
+        targetStep = 1; // Move to Step 2
+        
+        // Check Step 2: Paraclinical Tests
+        if (appointmentData.imagingTests?.length > 0 || appointmentData.labTests?.length > 0) {
+          targetStep = 2; // Move to Step 3
+          
+          // Check Step 3: Diagnosis
+          if (appointmentData.finalDiagnosis) {
+            targetStep = 3; // Move to Step 4
+            
+            // Check Step 4: Treatment & Services
+            if (appointmentData.selectedServices?.length > 0) {
+              targetStep = 4; // Move to Step 5
+            }
+          }
+        }
+      }
+      
+      // Navigate to the first incomplete step
       navigate(`/doctor/medical-records/examination/${appointment._id}`, { 
         state: { 
           appointmentId: appointment._id,
-          appointment: appointment,
-          currentStep: 2 // Start at step 3 (Re-examination)
+          appointment: appointmentData,
+          currentStep: targetStep
         } 
       });
     } catch (error) {
@@ -192,12 +228,12 @@ const Appointments = () => {
           
           if (appointmentResponse.ok) {
             const appointmentData = await appointmentResponse.json();
-            // Navigate to medical record page at step 3 (Re-examination)
+            // Navigate to medical record page at step 2 (Paraclinical Tests)
             navigate(`/doctor/medical-records/examination/${appointment._id}`, { 
               state: { 
                 appointmentId: appointment._id,
                 appointment: appointmentData.data, // Use fresh data from API
-                currentStep: 2 // Start at step 3 (Re-examination)
+                currentStep: 1 // Start at step 2 (Paraclinical Tests)
               } 
             });
           } else {
@@ -206,7 +242,7 @@ const Appointments = () => {
               state: { 
                 appointmentId: appointment._id,
                 appointment: appointment,
-                currentStep: 2
+                currentStep: 1
               } 
             });
           }
@@ -217,7 +253,70 @@ const Appointments = () => {
             state: { 
               appointmentId: appointment._id,
               appointment: appointment,
-              currentStep: 2
+              currentStep: 1
+            } 
+          });
+        }
+      } else {
+        message.error('Lỗi khi tiếp tục khám bệnh');
+      }
+    } catch (error) {
+      console.error('Error continuing examination:', error);
+      message.error('Lỗi khi tiếp tục khám bệnh');
+    }
+  };
+
+  // For in-treatment appointments (after service completion)
+  const handleContinueAfterTreatment = async (appointment) => {
+    try {
+      // Update status to in-progress
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/doctor/appointments/${appointment._id}/continue-examination`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        message.success('Tiếp tục khám bệnh sau dịch vụ thành công');
+        
+        // Fetch updated appointment data before navigating
+        try {
+          const appointmentResponse = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/doctor/appointments/${appointment._id}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          
+          if (appointmentResponse.ok) {
+            const appointmentData = await appointmentResponse.json();
+            // Navigate to medical record page at step 4 (Treatment & Services)
+            navigate(`/doctor/medical-records/examination/${appointment._id}`, { 
+              state: { 
+                appointmentId: appointment._id,
+                appointment: appointmentData.data, // Use fresh data from API
+                currentStep: 3 // Start at step 4 (Treatment & Services)
+              } 
+            });
+          } else {
+            // Fallback to original appointment data if fetch fails
+            navigate(`/doctor/medical-records/examination/${appointment._id}`, { 
+              state: { 
+                appointmentId: appointment._id,
+                appointment: appointment,
+                currentStep: 3
+              } 
+            });
+          }
+        } catch (fetchError) {
+          console.error('Error fetching updated appointment:', fetchError);
+          // Fallback to original appointment data
+          navigate(`/doctor/medical-records/examination/${appointment._id}`, { 
+            state: { 
+              appointmentId: appointment._id,
+              appointment: appointment,
+              currentStep: 3
             } 
           });
         }
@@ -466,6 +565,22 @@ const Appointments = () => {
                 }}
               >
                 Tiếp tục sau xét nghiệm
+              </Button>
+            )}
+            {record.status === 'in-treatment' && (
+              <Button 
+                type="primary" 
+                size="small"
+                icon={<PlayCircleOutlined />}
+                onClick={() => handleContinueAfterTreatment(record)}
+                style={{ 
+                  backgroundColor: '#1890ff', 
+                  borderColor: '#1890ff', 
+                  color: 'white',
+                  minWidth: '160px'
+                }}
+              >
+                Tiếp tục sau dịch vụ
               </Button>
             )}
             {record.status === 'in-progress' && (
