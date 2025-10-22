@@ -1,0 +1,232 @@
+/* PaymentModal.css (ĐÃ SỬA LỖI GIAO DIỆN) */
+
+.payment-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+  animation: fadeIn 0.3s ease;
+}
+
+.payment-modal-content {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh; /* <-- Giới hạn chiều cao tổng thể */
+  display: flex;
+  flex-direction: column;
+  animation: slideInUp 0.4s ease-out;
+}
+
+.payment-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #dee2e6;
+  flex-shrink: 0; /* Không co lại */
+}
+
+.payment-modal-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  padding: 0;
+  overflow: hidden; /* <-- QUAN TRỌNG: Ẩn cuộn ở body */
+  flex-grow: 1;
+}
+
+.modal-loading, .modal-error {
+  padding: 2rem;
+  text-align: center;
+}
+
+/* Cột 1: Danh sách dịch vụ */
+.service-list-panel {
+  padding: 1.5rem;
+  border-right: 1px solid #dee2e6;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto; /* <-- Cột 1 tự cuộn */
+}
+.service-list-items {
+  /* Bỏ giới hạn chiều cao ở đây, để service-list-panel xử lý */
+  padding-right: 10px;
+}
+.service-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.service-item:hover {
+  background-color: #f8f9fa;
+  border-color: #5D5FEF;
+}
+.service-name {
+  font-weight: 500;
+}
+.service-price {
+  font-weight: 600;
+  color: #5D5FEF;
+}
+
+/* === SỬA LỖI GIAO DIỆN Ở ĐÂY === */
+
+/* Cột 2: Giỏ hàng */
+.cart-panel {
+  padding: 1.5rem;
+  background-color: #fcfdff;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto; /* <-- 1. LÀM CHO CẢ CỘT 2 CUỘN */
+  /* Không cần max-height vì .payment-modal-body đã xử lý */
+}
+.cart-items-list {
+  /* 2. Bỏ các thuộc tính cuộn và co giãn ở đây */
+  overflow-y: visible; 
+  /* max-height: 35vh; (Xóa) */
+  /* min-height: 0; (Xóa) */
+  /* flex-grow: 1; (Xóa) */
+  padding: 5px;
+  flex-shrink: 0; /* Ngăn co lại */
+}
+
+/* Phần thanh toán */
+.payment-summary {
+  /* 3. Bỏ margin-top: auto */
+  /* margin-top: auto; (Xóa) */
+  padding-top: 1rem;
+  border-top: 1px dashed #ccc;
+  flex-shrink: 0; /* Ngăn co lại */
+}
+
+/* === KẾT THÚC SỬA LỖI GIAO DIỆN === */
+
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+.cart-item-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.cart-item-controls {
+  display: flex;
+  align-items: center;
+}
+.cart-item-controls button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 50%;
+  font-weight: bold;
+}
+.cart-item-controls input {
+  width: 40px;
+  text-align: center;
+  border: none;
+  font-weight: 600;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+.summary-row label {
+  font-weight: 500;
+}
+.summary-row .total-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #d9534f;
+}
+.summary-row.highlight .change-amount {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #5cb85c;
+}
+
+/* CSS cho animation (từ staff.css) */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideInUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* CSS CHO DISCOUNT */
+.discount-input-group {
+  display: flex;
+  gap: 5px;
+  flex-basis: 60%;
+  max-width: 250px;
+}
+
+.discount-input-group input {
+  flex-grow: 1;
+}
+
+.summary-row.original-total-row .total-amount.original-total {
+  text-decoration: line-through;
+  color: #6c757d;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.summary-row.discount-applied span:last-child {
+  font-weight: 600;
+  color: #5cb85c;
+}
+
+.summary-row.final-total-row .total-amount.final-total {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #d9534f;
+}
+
+/* === CSS MỚI CHO THANH TOÁN QR === */
+.transfer-payment-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.qr-code-image {
+  width: 200px;
+  height: 200px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.payment-summary {
+  flex: 0 0 auto !important; /* KHÔNG dãn, KHÔNG co, kích thước tự động */
+  height: auto !important; /* Ghi đè mọi 'height: 100%' */
+  margin-top: 0 !important;  /* Ghi đè mọi 'margin-top: auto' */
+}
