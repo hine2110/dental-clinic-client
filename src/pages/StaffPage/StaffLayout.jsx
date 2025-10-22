@@ -41,7 +41,7 @@ function StaffLayout() {
       
       fetchInitialCount();
 
-      const socket = io(API_BASE);
+      const socket = io('http://localhost:5000');
 
       socket.on("new_contact_received", () => {
         setUnreadCount(prevCount => prevCount + 1);
@@ -108,7 +108,8 @@ function StaffLayout() {
               </NavLink>
             </li>
             <li><NavLink to="patients"><i className="fas fa-user-injured nav-icon"></i>Bệnh nhân</NavLink></li>
-            <li><NavLink to="invoices"><i className="fas fa-file-invoice nav-icon"></i>Hóa đơn</NavLink></li>
+            <li><NavLink to="invoices"><i className="fas fa-file-invoice nav-icon"></i>Thanh toán</NavLink></li>
+            <li><NavLink to="payment-history"><i className="fas fa-history nav-icon"></i>Lịch sử hóa đơn</NavLink></li>
           </ul>
         </aside>
         <main className="staff-main-content">
