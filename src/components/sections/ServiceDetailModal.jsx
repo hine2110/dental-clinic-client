@@ -4,7 +4,23 @@ import './ServiceDetailModal.css';
 import thumbnailFallback from '../../assets/thumbnail.jpg'; // Đảm bảo đường dẫn này đúng
 
 const ServiceDetailModal = ({ isOpen, onClose, service }) => {
-  const [activeStep, setActiveStep] = useState(1);
+  const [activeStep, setActiveStep] = useState(
+    service?.process?.[0]?.step || null
+  );
+
+  // --- SỬA LỖI ESLINT ---
+  // Di chuyển Hook lên đây, trước lệnh return có điều kiện
+  React.useEffect(() => {
+    // Chỉ cập nhật state nếu 'service' tồn tại
+    if (service?.process?.[0]) {
+      setActiveStep(service.process[0].step);
+    } else {
+      setActiveStep(null); // Không có quy trình thì không mở step nào
+    }
+  }, [service]); // Chạy lại khi 'service' prop thay đổi
+  // --- KẾT THÚC SỬA LỖI ---
+
+  // Lệnh return sớm phải nằm SAU khi tất cả các Hook đã được gọi
   if (!isOpen || !service) return null;
 
   const formatPrice = (price) => {
@@ -40,53 +56,27 @@ const ServiceDetailModal = ({ isOpen, onClose, service }) => {
           <div className="service-process-section">
             <h3>Treatment Process</h3>
             <div className="process-timeline">
-                <>
-                  {/* --- Quy trình mặc định --- */}
-                  <div className={`timeline-item ${activeStep === 1 ? 'active' : ''}`} onClick={() => setActiveStep(activeStep === 1 ? null : 1)}>
+              {service.process && service.process.length > 0 ? (
+                service.process.map((step) => (
+                  <div 
+                    key={step._id || step.step} 
+                    className={`timeline-item ${activeStep === step.step ? 'active' : ''}`} 
+                    onClick={() => setActiveStep(activeStep === step.step ? null : step.step)}
+                  >
                     <div className="timeline-content">
                       <div className="timeline-title-wrapper">
-                        <h4>Khám và chụp X-quang</h4>
+                        <h4>{step.title}</h4> 
                         <span className="timeline-chevron"></span>
                       </div>
                       <div className="timeline-description-wrapper">
-                        <p>Đánh giá vị trí răng khôn. Bác sĩ sẽ kiểm tra sức khỏe răng miệng tổng quát và tư vấn chi tiết về tình trạng của bạn.</p>
+                        <p>{step.description}</p>
                       </div>
                     </div>
                   </div>
-                  <div className={`timeline-item ${activeStep === 2 ? 'active' : ''}`} onClick={() => setActiveStep(activeStep === 2 ? null : 2)}>
-                    <div className="timeline-content">
-                      <div className="timeline-title-wrapper">
-                        <h4>Gây tê</h4>
-                        <span className="timeline-chevron"></span>
-                      </div>
-                      <div className="timeline-description-wrapper">
-                        <p>Tiến hành gây tê tại chỗ để đảm bảo bạn không cảm thấy đau trong suốt quá trình thực hiện.</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className={`timeline-item ${activeStep === 3 ? 'active' : ''}`} onClick={() => setActiveStep(activeStep === 3 ? null : 3)}>
-                    <div className="timeline-content">
-                      <div className="timeline-title-wrapper">
-                        <h4>Nhổ răng</h4>
-                        <span className="timeline-chevron"></span>
-                      </div>
-                      <div className="timeline-description-wrapper">
-                        <p>Thực hiện nhổ răng khôn theo quy trình chuẩn quốc tế, an toàn và nhanh chóng.</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className={`timeline-item ${activeStep === 4 ? 'active' : ''}`} onClick={() => setActiveStep(activeStep === 4 ? null : 4)}>
-                    <div className="timeline-content">
-                      <div className="timeline-title-wrapper">
-                        <h4>Khâu vết thương</h4>
-                        <span className="timeline-chevron"></span>
-                      </div>
-                      <div className="timeline-description-wrapper">
-                        <p>Khâu lại vết thương bằng chỉ tự tiêu và hướng dẫn chăm sóc sau điều trị để đảm bảo quá trình lành thương tốt nhất.</p>
-                      </div>
-                    </div>
-                  </div>
-                </>
+                ))
+              ) : (
+                <p>No treatment process available for this service.</p>
+              )}
             </div>
           </div>
 

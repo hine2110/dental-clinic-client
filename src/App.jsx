@@ -19,6 +19,8 @@ import ForgotPasswordPage from "./pages/ForgotPassword";
 import PaymentStatusPage from "./pages/patient/PaymentStatusPage";
 import ReschedulePage from './pages/patient/ReschedulePage';
 import StaffContacts from "./pages/StaffPage/StaffContacts";
+import StaffInvoices from "./pages/StaffPage/StaffInvoices";
+import PaymentHistory from './pages/StaffPage/PaymentHistory';
 import "./App.css";
 
 function App() {
@@ -38,7 +40,8 @@ function App() {
               <Route path="contacts" element={<StaffContacts />} />
               {/* Placeholders for future */}
               <Route path="patients" element={<StaffHome />} />
-              <Route path="invoices" element={<StaffHome />} />
+              <Route path="invoices" element={<StaffInvoices />} />
+              <Route path="payment-history" element={<PaymentHistory />} />
             </Route>
             {/* Placeholders for future */}
             <Route path="/management" element={<ManagementLayout />}>
