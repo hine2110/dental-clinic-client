@@ -1,29 +1,12 @@
 /* ScheduleCreator.css */
 .schedule-creator {
-  height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 1rem;
 }
 
+/* Header đã bị xóa trong JSX, các class này có thể xóa đi để gọn gàng */
 .creator-header {
-  text-align: center;
-  margin-bottom: 1.5rem;
-  color: white;
-}
-
-.creator-header h2 {
-  font-size: 1.8rem;
-  font-weight: 600;
-  margin: 0 0 0.5rem 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.creator-header p {
-  font-size: 1rem;
-  opacity: 0.9;
-  margin: 0;
+ display: none; /* Hoặc xóa hoàn toàn */
 }
 
 .creator-content {
@@ -42,7 +25,7 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  overflow-y: auto;
+  /* Xóa overflow-y: auto; */
 }
 
 /* Right side - Calendar */
@@ -53,7 +36,7 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  overflow-y: auto;
+  /* Xóa overflow-y: auto; */
 }
 
 .calendar-header {
@@ -112,19 +95,10 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 0.5rem;
-  height: calc(100% - 80px);
+  /* Bỏ height để nó tự co dãn */
 }
 
-.calendar-day {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 0.5rem;
-  min-height: 80px;
-  display: flex;
-  flex-direction: column;
-  transition: all 0.2s ease;
-}
+
 
 .calendar-day:hover {
   background: #f3f4f6;
@@ -145,6 +119,19 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  overflow-y: auto; 
+  overflow-x: hidden;
+}
+
+.day-schedules::-webkit-scrollbar {
+  width: 4px;
+}
+.day-schedules::-webkit-scrollbar-track {
+  background: transparent;
+}
+.day-schedules::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 2px;
 }
 
 .schedule-item {
@@ -319,10 +306,6 @@
 }
 
 @media (max-width: 768px) {
-  .schedule-creator {
-    padding: 0.5rem;
-  }
-  
   .creator-content {
     grid-template-columns: 1fr;
   }
@@ -432,12 +415,18 @@
   font-size: 0.8rem;
 }
 
-/* Sửa lại calendar-day một chút */
 .calendar-day {
-  border: 1px solid #eee;
-  min-height: 100px;
-  padding: 4px;
-  transition: background-color 0.2s;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb; /* Sử dụng border nhất quán */
+  border-radius: 8px;
+  padding: 0.5rem; /* Sử dụng padding nhất quán */
+  
+  /* Bắt buộc tất cả các ô phải có chiều cao này */
+  height: 120px; 
+  
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease; /* Gộp transition lại */
 }
 
 /* Style cho các ngày không thuộc tháng hiện tại */
@@ -498,4 +487,3 @@
 .schedule-action-btn:hover {
   transform: scale(1.2); /* Phóng to icon khi di chuột vào */
 }
-

@@ -21,6 +21,7 @@ import ReschedulePage from './pages/patient/ReschedulePage';
 import StaffContacts from "./pages/StaffPage/StaffContacts";
 import StaffInvoices from "./pages/StaffPage/StaffInvoices";
 import PaymentHistory from './pages/StaffPage/PaymentHistory';
+import LocationsPage from "./pages/ManagementPage/LocationsPage";
 import "./App.css";
 
 function App() {
@@ -46,7 +47,7 @@ function App() {
             {/* Placeholders for future */}
             <Route path="/management" element={<ManagementLayout />}>
               <Route index element={<ManagementDashboard />} />
-
+              <Route path="locations" element={<LocationsPage />} />
               <Route path="doctor/information" element={<ManagementScheduleDoctor />} />
               <Route path="doctor/schedule" element={<ManagementScheduleDoctor />} />
               
