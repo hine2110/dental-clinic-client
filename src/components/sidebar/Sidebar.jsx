@@ -84,17 +84,56 @@ const Sidebar = () => {
 
     return (
       <>
-        {locationItems}
-        <li className="menu-item add-location-item">
-          {/* Link này sẽ dẫn đến trang LocationsPage */}
+        {/* === PHẦN CÁC LINK TĨNH === */}
+        {/* <li className="menu-item">
+          <NavLink to="/management" end className="menu-link">
+            <i className="fas fa-tachometer-alt menu-icon"></i>
+            <span className="menu-label">Tổng quan</span>
+          </NavLink>
+        </li> */}
+
+        {/* === ĐÂY LÀ LINK BẠN CẦN THÊM === */}
+        <li className="menu-item">
+          <NavLink to="/management/information" className="menu-link">
+            <i className="fas fa-users-cog menu-icon"></i>
+            <span className="menu-label">Thông tin Nhân sự</span>
+          </NavLink>
+        </li>
+        
+        <li className="menu-item">
           <NavLink to="/management/locations" className="menu-link">
             <i className="fas fa-plus-circle menu-icon"></i>
             <span className="menu-label">Quản lý Cơ sở</span>
           </NavLink>
         </li>
+
+        <li className="menu-item">
+          <NavLink to="/management/revenue" className="menu-link">
+            {/* Bạn có thể chọn icon khác nếu muốn */}
+            <i className="fas fa-chart-line menu-icon"></i> 
+            <span className="menu-label">Thống kê Doanh thu</span>
+          </NavLink>
+        </li>
+
+        <li className="menu-item">
+          <NavLink to="/management/equipment-issues" className="menu-link">
+            <i className="fas fa-wrench nav-icon menu-icon"></i> {/* Icon for issues/repairs */}
+              Sự cố Thiết bị
+          </NavLink>
+        </li>
+
+        
+
+        {/* Vạch kẻ phân cách giữa link tĩnh và link động */}
+        <hr className="sidebar-divider" />
+
+        {/* === PHẦN CÁC LINK ĐỘNG (THEO CƠ SỞ) === */}
+        {locationItems}
       </>
     );
   };
+
+
 
   return (
     <aside className="sidebar">

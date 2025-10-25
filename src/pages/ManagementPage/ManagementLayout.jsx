@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { useAuth } from "../../context/authContext";
 import { useNavigate, Outlet } from "react-router-dom";
-import { Menu, Dropdown } from "antd";
 import Sidebar from "../../components/sidebar";
 import { LogoutOutlined } from "@ant-design/icons";
 import "./management.css";
@@ -29,19 +28,9 @@ function ManagementLayout() {
     navigate("/");
   };
 
-  const userMenu = (
-    <Menu>
-      
-      <Menu.Item
-        key="logout"
-        icon={<LogoutOutlined />}
-        onClick={handleLogout}
-        style={{ color: "#ff4d4f" }}
-      >
-        Logout
-      </Menu.Item>
-    </Menu>
-  );
+  const handleProfileClick = () => {
+    navigate("/management/profile");
+  };
 
   if (loading) {
     return (
@@ -53,6 +42,11 @@ function ManagementLayout() {
 
   if (!user || user.role !== "management") return null;
 
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+  const avatarUrl = user.avatar 
+    ? `${API_BASE_URL}/${user.avatar.replace(/\\/g, '/')}` 
+    : "https://via.placeholder.com/40";
+
   return (
     <div className="management-layout">
       <div className="background-glow"></div>
@@ -63,12 +57,31 @@ function ManagementLayout() {
             <h3>Beauty Smile</h3>
           </div>
           <div className="user-profile">
-            <i className="fas fa-envelope fa-lg"></i>
-            <i className="fas fa-bell fa-lg"></i>
-            <span>Xin chào, Management!</span>
-            <Dropdown overlay={userMenu} trigger={["click"]}>
-              <img src="https://via.placeholder.com/40" alt="User Avatar" style={{ cursor: "pointer" }} />
-            </Dropdown>
+            {/* <i className="fas fa-envelope fa-lg"></i>
+            <i className="fas fa-bell fa-lg"></i> */}
+            
+            <img 
+              src={avatarUrl} // <-- Sử dụng avatar thật
+              alt="User Avatar" 
+              style={{ 
+                cursor: "pointer", 
+                width: "40px",      // Thêm kích thước cố định
+                height: "40px",     // Thêm kích thước cố định
+                borderRadius: "50%" // Làm cho nó tròn
+              }} 
+              onClick={handleProfileClick} // <-- Thêm sự kiện click
+              title="Hồ sơ cá nhân" // Tooltip khi hover
+            />
+            <LogoutOutlined
+              onClick={handleLogout}
+              style={{
+                cursor: "pointer",
+                color: "#000000", // Giữ màu đỏ
+                fontSize: "20px",    // Chỉnh kích thước cho dễ thấy
+                marginLeft: "16px" // Thêm khoảng cách
+              }}
+              title="Đăng xuất" // Tooltip khi hover
+            />
           </div>
         </div>
       </header>
