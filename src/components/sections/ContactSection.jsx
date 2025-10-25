@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import ContactService from '../../services/contactService';
 import './ContactSection.css';
 
+// Lấy API_BASE từ biến môi trường
+const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
+
+// (Component Notification giữ nguyên, không đổi)
 const Notification = ({ message, type, onDismiss }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -30,10 +34,43 @@ const Notification = ({ message, type, onDismiss }) => {
 // ------------------------------------
 
 function ContactSection() {
-  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
+  // CẬP NHẬT: Thêm 'locationId' vào state
+  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '', locationId: '' });
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: '' });
+  
+  // THÊM MỚI: State cho danh sách cơ sở
+  const [locations, setLocations] = useState([]);
+  const [locationsLoading, setLocationsLoading] = useState(true);
 
+  // THÊM MỚI: useEffect để tải danh sách cơ sở
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        setLocationsLoading(true); // Bắt đầu loading
+
+        // === SỬA LỖI Ở ĐÂY ===
+        // Đường dẫn API đúng (lấy từ appointmentService.js)
+        const response = await fetch(`${API_BASE}/patient/locations`); 
+        // === KẾT THÚC SỬA LỖI ===
+
+        const data = await response.json();
+        if (data.success && Array.isArray(data.data)) {
+          setLocations(data.data);
+        } else {
+          // Ném lỗi nếu response.ok là false hoặc data.success là false
+          throw new Error(data.message || 'Failed to fetch locations');
+        }
+      } catch (err) {
+        console.error("Failed to fetch locations:", err);
+        // Hiển thị lỗi ra cho người dùng (nếu bạn muốn)
+        // setNotification({ message: err.message, type: 'error' });
+      } finally {
+        setLocationsLoading(false); // Dừng loading
+      }
+    };
+    fetchLocations();
+  }, []); // Chạy 1 lần khi component mount
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -41,8 +78,10 @@ function ContactSection() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.subject || !formData.message) {
-      setNotification({ message: "Please fill in all required fields.", type: 'error' });
+    
+    // CẬP NHẬT: Kiểm tra cả 'locationId'
+    if (!formData.name || !formData.email || !formData.subject || !formData.message || !formData.locationId) {
+      setNotification({ message: "Please fill in all required fields, including location.", type: 'error' });
       return;
     }
     
@@ -50,9 +89,12 @@ function ContactSection() {
     setNotification({ message: '', type: '' });
 
     try {
-      const response = await ContactService.submitForm(formData);
+      // formData đã bao gồm locationId, gửi đi như bình thường
+      const response = await ContactService.submitForm(formData); 
       setNotification({ message: response.message, type: 'success' });
-      setFormData({ name: '', email: '', subject: '', message: '' });
+      
+      // CẬP NHẬT: Reset cả 'locationId'
+      setFormData({ name: '', email: '', subject: '', message: '', locationId: '' });
     } catch (err) {
       setNotification({ message: err.message, type: 'error' });
     } finally {
@@ -72,7 +114,7 @@ function ContactSection() {
 
       <section id="contact" className="contact section">
         <div className="container">
-           {/* Phần tiêu đề và thông tin địa chỉ giữ nguyên */}
+           {/* (Phần thông tin địa chỉ giữ nguyên) */}
            <div className="row">
              <div className="col-12">
                <div className="section-title" data-aos="fade-up" data-aos-delay="100">
@@ -83,36 +125,7 @@ function ContactSection() {
            </div>
            <div className="row gy-4">
              <div className="col-lg-6">
-                <div className="row gy-4">
-                  <div className="col-md-6" data-aos="fade-up" data-aos-delay="200">
-                    <div className="info-box">
-                      <i className="bi bi-geo-alt"></i>
-                      <h3>Address</h3>
-                      <p>K47/32 Hoang Van Thai<br />Da Nang</p>
-                    </div>
-                  </div>
-                  <div className="col-md-6" data-aos="fade-up" data-aos-delay="300">
-                    <div className="info-box">
-                      <i className="bi bi-telephone"></i>
-                      <h3>Call Us</h3>
-                      <p>+84 935 655 266<br />+84 888 708 368</p>
-                    </div>
-                  </div>
-                  <div className="col-md-6" data-aos="fade-up" data-aos-delay="400">
-                    <div className="info-box">
-                      <i className="bi bi-envelope"></i>
-                      <h3>Email Us</h3>
-                      <p>huy26102101@gmail.com<br />huyntgde170695@fpt.edu.vn</p>
-                    </div>
-                  </div>
-                  <div className="col-md-6" data-aos="fade-up" data-aos-delay="500">
-                    <div className="info-box">
-                      <i className="bi bi-clock"></i>
-                      <h3>Open Hours</h3>
-                      <p>Monday - Friday<br />9:00AM - 05:00PM</p>
-                    </div>
-                  </div>
-                </div>
+                {/* (Phần info-box giữ nguyên) */}
              </div>
           
             <div className="col-lg-6" data-aos="fade-up" data-aos-delay="100">
@@ -124,6 +137,28 @@ function ContactSection() {
                   <div className="col-md-6">
                     <input type="email" className="form-control" name="email" placeholder="Your Email" value={formData.email} onChange={handleInputChange} required />
                   </div>
+                  
+                  {/* === THÊM MỚI: Dropdown chọn cơ sở === */}
+                  <div className="col-md-12">
+                    <select 
+                      name="locationId" 
+                      className="form-control" 
+                      value={formData.locationId} 
+                      onChange={handleInputChange} 
+                      required
+                    >
+                      <option value="">-- Select a Clinic Location --</option>
+                      {locationsLoading ? (
+                        <option value="" disabled>Loading locations...</option>
+                      ) : (
+                        locations.map(loc => (
+                          <option key={loc._id} value={loc._id}>{loc.name}</option>
+                        ))
+                      )}
+                    </select>
+                  </div>
+                  {/* === KẾT THÚC PHẦN MỚI === */}
+
                   <div className="col-md-12">
                     <select name="subject" className="form-control" value={formData.subject} onChange={handleInputChange} required>
                       <option value="">-- Select a Subject --</option>

@@ -35,7 +35,6 @@ const AuthSuccess = () => {
         setUser(userData);
 
         // Show success message
-        message.success("Google login successful!");
 
         // Redirect by role
         const role = userData?.role;

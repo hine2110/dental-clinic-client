@@ -1,0 +1,110 @@
+/* File: src/components/PatientAppointmentList.css */
+
+.appointment-list-container {
+  width: 100%;
+}
+
+.appointment-list {
+  display: grid;
+  gap: 1rem; 
+}
+
+.appointment-card {
+  background-color: #ffffff; 
+  border: 1px solid #e9ecef; 
+  border-radius: 8px;
+  padding: 1rem 1.25rem; 
+  display: flex;
+  justify-content: space-between;
+  align-items: center; 
+  transition: box-shadow 0.2s ease;
+}
+
+.appointment-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); 
+}
+
+.appointment-info h4 {
+  margin-top: 0;
+  margin-bottom: 0.5rem; 
+  color: #333;
+  font-size: 1.1rem; 
+}
+
+.appointment-info p {
+  margin: 0.2rem 0; 
+  color: #555;
+  font-size: 0.9rem; 
+}
+
+.appointment-actions {
+  flex-shrink: 0;
+  padding-left: 1rem;
+}
+
+.btn-reschedule {
+  background-color: #6f42c1; /* Màu tím đồng nhất với nút Edit */
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.btn-reschedule:hover {
+  background-color: #5a32a8; /* Hover màu tím đậm hơn */
+}
+
+/* ... (CSS cho .status-badge giữ nguyên) ... */
+.status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; text-transform: uppercase; white-space: nowrap; }
+.status-badge.confirmed { background-color: #d1ecf1; color: #0c5460; }
+.status-badge.pending { background-color: #fff3cd; color: #856404; }
+.status-badge.completed { background-color: #d4edda; color: #155724; }
+.status-badge.cancelled { background-color: #f8d7da; color: #721c24; }
+.status-badge.default { background-color: #e2e3e5; color: #383d41; }
+
+/* ... (CSS cho @media (max-width: 576px) giữ nguyên) ... */
+@media (max-width: 576px) {
+  .appointment-card { flex-direction: column; align-items: stretch; }
+  .appointment-actions { padding-left: 0; margin-top: 1rem; text-align: right; }
+  .btn-reschedule { width: auto; }
+}
+
+/* === BẮT ĐẦU PHẦN CẬP NHẬT CSS === */
+
+/* Xóa style cũ gây lỗi */
+.appointment-list-container .alert-danger {
+  display: none; /* Ẩn style .alert-danger cũ đi */
+}
+
+/* Style chung cho các thông báo (tải, rỗng) */
+.appointment-list-container .loading-text,
+.appointment-list-container .empty-text {
+    font-size: 1rem;
+    color: #555;
+    text-align: center;
+    padding: 1.5rem 0;
+}
+
+/* (QUAN TRỌNG) Style cho hộp báo lỗi, sửa lỗi chữ bị ẩn */
+.appointment-list-container .appointment-list-error { 
+    background-color: #f8d7da; /* Nền đỏ nhạt */
+    color: #721c24; /* Chữ đỏ đậm (Sửa lỗi chữ bị ẩn) */
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 0; /* Bỏ margin-top vì đã nằm trong card */
+    text-align: center;
+    font-size: 1rem;
+}
+/* === KẾT THÚC PHẦN CẬP NHẬT CSS === */
+/* Add to the end of PatientAppointmentList.css */
+.rescheduled-text {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #6c757d; /* Gray color */
+  padding-right: 10px; /* Add some spacing */
+}

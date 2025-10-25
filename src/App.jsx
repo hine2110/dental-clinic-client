@@ -1,7 +1,11 @@
+// File: App.jsx
+// Updated: Added AuthModal and event listener logic
 
-import React from "react";
+import React, { useState, useEffect } from "react"; // <--- THÊM 'useState', 'useEffect'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/authContext";
+
+// --- Import components và pages của bạn ---
 import Home from "./pages/Home";
 import AuthSuccess from "./pages/AuthSuccess";
 import { CreateAccount, AdminDashboard } from "./pages/AdminPage";
@@ -32,13 +36,42 @@ import ManagementProfilePage from "./pages/ManagementPage/ManagementProfilePage"
 import StaffProfilePage from "./pages/StaffPage/StaffProfilePage";
 import StaffSchedulePage from "./pages/StaffPage/StaffSchedulePage";
 import ViewManagerEquipmentIssue from './pages/ManagementPage/ViewManagerEquipmentIssue';
+import AuthModal from "./components/AuthModal";
 import "./App.css";
 
 function App() {
+  // <--- THÊM STATE ĐỂ QUẢN LÝ MODAL ---
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false); // Thêm nếu bạn cần cho nút 'Complete Profile'
+
+  // <--- THÊM useEffect ĐỂ LẮNG NGHE SỰ KIỆN ---
+  useEffect(() => {
+    // Hàm mở modal login
+    const handleOpenLoginModal = () => {
+      setIsLoginModalOpen(true);
+    };
+
+    // Hàm mở modal profile (từ AppointmentSection)
+    const handleOpenProfileModal = () => {
+      setIsProfileModalOpen(true);
+    };
+
+    // Đăng ký lắng nghe
+    window.addEventListener('openLoginModal', handleOpenLoginModal);
+    window.addEventListener('openProfileModal', handleOpenProfileModal);
+
+    // Dọn dẹp khi component unmount
+    return () => {
+      window.removeEventListener('openLoginModal', handleOpenLoginModal);
+      window.removeEventListener('openProfileModal', handleOpenProfileModal);
+    };
+  }, []); // [] đảm bảo chỉ chạy 1 lần
+
   return (
     <AuthProvider>
       <Router>
         <ProfileGuard>
+          {/* ... toàn bộ Routes của bạn giữ nguyên ... */}
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/auth-success" element={<AuthSuccess />} />
@@ -96,6 +129,12 @@ function App() {
             <Route path="/reschedule" element={<ReschedulePage />} />
           </Routes>
         </ProfileGuard>
+        
+        <AuthModal
+          isOpen={isLoginModalOpen}
+          onClose={() => setIsLoginModalOpen(false)}
+          initialMode="login" 
+        />
       </Router>
     </AuthProvider>
   );

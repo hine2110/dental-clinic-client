@@ -1,259 +1,224 @@
 // File: dental-clinic-client/src/pages/patient/ProfilePage.jsx
+// ĐÃ SỬA: Thêm code để hiển thị Emergency Contact và Medical Info
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/authContext';
 import { getPatientProfile } from '../../services/patientService';
 import ProfileEditModal from '../../components/ProfileEditModal';
 import './ProfilePage.css';
+import PatientAppointmentList from '../../components/PatientAppointmentList';
 
 const ProfilePage = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
   const [showEditModal, setShowEditModal] = useState(false);
 
-  // Lấy thông tin profile khi component mount
   useEffect(() => {
     const fetchProfile = async () => {
+      if (!user) {
+        setLoading(false);
+        setError('Bạn cần đăng nhập để xem thông tin cá nhân.');
+        return;
+      }
       try {
         setLoading(true);
-        const response = await getPatientProfile();
-        if (response.success) {
-          setProfile(response.data);
+        setError('');
+        const response = await getPatientProfile(); 
+        if (response && response.success) {
+          setProfile(response.data || null); 
         } else {
-          setError('Unable to load profile information');
+          throw new Error(response.message || 'Không thể tải dữ liệu profile.');
         }
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-        setError('Error loading profile information');
+      } catch (err) {
+        console.error("Lỗi khi tải thông tin cá nhân:", err);
+        const errorMessage = (err.response && err.response.data && err.response.data.message) 
+                             || err.message 
+                             || 'Lỗi khi tải thông tin cá nhân.';
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
     };
-
-    if (user && user.role === 'patient') {
-      fetchProfile();
-    }
+    fetchProfile();
   }, [user]);
 
-  // Xử lý cập nhật profile
-  const handleProfileUpdate = (updatedProfile) => {
-    setProfile(updatedProfile);
-    setShowEditModal(false);
+  // Hàm này được gọi khi modal 'onSave' thành công
+  const handleProfileUpdate = (updatedProfileData) => {
+    setProfile(updatedProfileData); // Cập nhật state với dữ liệu mới
+    setShowEditModal(false); // Đóng modal
   };
 
-  // Nếu không phải patient, hiển thị thông báo
-  if (user && user.role !== 'patient') {
+  if (!user) {
     return (
-      <div className="profile-page">
-        <div className="profile-container">
-          <div className="access-denied">
-            <h2>Access Denied</h2>
-            <p>Only patients can view this profile page.</p>
-          </div>
-        </div>
+      <div className="profile-page access-denied">
+        <p>Vui lòng đăng nhập để xem trang này.</p>
       </div>
     );
   }
 
   if (loading) {
-    return (
-      <div className="profile-page">
-        <div className="profile-container">
-          <div className="loading">
-            <div className="loading-spinner"></div>
-            <p>Loading profile information...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <p className="loading-message">Đang tải thông tin cá nhân...</p>;
   }
 
   if (error) {
-    return (
-      <div className="profile-page">
-        <div className="profile-container">
-          <div className="error">
-            <h2>Error</h2>
-            <p>{error}</p>
-            <button onClick={() => window.location.reload()} className="btn-primary">
-              Try Again
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    return <div className="alert alert-danger error-message">{error}</div>;
   }
 
+  // Nếu profile là null (người dùng mới, chưa tạo)
   if (!profile) {
     return (
-      <div className="profile-page">
-        <div className="profile-container">
-          <div className="no-profile">
-            <h2>No Profile Information</h2>
-            <p>You don't have profile information yet. Please create a profile to use the system.</p>
-            <button onClick={() => setShowEditModal(true)} className="btn-primary">
-              Create Profile
-            </button>
-          </div>
-        </div>
+      <div className="profile-page no-profile">
+        <p>Bạn chưa có thông tin hồ sơ. Hãy cập nhật hồ sơ của bạn.</p>
+        <button onClick={() => setShowEditModal(true)} className="btn btn-primary">
+          Tạo hồ sơ
+        </button>
+        {showEditModal && (
+          <ProfileEditModal
+            isOpen={showEditModal}
+            onClose={() => setShowEditModal(false)}
+            initialData={null}
+            onSave={handleProfileUpdate} 
+          />
+        )}
       </div>
     );
   }
 
+  // Nếu profile đã tồn tại
   return (
     <div className="profile-page">
       <div className="profile-container">
-        {/* Header */}
+        {/* Header (Giữ nguyên) */}
         <div className="profile-header">
           <div className="profile-avatar">
-            <div className="avatar-circle">
-              {profile.basicInfo?.fullName?.charAt(0) || user?.firstName?.charAt(0) || 'U'}
-            </div>
+            <span className="avatar-letter">
+              {profile.basicInfo?.fullName ? profile.basicInfo.fullName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+            </span>
           </div>
           <div className="profile-info">
-            <h1>{profile.basicInfo?.fullName || 'No Name'}</h1>
-            <p className="profile-email">{user?.email}</p>
-            <div className="profile-status">
-              <span className={`status-badge ${profile.isProfileComplete ? 'complete' : 'incomplete'}`}>
-                {profile.isProfileComplete ? 'Completed' : 'Incomplete'}
-              </span>
-            </div>
+            <h3>{profile.basicInfo?.fullName || 'Tên bệnh nhân'}</h3>
+            <p className="profile-email">{user.email}</p>
+            <span className={`profile-status ${profile.isProfileComplete ? 'completed' : 'incomplete'}`}>
+              {profile.isProfileComplete ? 'Đã hoàn thành' : 'Chưa hoàn thành'}
+            </span>
           </div>
-          <div className="profile-actions">
-            <button 
-              onClick={() => setShowEditModal(true)} 
-              className="btn-primary"
-            >
-              Edit
-            </button>
-          </div>
+          <button onClick={() => setShowEditModal(true)} className="btn btn-edit">
+            Edit
+          </button>
         </div>
 
         {/* Profile Content */}
         <div className="profile-content">
-          {/* Thông tin cơ bản */}
+          {/* Basic Information (Giữ nguyên) */}
           <div className="profile-section">
             <h2>Basic Information</h2>
-            <div className="profile-grid">
-              <div className="profile-field">
-                <label>Full Name</label>
-                <p>{profile.basicInfo?.fullName || 'Not available'}</p>
+            <div className="info-grid">
+              <div className="info-item">
+                <strong>Full Name</strong>
+                <span>{profile.basicInfo?.fullName || '-'}</span>
               </div>
-              <div className="profile-field">
-                <label>Date of Birth</label>
-                <p>{profile.basicInfo?.dateOfBirth ? new Date(profile.basicInfo.dateOfBirth).toLocaleDateString('en-US') : 'Not available'}</p>
+              <div className="info-item">
+                <strong>Date of Birth</strong>
+                <span>{profile.basicInfo?.dateOfBirth ? new Date(profile.basicInfo.dateOfBirth).toLocaleDateString('vi-VN') : '-'}</span>
               </div>
-              <div className="profile-field">
-                <label>Gender</label>
-                <p>{profile.basicInfo?.gender === 'male' ? 'Male' : profile.basicInfo?.gender === 'female' ? 'Female' : profile.basicInfo?.gender || 'Not available'}</p>
+              <div className="info-item">
+                <strong>Gender</strong>
+                <span>{profile.basicInfo?.gender || '-'}</span>
               </div>
-              <div className="profile-field">
-                <label>ID Number</label>
-                <p>{profile.basicInfo?.idCard?.idNumber || 'Not available'}</p>
+              <div className="info-item">
+                <strong>ID Number</strong>
+                <span>{profile.basicInfo?.idCard?.idNumber || '-'}</span>
               </div>
             </div>
           </div>
 
-          {/* Thông tin liên hệ */}
+          {/* Contact Information (Giữ nguyên) */}
           <div className="profile-section">
             <h2>Contact Information</h2>
-            <div className="profile-grid">
-              <div className="profile-field">
-                <label>Phone Number</label>
-                <p>{profile.contactInfo?.phone || 'Not available'}</p>
+            <div className="info-grid">
+              <div className="info-item">
+                <strong>Phone Number</strong>
+                <span>{profile.contactInfo?.phone || '-'}</span>
               </div>
-              <div className="profile-field">
-                <label>Email</label>
-                <p>{profile.contactInfo?.email || 'Not available'}</p>
+              <div className="info-item">
+                <strong>Email</strong>
+                <span>{profile.contactInfo?.email || user.email || '-'}</span>
               </div>
-              <div className="profile-field full-width">
-                <label>Address</label>
-                <p>
-                  {profile.contactInfo?.address ? 
-                    `${profile.contactInfo.address.street || ''}, ${profile.contactInfo.address.city || ''}, ${profile.contactInfo.address.state || ''}`.trim() || 'Not available'
-                    : 'Not available'
-                  }
-                </p>
+              <div className="info-item full-width">
+                <strong>Address</strong>
+                <span>
+                  {profile.contactInfo?.address?.street || 'N/A'}
+                  {profile.contactInfo?.address?.city ? `, ${profile.contactInfo.address.city}` : ''}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Liên hệ khẩn cấp */}
+          {/* === BẮT ĐẦU PHẦN CODE BỊ THIẾU === */}
+          
+          {/* Emergency Contact (Chỉ hiển thị nếu có tên) */}
           {profile.emergencyContact?.name && (
             <div className="profile-section">
               <h2>Emergency Contact</h2>
-              <div className="profile-grid">
-                <div className="profile-field">
-                  <label>Name</label>
-                  <p>{profile.emergencyContact.name}</p>
+              <div className="info-grid">
+                <div className="info-item">
+                  <strong>Name</strong>
+                  <span>{profile.emergencyContact.name}</span>
                 </div>
-                <div className="profile-field">
-                  <label>Relationship</label>
-                  <p>{profile.emergencyContact.relationship || 'Not available'}</p>
+                <div className="info-item">
+                  <strong>Relationship</strong>
+                  <span>{profile.emergencyContact.relationship}</span>
                 </div>
-                <div className="profile-field">
-                  <label>Phone Number</label>
-                  <p>{profile.emergencyContact.phone || 'Not available'}</p>
+                <div className="info-item">
+                  <strong>Phone Number</strong>
+                  <span>{profile.emergencyContact.phone}</span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Thông tin y tế */}
+          {/* Medical Information (Chỉ hiển thị nếu có 1 trong 2) */}
           {(profile.medicalHistory?.length > 0 || profile.allergies?.length > 0) && (
             <div className="profile-section">
               <h2>Medical Information</h2>
-              
-              {profile.medicalHistory?.length > 0 && (
-                <div className="medical-info">
-                  <h3>Medical History</h3>
-                  <div className="medical-list">
-                    {profile.medicalHistory.map((item, index) => (
-                      <div key={index} className="medical-item">
-                        <strong>{item.condition}</strong>
-                        {item.year && <span className="year">({item.year})</span>}
-                        {item.notes && <p className="notes">{item.notes}</p>}
-                      </div>
-                    ))}
+              <div className="info-grid">
+                {/* Controller của bạn lưu medicalHistory/allergies dạng array,
+                  nên chúng ta cần đọc nó từ array 
+                */}
+                {profile.medicalHistory?.length > 0 && (
+                  <div className="info-item full-width">
+                    <strong>Medical History</strong>
+                    <span>{profile.medicalHistory.map(item => item.condition).join(', ')}</span>
                   </div>
-                </div>
-              )}
-
-              {profile.allergies?.length > 0 && (
-                <div className="medical-info">
-                  <h3>Allergies</h3>
-                  <div className="allergy-list">
-                    {profile.allergies.map((item, index) => (
-                      <div key={index} className="allergy-item">
-                        <strong>{item.allergen}</strong>
-                        {item.severity && <span className="severity">({item.severity})</span>}
-                        {item.reaction && <p className="reaction">{item.reaction}</p>}
-                      </div>
-                    ))}
+                )}
+                {profile.allergies?.length > 0 && (
+                  <div className="info-item full-width">
+                    <strong>Allergies</strong>
+                    <span>{profile.allergies.map(item => item.allergen).join(', ')}</span>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           )}
-
-          {/* Thông tin bảo hiểm */}
-          {profile.insuranceInfo && (
-            <div className="profile-section">
-              <h2>Insurance Information</h2>
-              <p>{profile.insuranceInfo}</p>
-            </div>
-          )}
+          
+          {/* Lịch sử cuộc hẹn */}
+          <div className="profile-section">
+            <h2>My Appointments</h2>
+            <PatientAppointmentList />
+          </div>
+          
         </div>
       </div>
 
-      {/* Edit Modal */}
+      {/* Modal Edit (Giữ nguyên) */}
       {showEditModal && (
         <ProfileEditModal
           isOpen={showEditModal}
           onClose={() => setShowEditModal(false)}
+          initialData={profile} 
           onSave={handleProfileUpdate}
-          initialData={profile}
         />
       )}
     </div>

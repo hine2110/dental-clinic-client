@@ -1,8 +1,9 @@
 // src/pages/StaffPage/StaffContacts.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/authContext';
-import './staff.css'; // We will create this file in the next step
+import { io } from "socket.io-client"; // THÊM MỚI
+import './staff.css'; 
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -18,42 +19,99 @@ function StaffContacts() {
     totalContacts: 0
   });
   
-  // State for the reply modal
   const [selectedContact, setSelectedContact] = useState(null);
   const [replyMessage, setReplyMessage] = useState('');
   const [isReplying, setIsReplying] = useState(false);
 
-  useEffect(() => {
-    const fetchContacts = async (page) => {
-      try {
-        setLoading(true);
-        setError('');
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_BASE}/contact?page=${page}&limit=10`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+  // === BƯỚC 1: Tách hàm fetchContacts ra ngoài ===
+  // Gói trong useCallback để nó ổn định và có thể được sử dụng trong các useEffect khác
+  const fetchContacts = useCallback(async (page) => {
+    try {
+      setLoading(true);
+      setError('');
+      const token = localStorage.getItem('token');
+      // API endpoint này không đổi, backend sẽ tự động lọc
+      const response = await fetch(`${API_BASE}/contact?page=${page}&limit=10`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
 
-        const data = await response.json();
-        if (!response.ok || !data.success) {
-          throw new Error(data.message || 'Failed to fetch contacts');
-        }
-        setContacts(data.data);
-        setPaginationInfo(data.pagination);
-      } catch (e) {
-        setError(e.message);
-      } finally {
-        setLoading(false);
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Failed to fetch contacts');
       }
-    };
+      setContacts(data.data);
+      setPaginationInfo(data.pagination);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []); // Hàm này không phụ thuộc vào gì (vì token lấy từ localStorage)
 
+  // === BƯỚC 2: useEffect gốc, chỉ gọi fetchContacts ===
+  useEffect(() => {
     if (user) {
       fetchContacts(currentPage);
     }
-  }, [user, currentPage]);
+  }, [user, currentPage, fetchContacts]); // Thêm fetchContacts vào dependency
+
+  // === BƯỚC 3: useEffect MỚI cho Socket.io ===
+  useEffect(() => {
+    if (!user) return; // Chỉ chạy khi user đã đăng nhập
+
+    const token = localStorage.getItem('token');
+    
+    // 1. Kết nối tới Socket server
+    const socket = io(API_BASE.replace("/api", ""), { // Kết nối tới root (vd: http://localhost:5000)
+      auth: { token: token } // Gửi token để xác thực (nếu backend có)
+    });
+
+    // 2. Lấy danh sách cơ sở làm việc HÔM NAY của nhân viên
+    const fetchLocationsAndJoinRooms = async () => {
+      try {
+        // Gọi API mới (Giả định là /api/staff/my-locations-today)
+        const response = await fetch(`${API_BASE}/staff/my-locations-today`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        if (data.success && Array.isArray(data.data)) {
+          // 3. Tham gia vào "room" của từng cơ sở
+          data.data.forEach(location => {
+            if(location._id) {
+              socket.emit('join_location_room', location._id);
+            }
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch locations for socket rooms:", err);
+      }
+    };
+    
+    fetchLocationsAndJoinRooms();
+
+    // 4. Lắng nghe sự kiện "new_contact_received"
+    socket.on('new_contact_received', () => {
+      console.log("Socket: New contact received! Refetching...");
+      // Khi có tin nhắn mới, tải lại danh sách ở trang hiện tại
+      fetchContacts(currentPage); 
+      // (Bạn cũng có thể gọi API đếm số tin chưa đọc ở đây)
+    });
+
+    // 5. Cleanup: Ngắt kết nối socket khi component unmount
+    return () => {
+      socket.disconnect();
+    };
+
+  }, [user, currentPage, fetchContacts]); // Chạy lại nếu user, trang, hoặc hàm fetch thay đổi
+
+  // === CÁC HÀM KHÁC (giữ nguyên) ===
 
   const handleOpenReplyModal = (contact) => {
     setSelectedContact(contact);
     setReplyMessage('');
+    
+    // (Tùy chọn: Đánh dấu là 'read' ở đây nếu cần)
   };
 
   const handleCloseReplyModal = () => {
@@ -84,7 +142,6 @@ function StaffContacts() {
         throw new Error(data.message || 'Gửi trả lời thất bại');
       }
 
-      // Update the contact list in the UI without a full refresh
       setContacts(prevContacts => 
         prevContacts.map(c => 
           c._id === selectedContact._id ? data.data : c
@@ -115,7 +172,7 @@ function StaffContacts() {
     }
   };
 
-    const handlePageChange = (newPage) => {
+  const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= paginationInfo.totalPages) {
       setCurrentPage(newPage);
     }
@@ -135,6 +192,7 @@ function StaffContacts() {
               <thead className="table-light">
                 <tr>
                   <th>#</th>
+                  <th>Cơ sở</th> {/* THÊM MỚI */}
                   <th>Ngày gửi</th>
                   <th>Người gửi</th>
                   <th>Email</th>
@@ -147,6 +205,8 @@ function StaffContacts() {
                 {contacts.length > 0 ? contacts.map((contact, index) => (
                   <tr key={contact._id}>
                     <td>{(currentPage - 1) * 10 + index + 1}</td>
+                    {/* THÊM MỚI: Hiển thị tên cơ sở */}
+                    <td>{contact.location?.name || 'N/A'}</td>
                     <td>{new Date(contact.createdAt).toLocaleDateString('vi-VN')}</td>
                     <td>{contact.name}</td>
                     <td>{contact.email}</td>
@@ -164,14 +224,15 @@ function StaffContacts() {
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan="7" className="text-center">Không có tin nhắn nào.</td>
+                    {/* CẬP NHẬT: Tăng colSpan */}
+                    <td colSpan="8" className="text-center">Không có tin nhắn nào.</td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
 
-          {/* Khối Phân trang */}
+          {/* (Phần Phân trang giữ nguyên) */}
           {paginationInfo && paginationInfo.totalPages > 1 && (
             <nav className="d-flex justify-content-end mt-3">
               <ul className="pagination">
@@ -196,7 +257,7 @@ function StaffContacts() {
         </>
       )}
 
-      {/* Modal Trả lời Tin nhắn */}
+      {/* (Phần Modal giữ nguyên) */}
       {selectedContact && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -205,6 +266,10 @@ function StaffContacts() {
               <button type="button" className="btn-close" onClick={handleCloseReplyModal}></button>
             </div>
             <div className="modal-body">
+               {/* THÊM MỚI: Hiển thị cơ sở */}
+              <div className="mb-3">
+                <label className="form-label"><strong>Cơ sở:</strong> {selectedContact.location?.name || 'N/A'}</label>
+              </div>
               <div className="mb-3">
                 <label className="form-label"><strong>Từ:</strong> {selectedContact.name} ({selectedContact.email})</label>
               </div>
