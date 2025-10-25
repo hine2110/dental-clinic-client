@@ -300,81 +300,62 @@ function ScheduleCreator({ scheduleType, scheduleSubType, onScheduleCreated, loc
     return diffHours >= 8;
   };
 
-  // Extract day from date string (handles timezone issues)
   const extractDayFromDate = (dateString) => {
-    if (!dateString || typeof dateString !== 'string') {
-      return 1; 
+    if (!dateString) {
+      return 1; // Mặc định là ngày lẻ nếu không có dữ liệu
     }
     
-    const datePart = dateString.substring(0, 10);
-    
-    const day = parseInt(datePart.split('-')[2], 10);
-  
-    return isNaN(day) ? 1 : day;
-};
+    try {
+      // Tạo Date object, nó sẽ tự động chuyển sang múi giờ local
+      const dateObj = new Date(dateString); 
+      
+      // Lấy ngày (1-31) của giờ local
+      const day = dateObj.getDate(); 
+      
+      return isNaN(day) ? 1 : day;
+    } catch (e) {
+      return 1; // Mặc định là ngày lẻ nếu có lỗi
+    }
+  };
 
   // Get color for schedule based on person type and schedule type
   const getScheduleColor = (schedule) => {
     const isFull = isFulltime(schedule.startTime, schedule.endTime);
     
-    if (scheduleType === 'doctor') {
-      // Doctor colors based on day (odd/even) and schedule type (fulltime/parttime)
-      const day = extractDayFromDate(schedule.date);
-      const isOddDay = day % 2 === 1; // Odd days: 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31
-      
-      console.log('Schedule date:', schedule.date);
-      console.log('Extracted day:', day);
-      console.log('Is odd day:', isOddDay);
-      
-      if (isFull) {
-        // Fulltime doctor colors
-        return isOddDay ? '#ffd700' : '#ff69b4'; // Yellow dark (odd) / Pink dark (even)
-      } else {
-        // Parttime doctor colors
-        return isOddDay ? '#ffff99' : '#ffb6c1'; // Yellow light (odd) / Pink light (even)
-      }
-    } else {
-      // Staff colors based on staff type
-      if (schedule.staff?.staffType === 'receptionist') {
-        // Receptionist: Yellow
-        return isFull ? '#ffd700' : '#ffff00'; // Gold / Yellow
-      } else if (schedule.staff?.staffType === 'storeKepper') {
-        // Storekepper: Blue
-        return isFull ? '#1e3a8a' : '#3b82f6'; // Dark Blue / Light Blue
-      } else {
-        // Default staff color
-        return isFull ? '#6b7280' : '#9ca3af'; // Gray
-      }
-    }
-  };
+    // Lấy ngày local (đã sửa)
+    const day = extractDayFromDate(schedule.date);
+    const isOddDay = day % 2 === 1; // true nếu là ngày lẻ
 
-  // Get text color based on background color
-  const getTextColor = (schedule) => {
-    const isFull = isFulltime(schedule.startTime, schedule.endTime);
+    if (scheduleType === 'doctor') {
+      // ---- LOGIC BÁC SĨ ----
+      // Ngày lẻ = Xanh nhạt, Ngày chẵn = Vàng nhạt
+      return isOddDay ? '#3b82f6' : '#ffff00'; 
     
-    if (scheduleType === 'doctor') {
-      const day = extractDayFromDate(schedule.date);
-      const isOddDay = day % 2 === 1;
-      
-      if (isFull) {
-        // Fulltime: Yellow (black text) / Pink (white text)
-        return isOddDay ? '#000000' : '#ffffff'; // Black for yellow / White for pink
-      } else {
-        // Parttime: Yellow light (black text) / Pink light (white text)
-        return isOddDay ? '#000000' : '#ffffff'; // Black for yellow / White for pink
-      }
     } else {
-      // Staff colors - determine based on background
-      if (schedule.staff?.staffType === 'receptionist') {
-        return isFull ? '#000000' : '#000000'; // Black for yellow
-      } else if (schedule.staff?.staffType === 'storeKepper') {
-        return isFull ? '#ffffff' : '#ffffff'; // White for blue
-      } else {
-        return '#ffffff'; // White for gray
+      // ---- LOGIC NHÂN VIÊN ----
+      const staffType = schedule.staff?.staffType;
+
+      if (staffType === 'receptionist' && isOddDay) {
+        // Receptionist VÀ ngày lẻ = Xanh nhạt
+        return '#3b82f6';
+      } 
+      
+      if (staffType === 'storeKepper' && !isOddDay) {
+        // StoreKepper VÀ ngày chẵn = Vàng nhạt
+        return '#ffff00';
       }
+      
+      // TẤT CẢ CÁC TRƯỜNG HỢP CÒN LẠI CỦA NHÂN VIÊN:
+      // (Receptionist ngày chẵn, StoreKepper ngày lẻ, các loại staff khác)
+      // Dùng màu xám mặc định
+      return isFull ? '#6b7280' : '#9ca3af'; // Gray
     }
   };
 
+  const getTextColor = (schedule) => {
+    
+    return '#000000'; 
+  };
   const goToPreviousMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
   };

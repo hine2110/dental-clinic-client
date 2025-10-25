@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useParams } from 'react-router-dom'; // Thêm useParams
-import ScheduleCreator from '../../components/ScheduleCreator';
+import ScheduleCreator from '../../components/management/ScheduleCreator';
 import './management.css';
 
 function ManagementScheduleDoctor() {
