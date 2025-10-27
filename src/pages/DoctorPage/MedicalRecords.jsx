@@ -18,7 +18,8 @@ import {
   Divider,
   Badge,
   Statistic,
-  Typography
+  Typography,
+  Image
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -563,6 +564,28 @@ const MedicalRecords = () => {
                       <div style={{ whiteSpace: 'pre-wrap' }}>{selectedRecord.testResults}</div>
                     </Descriptions.Item>
                   )}
+                  {selectedRecord.testImages && selectedRecord.testImages.length > 0 && (
+                    <Descriptions.Item label="Hình ảnh xét nghiệm" span={3}>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <Image.PreviewGroup>
+                          {selectedRecord.testImages.map((url, index) => (
+                            <Image
+                              key={index}
+                              width={100}
+                              height={100}
+                              src={url}
+                              alt={`Kết quả xét nghiệm ${index + 1}`}
+                              style={{ 
+                                objectFit: 'cover', 
+                                borderRadius: '8px',
+                                border: '1px solid #d9d9d9'
+                              }}
+                            />
+                          ))}
+                        </Image.PreviewGroup>
+                      </div>
+                    </Descriptions.Item>
+                  )}
                 </Descriptions>
               </Card>
             )}
@@ -617,8 +640,12 @@ const MedicalRecords = () => {
                 {selectedRecord.selectedServices && selectedRecord.selectedServices.length > 0 && (
                   <Descriptions.Item label="Dịch vụ đã thực hiện">
                     <div>
-                      {selectedRecord.selectedServices.map((serviceId, index) => (
-                        <Tag key={index} color="blue" style={{ marginBottom: '4px' }}>{serviceId}</Tag>
+                      {selectedRecord.selectedServices.map((service, index) => (
+                        <Tag key={index} color="blue" style={{ marginBottom: '4px' }}>
+                          {typeof service === 'object' && service?.name 
+                            ? service.name 
+                            : service}
+                        </Tag>
                       ))}
                     </div>
                   </Descriptions.Item>

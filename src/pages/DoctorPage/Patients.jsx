@@ -350,16 +350,21 @@ const Patients = () => {
                 <PhoneOutlined style={{ marginRight: '8px' }} />
                 Thông tin liên hệ
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div>
-                  <p><strong>Địa chỉ:</strong> {safeRender(patientDetails.patient.contactInfo?.address?.street)}</p>
-                  <p><strong>Phường/Xã:</strong> {safeRender(patientDetails.patient.contactInfo?.address?.ward)}</p>
-                </div>
-                <div>
-                  <p><strong>Quận/Huyện:</strong> {safeRender(patientDetails.patient.contactInfo?.address?.district)}</p>
-                  <p><strong>Tỉnh/Thành phố:</strong> {safeRender(patientDetails.patient.contactInfo?.address?.city)}</p>
-                </div>
-              </div>
+              <p><strong>Địa chỉ:</strong> {(() => {
+                const address = patientDetails.patient.contactInfo?.address;
+                if (!address) return 'Chưa cập nhật';
+                
+                // Gộp các phần địa chỉ có giá trị (theo đúng schema: street, city, state, zipCode, country)
+                const parts = [
+                  address.street,
+                  address.city,
+                  address.state,
+                  address.zipCode,
+                  address.country
+                ].filter(Boolean); // Loại bỏ giá trị null/undefined/''
+                
+                return parts.length > 0 ? parts.join(', ') : 'Chưa cập nhật';
+              })()}</p>
             </div>
 
             {/* Thông tin bảo hiểm */}
