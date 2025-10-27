@@ -26,7 +26,9 @@ import {
   Timeline,
   Statistic,
   Avatar,
-  Descriptions
+  Descriptions,
+  Upload,
+  Image
 } from 'antd';
 import { 
   UserOutlined, 
@@ -48,6 +50,8 @@ import {
   PrinterOutlined,
   DownloadOutlined,
   PhoneOutlined,
+  UploadOutlined,
+  PictureOutlined,
   MailOutlined,
   HomeOutlined
 } from '@ant-design/icons';
@@ -117,6 +121,8 @@ const MedicalRecord = () => {
   const [imagingTests, setImagingTests] = useState([]);
   const [followUpDate, setFollowUpDate] = useState(null);
   const [error, setError] = useState(null);
+  const [testImages, setTestImages] = useState([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Helper function to safely render values
   const safeRender = (value, fallback = 'N/A') => {
@@ -202,7 +208,7 @@ const MedicalRecord = () => {
           prognosis: response.data.prognosis || '',
           
           // Step 4: Treatment
-          selectedServices: response.data.selectedServices || [],
+          selectedServices: response.data.selectedServices?.map(s => typeof s === 'object' ? s._id : s) || [],
           treatmentNotes: response.data.treatmentNotes || '',
           homeCare: response.data.homeCare || '',
           
@@ -214,6 +220,11 @@ const MedicalRecord = () => {
         };
         
         form.setFieldsValue(formData);
+        
+        // Load test images if exist
+        if (response.data.testImages && response.data.testImages.length > 0) {
+          setTestImages(response.data.testImages);
+        }
         
         // Load prescriptions if exist
         if (response.data.prescriptions && response.data.prescriptions.length > 0) {
@@ -290,6 +301,9 @@ const MedicalRecord = () => {
         status: 'in-progress'
       });
       
+      // Refresh appointment data để cập nhật Steps indicator
+      await fetchAppointmentDetails();
+      
       message.success('Lưu khám lâm sàng thành công');
       setCurrentStep(1);
     } catch (error) {
@@ -330,6 +344,9 @@ const MedicalRecord = () => {
         prognosis: values.prognosis
       });
       
+      // Refresh appointment data để cập nhật Steps indicator
+      await fetchAppointmentDetails();
+      
       message.success('Lưu chẩn đoán thành công');
       setCurrentStep(3);
     } catch (error) {
@@ -349,6 +366,9 @@ const MedicalRecord = () => {
         homeCare: values.homeCare
       });
       
+      // Refresh appointment data để cập nhật Steps indicator
+      await fetchAppointmentDetails();
+      
       message.success('Lưu dịch vụ & điều trị thành công');
       setCurrentStep(4);
     } catch (error) {
@@ -362,6 +382,34 @@ const MedicalRecord = () => {
   const handleSaveFollowUp = async (values) => {
     try {
       setLoading(true);
+      
+      // ✅ VALIDATION: Kiểm tra các fields bắt buộc từ các bước trước
+      const missingFields = [];
+      
+      if (!appointment?.chiefComplaint) missingFields.push('Lý do khám (Step 1)');
+      if (!appointment?.medicalHistory) missingFields.push('Tiền sử bệnh (Step 1)');
+      if (!appointment?.physicalExamination?.oralExamination) missingFields.push('Khám răng miệng (Step 1)');
+      if (!appointment?.finalDiagnosis) missingFields.push('Chẩn đoán xác định (Step 3)');
+      
+      if (missingFields.length > 0) {
+        message.error({
+          content: (
+            <div>
+              <strong>Không thể hoàn thành khám bệnh!</strong>
+              <br />
+              <span>Vui lòng điền đầy đủ các thông tin bắt buộc:</span>
+              <ul style={{ marginTop: 8, marginBottom: 0, paddingLeft: 20 }}>
+                {missingFields.map((field, index) => (
+                  <li key={index}>{field}</li>
+                ))}
+              </ul>
+            </div>
+          ),
+          duration: 5
+        });
+        setLoading(false);
+        return;
+      }
       
       // Prepare prescription data
       const prescriptionData = prescriptionItems.map(item => ({
@@ -698,26 +746,42 @@ const MedicalRecord = () => {
           >
             <Step 
               title="Khám lâm sàng" 
-              description="Khám tổng quát và chuyên khoa"
-              status={appointment?.physicalExamination ? "finish" : "wait"}
+              description={
+                appointment?.chiefComplaint && appointment?.medicalHistory && appointment?.physicalExamination?.oralExamination
+                  ? "✓ Đã hoàn thành"
+                  : "⚠ Chưa đầy đủ thông tin"
+              }
+              status={
+                appointment?.chiefComplaint && appointment?.medicalHistory && appointment?.physicalExamination?.oralExamination
+                  ? "finish" 
+                  : currentStep === 0 ? "process" : "error"
+              }
               icon={<EyeOutlined />}
             />
             <Step 
               title="Chỉ định cận lâm sàng" 
               description="Chỉ định xét nghiệm và chờ kết quả"
-              status={appointment?.labTests?.length > 0 ? "finish" : "wait"}
+              status={appointment?.labTests?.length > 0 || appointment?.imagingTests?.length > 0 ? "finish" : currentStep === 1 ? "process" : "wait"}
               icon={<ExperimentOutlined />}
             />
             <Step 
               title="Chẩn đoán" 
-              description="Chẩn đoán dựa trên kết quả xét nghiệm"
-              status={appointment?.finalDiagnosis ? "finish" : currentStep === 2 ? "process" : "wait"}
+              description={
+                appointment?.finalDiagnosis
+                  ? "✓ Đã hoàn thành"
+                  : "⚠ Chưa đầy đủ thông tin"
+              }
+              status={
+                appointment?.finalDiagnosis
+                  ? "finish" 
+                  : currentStep === 2 ? "process" : "error"
+              }
               icon={<CheckCircleOutlined />}
             />
             <Step 
               title="Dịch vụ & Điều trị" 
               description="Chọn dịch vụ và thực hiện điều trị"
-              status={appointment?.procedures ? "finish" : currentStep === 3 ? "process" : "wait"}
+              status={appointment?.treatmentNotes ? "finish" : currentStep === 3 ? "process" : "wait"}
               icon={<MedicineBoxOutlined />}
             />
             <Step 
@@ -1029,6 +1093,131 @@ const MedicalRecord = () => {
                     />
                   </Form.Item>
 
+                  {/* Upload hình ảnh xét nghiệm */}
+                  <Form.Item
+                    label={
+                      <span>
+                        <PictureOutlined /> Hình ảnh kết quả xét nghiệm
+                      </span>
+                    }
+                    className="form-item-enhanced"
+                  >
+                    <Upload
+                      listType="picture-card"
+                      fileList={testImages.map((url, index) => ({
+                        uid: `${index}`,
+                        name: `test-image-${index + 1}`,
+                        status: 'done',
+                        url: url
+                      }))}
+                      customRequest={async ({ file, onSuccess, onError }) => {
+                        setUploadingImage(true);
+                        const formData = new FormData();
+                        formData.append('image', file);
+                        
+                        try {
+                          const response = await fetch(
+                            `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/doctor/upload/image`,
+                            {
+                              method: 'POST',
+                              headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                              },
+                              body: formData
+                            }
+                          );
+                          
+                          if (response.ok) {
+                            const data = await response.json();
+                            const newImages = [...testImages, data.data.url];
+                            setTestImages(newImages);
+                            
+                            // Lưu vào database
+                            await fetch(
+                              `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/doctor/appointments/${appointmentId}`,
+                              {
+                                method: 'PUT',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                },
+                                body: JSON.stringify({ testImages: newImages })
+                              }
+                            );
+                            
+                            message.success('Upload hình ảnh thành công');
+                            onSuccess();
+                          } else {
+                            throw new Error('Upload failed');
+                          }
+                        } catch (error) {
+                          console.error('Upload error:', error);
+                          message.error('Lỗi khi upload hình ảnh');
+                          onError(error);
+                        } finally {
+                          setUploadingImage(false);
+                        }
+                      }}
+                      onRemove={async (file) => {
+                        try {
+                          const imageUrl = file.url;
+                          const filename = imageUrl.split('/').pop();
+                          
+                          // Xóa file từ server
+                          await fetch(
+                            `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/doctor/upload/image/${filename}`,
+                            {
+                              method: 'DELETE',
+                              headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                              }
+                            }
+                          );
+                          
+                          // Cập nhật state
+                          const newImages = testImages.filter(url => url !== imageUrl);
+                          setTestImages(newImages);
+                          
+                          // Cập nhật database
+                          await fetch(
+                            `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/doctor/appointments/${appointmentId}`,
+                            {
+                              method: 'PUT',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                              },
+                              body: JSON.stringify({ testImages: newImages })
+                            }
+                          );
+                          
+                          message.success('Đã xóa hình ảnh');
+                          return true;
+                        } catch (error) {
+                          console.error('Delete error:', error);
+                          message.error('Lỗi khi xóa hình ảnh');
+                          return false;
+                        }
+                      }}
+                      onPreview={(file) => {
+                        window.open(file.url, '_blank');
+                      }}
+                      accept="image/*"
+                      capture="environment"
+                      disabled={uploadingImage}
+                    >
+                      {testImages.length >= 8 ? null : (
+                        <div>
+                          <UploadOutlined />
+                          <div style={{ marginTop: 8 }}>Upload</div>
+                        </div>
+                      )}
+                    </Upload>
+                    <div style={{ color: '#8c8c8c', fontSize: '12px', marginTop: '8px' }}>
+                      Hỗ trợ: JPG, PNG, GIF. Tối đa 8 hình ảnh (mỗi ảnh ≤ 5MB)
+                    </div>
+                  </Form.Item>
+
                   <Form.Item
                     name="finalDiagnosis"
                     label="Chẩn đoán cuối cùng"
@@ -1270,6 +1459,10 @@ const MedicalRecord = () => {
                           style={{ width: '100%' }}
                           placeholder="Chọn ngày tái khám"
                           showTime={{ format: 'HH:mm' }}
+                          disabledDate={(current) => {
+                            // Không cho chọn ngày quá khứ (trước hôm nay)
+                            return current && current < dayjs().startOf('day');
+                          }}
                         />
                       </Form.Item>
                     </Col>
@@ -1400,7 +1593,7 @@ const MedicalRecord = () => {
                 label="Liều lượng"
                 rules={[{ required: true, message: 'Vui lòng nhập liều lượng' }]}
               >
-                <Input placeholder="VD: 500mg" />
+                <Input placeholder="VD: 2 viên" />
               </Form.Item>
             </Col>
             <Col span={12}>

@@ -461,9 +461,13 @@ const Appointments = () => {
         </Tag>
       ),
       filters: [
+        { text: 'Chờ xác nhận', value: 'pending' },
+        { text: 'Đã xác nhận', value: 'confirmed' },
         { text: 'Đã check-in', value: 'checked-in' },
         { text: 'Tạm hoãn', value: 'on-hold' },
         { text: 'Đang khám', value: 'in-progress' },
+        { text: 'Chờ kết quả', value: 'waiting-for-results' },
+        { text: 'Đang làm dịch vụ', value: 'in-treatment' },
         { text: 'Đã hoàn thành', value: 'completed' },
         { text: 'Không đến', value: 'no-show' },
         { text: 'Đã hủy', value: 'cancelled' },
@@ -668,12 +672,16 @@ const Appointments = () => {
               placeholder="Trạng thái"
               value={filters.status}
               onChange={(value) => handleFilterChange('status', value)}
-              style={{ width: 150 }}
+              style={{ width: 180 }}
               allowClear
             >
+              <Option value="pending">Chờ xác nhận</Option>
+              <Option value="confirmed">Đã xác nhận</Option>
               <Option value="checked-in">Đã check-in</Option>
               <Option value="on-hold">Tạm hoãn</Option>
               <Option value="in-progress">Đang khám</Option>
+              <Option value="waiting-for-results">Chờ kết quả</Option>
+              <Option value="in-treatment">Đang làm dịch vụ</Option>
               <Option value="completed">Đã hoàn thành</Option>
               <Option value="no-show">Không đến</Option>
               <Option value="cancelled">Đã hủy</Option>
@@ -831,16 +839,21 @@ const Appointments = () => {
                 <PhoneOutlined style={{ marginRight: '8px' }} />
                 Thông tin liên hệ
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div>
-                  <p><strong>Địa chỉ:</strong> {safeRender(selectedAppointment.patient.contactInfo?.address?.street)}</p>
-                  <p><strong>Phường/Xã:</strong> {safeRender(selectedAppointment.patient.contactInfo?.address?.ward)}</p>
-                </div>
-                <div>
-                  <p><strong>Quận/Huyện:</strong> {safeRender(selectedAppointment.patient.contactInfo?.address?.district)}</p>
-                  <p><strong>Tỉnh/Thành phố:</strong> {safeRender(selectedAppointment.patient.contactInfo?.address?.city)}</p>
-                </div>
-              </div>
+              <p><strong>Địa chỉ:</strong> {(() => {
+                const address = selectedAppointment.patient.contactInfo?.address;
+                if (!address) return 'Chưa cập nhật';
+                
+                // Gộp các phần địa chỉ có giá trị (theo đúng schema: street, city, state, zipCode, country)
+                const parts = [
+                  address.street,
+                  address.city,
+                  address.state,
+                  address.zipCode,
+                  address.country
+                ].filter(Boolean); // Loại bỏ giá trị null/undefined/''
+                
+                return parts.length > 0 ? parts.join(', ') : 'Chưa cập nhật';
+              })()}</p>
             </div>
 
             {/* Thông tin bảo hiểm */}

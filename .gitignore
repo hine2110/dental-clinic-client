@@ -3,3 +3,19 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+package-lock.json
+
+# Documentation files (local only - do not push to main)
+DOCTOR_SCREEN_FLOW_VISUAL.md
+DOCTOR_SCREEN_FLOW_VISUAL_EN.md
+DOCTOR_FLOW_FOR_DRAWIO.md
+DOCTOR_SCREEN_FLOW_VERIFIED.md
+DOCTOR_AUTHENTICATION_SPECIFICATION.md
+DOCTOR_SCREENS_FLOW.md
+DOCTOR_SCREEN_FLOW_DETAILED.md
+GUEST_SCREEN_FLOW.md
+
+# Any other local files (add your files here)
+# Example:
+# my-notes.txt
+# local-config.json
