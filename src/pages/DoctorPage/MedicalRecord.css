@@ -393,3 +393,90 @@
 .medical-record-container::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #096dd9 0%, #1890ff 100%);
 }
+
+/* Print Styles */
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .medical-record-container {
+    background: white !important;
+    padding: 0 !important;
+  }
+  
+  .medical-record-header {
+    background: white !important;
+    color: #2c3e50 !important;
+    box-shadow: none !important;
+    border-bottom: 2px solid #1890ff;
+    page-break-after: avoid;
+  }
+  
+  .patient-info-card {
+    background: white !important;
+    box-shadow: none !important;
+    border: 1px solid #e8eaed !important;
+    page-break-after: avoid;
+  }
+  
+  .steps-container {
+    background: white !important;
+    box-shadow: none !important;
+    page-break-after: avoid;
+  }
+  
+  .step-content {
+    background: white !important;
+    border: 1px solid #e8eaed !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    margin-bottom: 16px !important;
+  }
+  
+  .form-section {
+    background: white !important;
+    box-shadow: none !important;
+    border: 1px solid #e8eaed !important;
+    page-break-inside: avoid;
+    margin-bottom: 16px !important;
+  }
+  
+  /* Hide buttons and non-essential elements */
+  .action-buttons,
+  .ant-btn,
+  .ant-steps,
+  .alert-enhanced,
+  .progress-stats {
+    display: none !important;
+  }
+  
+  /* Ensure content prints properly */
+  .ant-card {
+    border: 1px solid #e8eaed !important;
+    page-break-inside: avoid;
+    margin-bottom: 16px !important;
+  }
+  
+  /* Make text readable */
+  .ant-typography {
+    color: #2c3e50 !important;
+  }
+  
+  /* Table styles for print */
+  .ant-table {
+    border: 1px solid #e8eaed !important;
+  }
+  
+  .ant-table-thead > tr > th {
+    background: #f5f7fa !important;
+    color: #2c3e50 !important;
+    border: 1px solid #e8eaed !important;
+    font-weight: 600;
+  }
+  
+  .ant-table-tbody > tr > td {
+    border: 1px solid #e8eaed !important;
+  }
+}

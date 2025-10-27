@@ -336,6 +336,24 @@ export const getServices = async (filters = {}) => {
   }
 };
 
+/**
+ * Lấy danh sách dịch vụ xét nghiệm/chẩn đoán
+ * @param {object} filters - Bộ lọc (isActive, search)
+ * @returns {Promise<object>} Danh sách dịch vụ xét nghiệm
+ */
+export const getServiceDoctors = async (filters = {}) => {
+  try {
+    const queryParams = new URLSearchParams({ ...filters, limit: 'all', isActive: true }).toString();
+    const response = await axios.get(`${API_BASE_URL}/doctor/service-doctors?${queryParams}`, {
+      headers: getAuthHeaders()
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error getting service doctors:', error);
+    throw error;
+  }
+};
+
 export default {
   // Profile
   getDoctorProfile,
@@ -356,6 +374,7 @@ export default {
   // Medical Records
   getMedicines,
   getServices,
+  getServiceDoctors,
   
   // Schedule
   getDoctorSchedule,

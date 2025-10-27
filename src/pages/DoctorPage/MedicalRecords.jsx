@@ -33,7 +33,8 @@ import {
   UserOutlined,
   CalendarOutlined,
   MedicineBoxOutlined,
-  HeartOutlined
+  HeartOutlined,
+  PrinterOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { getDoctorAppointments } from '../../services/doctorService';
@@ -378,6 +379,9 @@ const MedicalRecords = () => {
         open={detailModalVisible}
         onCancel={() => setDetailModalVisible(false)}
         footer={[
+          <Button key="print" type="primary" icon={<PrinterOutlined />} size="large" onClick={() => window.print()}>
+            In hồ sơ
+          </Button>,
           <Button key="close" size="large" onClick={() => setDetailModalVisible(false)}>
             Đóng
           </Button>
@@ -519,6 +523,7 @@ const MedicalRecords = () => {
             {/* Chỉ định cận lâm sàng */}
             {((selectedRecord.labTests && selectedRecord.labTests.length > 0) || 
               (selectedRecord.imagingTests && selectedRecord.imagingTests.length > 0) ||
+              (selectedRecord.testServices && selectedRecord.testServices.length > 0) ||
               selectedRecord.testResults) && (
               <Card 
                 title={
@@ -531,23 +536,39 @@ const MedicalRecords = () => {
                 style={{ marginBottom: '16px' }}
               >
                 <Descriptions bordered column={1} size="small">
-                  {selectedRecord.imagingTests && selectedRecord.imagingTests.length > 0 && (
-                    <Descriptions.Item label="Chẩn đoán hình ảnh">
-                      <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                        {selectedRecord.imagingTests.map((test, index) => (
-                          <li key={index}>{test}</li>
+                  {(selectedRecord.testServices && selectedRecord.testServices.length > 0) ? (
+                    <Descriptions.Item label="Xét nghiệm & Chẩn đoán cần làm">
+                      <div>
+                        {selectedRecord.testServices.map((service, index) => (
+                          <Tag key={index} color="purple" style={{ marginBottom: '4px' }}>
+                            {typeof service === 'object' && service?.serviceName 
+                              ? service.serviceName 
+                              : service}
+                          </Tag>
                         ))}
-                      </ul>
+                      </div>
                     </Descriptions.Item>
-                  )}
-                  {selectedRecord.labTests && selectedRecord.labTests.length > 0 && (
-                    <Descriptions.Item label="Xét nghiệm">
-                      <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                        {selectedRecord.labTests.map((test, index) => (
-                          <li key={index}>{test}</li>
-                        ))}
-                      </ul>
-                    </Descriptions.Item>
+                  ) : (
+                    <>
+                      {selectedRecord.imagingTests && selectedRecord.imagingTests.length > 0 && (
+                        <Descriptions.Item label="Chẩn đoán hình ảnh">
+                          <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                            {selectedRecord.imagingTests.map((test, index) => (
+                              <li key={index}>{test}</li>
+                            ))}
+                          </ul>
+                        </Descriptions.Item>
+                      )}
+                      {selectedRecord.labTests && selectedRecord.labTests.length > 0 && (
+                        <Descriptions.Item label="Xét nghiệm">
+                          <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                            {selectedRecord.labTests.map((test, index) => (
+                              <li key={index}>{test}</li>
+                            ))}
+                          </ul>
+                        </Descriptions.Item>
+                      )}
+                    </>
                   )}
                   {selectedRecord.imagingResults && (
                     <Descriptions.Item label="Kết quả chẩn đoán hình ảnh">
