@@ -95,6 +95,30 @@ export const adminService = {
   toggleServiceStatus: (id) => adminAPI.patch(`/admin/services/${id}/toggle`),
   deleteService: (id) => adminAPI.delete(`/admin/services/${id}`),
   
+  // Service Doctor Management
+  getServiceDoctors: (params = {}) => {
+    const queryParams = new URLSearchParams(params);
+    const timestamp = new Date().getTime(); 
+    queryParams.append('_', timestamp);
+    const url = `/admin/service-doctors?${queryParams.toString()}`;
+    return adminAPI.get(url);
+  },
+  createServiceDoctor: (payload) => {
+    return adminAPI.post("/admin/service-doctors", payload);
+  },
+  updateServiceDoctor: (id, payload) => {
+    return adminAPI.put(`/admin/service-doctors/${id}`, payload);
+  },
+  toggleServiceDoctorStatus: (id) => {
+    return adminAPI.patch(`/admin/service-doctors/${id}/toggle-status`);
+  },
+  deleteServiceDoctor: (id) => {
+    return adminAPI.delete(`/admin/service-doctors/${id}`);
+  },
+  hardDeleteServiceDoctor: (id) => {
+    return adminAPI.delete(`/admin/service-doctors/${id}/hard-delete`);
+  },
+
   // Discount Management
   getAllDiscounts: () => adminAPI.get("/admin/discounts"),
   createDiscount: (discountData) =>
@@ -103,4 +127,17 @@ export const adminService = {
     adminAPI.put(`/admin/discounts/${id}`, discountData),
   deleteDiscount: (id) => adminAPI.delete(`/admin/discounts/${id}`),
   checkDiscountCode: (code) => adminAPI.get(`/admin/discounts/check-code/${code}`),
+
+  getAllLocations: () => {
+    return adminAPI.get('/locations');
+  },
+
+  getSchedules: (params) => { 
+    return adminAPI.get("/admin/schedules", { params });
+  },
+
+  getPatientHistory: (patientId) => {
+    return adminAPI.get(`/admin/history/${patientId}`);
+},
+
 };
