@@ -61,7 +61,8 @@ import {
   getAppointmentDetails, 
   updateAppointmentStatus,
   getMedicines,
-  getServices
+  getServices,
+  getServiceDoctors
 } from '../../services/doctorService';
 import './MedicalRecord.css';
 
@@ -114,6 +115,7 @@ const MedicalRecord = () => {
   const [currentStep, setCurrentStep] = useState(location.state?.currentStep || 0);
   const [medicines, setMedicines] = useState([]);
   const [services, setServices] = useState([]);
+  const [serviceDoctors, setServiceDoctors] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
   const [prescriptionItems, setPrescriptionItems] = useState([]);
   const [prescriptionModalVisible, setPrescriptionModalVisible] = useState(false);
@@ -168,6 +170,7 @@ const MedicalRecord = () => {
         fetchAppointmentDetails();
         fetchMedicines();
         fetchServices();
+        fetchServiceDoctors();
       } catch (err) {
         console.error('Error in useEffect:', err);
         setError(err.message || 'Unknown error');
@@ -196,8 +199,7 @@ const MedicalRecord = () => {
           otherFindings: response.data.physicalExamination?.otherFindings || '',
           
           // Step 2: Lab Tests
-          labTests: response.data.labTests || [],
-          imagingTests: response.data.imagingTests || [],
+          testServices: response.data.testServices?.map(s => typeof s === 'object' ? s._id : s) || [],
           testInstructions: response.data.testInstructions || '',
           
           // Step 3: Diagnosis
@@ -271,6 +273,16 @@ const MedicalRecord = () => {
     }
   };
 
+  const fetchServiceDoctors = async () => {
+    try {
+      const response = await getServiceDoctors();
+      setServiceDoctors(response.data || []);
+    } catch (error) {
+      console.error('Error fetching service doctors:', error);
+      message.error('Lỗi khi tải danh sách dịch vụ xét nghiệm');
+    }
+  };
+
   const handleStepChange = (step) => {
     // Cho phép chuyển đến bước trước đó để xem dữ liệu
     if (step < currentStep) {
@@ -318,10 +330,12 @@ const MedicalRecord = () => {
     try {
       setLoading(true);
       await updateAppointmentStatus(appointmentId, {
-        imagingTests: values.imagingTests,
-        labTests: values.labTests,
+        testServices: values.testServices,
         testInstructions: values.testInstructions
       });
+      
+      // Refresh appointment data để cập nhật Steps indicator
+      await fetchAppointmentDetails();
       
       message.success('Lưu cận lâm sàng thành công');
       setCurrentStep(2);
@@ -613,9 +627,21 @@ const MedicalRecord = () => {
               </div>
             </Col>
             <Col xs={24} sm={16} md={18}>
-              <Title level={2} style={{ color: 'white', margin: 0 }}>
-                Hồ sơ bệnh án
-              </Title>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Title level={2} style={{ color: 'white', margin: 0 }}>
+                  Hồ sơ bệnh án
+                </Title>
+                {appointment?.status === 'completed' && (
+                  <Button 
+                    type="primary"
+                    icon={<PrinterOutlined />}
+                    onClick={() => window.print()}
+                    style={{ marginLeft: '16px' }}
+                  >
+                    In hồ sơ
+                  </Button>
+                )}
+              </div>
               <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: '16px' }}>
                 Bệnh nhân: {safeRender(appointment?.patient?.user?.fullName)}
               </Text>
@@ -939,43 +965,20 @@ const MedicalRecord = () => {
                   />
 
                   <Form.Item
-                    name="labTests"
-                    label="Xét nghiệm nha khoa cần làm"
-                    rules={[{ required: true, message: 'Vui lòng chọn ít nhất một xét nghiệm' }]}
+                    name="testServices"
+                    label="Xét nghiệm & Chẩn đoán cần làm"
+                    rules={[{ required: true, message: 'Vui lòng chọn ít nhất một xét nghiệm/chẩn đoán' }]}
                     className="form-item-enhanced"
                   >
                     <Select
                       mode="multiple"
-                      placeholder="Chọn các xét nghiệm nha khoa cần thiết"
-                      options={[
-                        { label: 'Xét nghiệm vi khuẩn trong miệng', value: 'Oral Bacteria Test' },
-                        { label: 'Xét nghiệm pH nước bọt', value: 'Saliva pH Test' },
-                        { label: 'Xét nghiệm mảng bám răng', value: 'Plaque Test' },
-                        { label: 'Xét nghiệm độ nhạy cảm răng', value: 'Tooth Sensitivity Test' },
-                        { label: 'Xét nghiệm chức năng nhai', value: 'Chewing Function Test' }
-                      ]}
+                      placeholder="Chọn các xét nghiệm và chẩn đoán cần thiết"
+                      options={serviceDoctors.map(service => ({
+                        label: service.serviceName,
+                        value: service._id
+                      }))}
                     />
                   </Form.Item>
-
-                  <Form.Item
-                    name="imagingTests"
-                    label="Chẩn đoán hình ảnh nha khoa"
-                    rules={[{ required: true, message: 'Vui lòng chọn ít nhất một xét nghiệm hình ảnh' }]}
-                    className="form-item-enhanced"
-                  >
-                    <Select
-                      mode="multiple"
-                      placeholder="Chọn các xét nghiệm hình ảnh nha khoa"
-                      options={[
-                        { label: 'X-quang răng (Periapical)', value: 'Periapical X-ray' },
-                    { label: 'X-quang toàn cảnh (Panoramic)', value: 'Panoramic X-ray' },
-                    { label: 'X-quang cắn cánh (Bitewing)', value: 'Bitewing X-ray' },
-                    { label: 'CT Cone Beam (CBCT)', value: 'CBCT' },
-                    { label: 'X-quang sọ mặt', value: 'Cephalometric X-ray' },
-                    { label: 'X-quang TMJ (khớp thái dương hàm)', value: 'TMJ X-ray' }
-                  ]}
-                />
-              </Form.Item>
 
                   <Form.Item
                     name="testInstructions"
@@ -1025,20 +1028,14 @@ const MedicalRecord = () => {
                           const formValues = form.getFieldsValue();
 
                           // Validate required fields
-                          if (!formValues.labTests || formValues.labTests.length === 0) {
-                            message.error('Vui lòng chọn ít nhất một xét nghiệm nha khoa');
-                            return;
-                          }
-
-                          if (!formValues.imagingTests || formValues.imagingTests.length === 0) {
-                            message.error('Vui lòng chọn ít nhất một xét nghiệm hình ảnh');
+                          if (!formValues.testServices || formValues.testServices.length === 0) {
+                            message.error('Vui lòng chọn ít nhất một xét nghiệm/chẩn đoán');
                             return;
                           }
 
                           const updateData = {
                             status: 'waiting-for-results',
-                            labTests: formValues.labTests,
-                            imagingTests: formValues.imagingTests,
+                            testServices: formValues.testServices,
                             testInstructions: formValues.testInstructions || ''
                           };
 
