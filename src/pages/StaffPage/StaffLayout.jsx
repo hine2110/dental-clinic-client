@@ -8,7 +8,7 @@ import "./staff.css";
 const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 function StaffLayout() {
-  const { user, loading, logout } = useAuth();
+  const { user, staff, loading, logout } = useAuth();
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -22,7 +22,7 @@ function StaffLayout() {
     }
 
     // Phần 2: Thiết lập thông báo real-time
-    if (!loading && user && user.role === 'staff') {
+    if (!loading && user && user.staffType === 'receptionist') {
       
       const fetchInitialCount = async () => {
         try {
@@ -63,6 +63,27 @@ function StaffLayout() {
 
   }, [user, loading, navigate]);
 
+  const staffType = staff?.staffType || user?.staffType;
+
+  let profileUrl = "/"; // Đường dẫn dự phòng
+  if (staffType === "receptionist") {
+    profileUrl = "/staff/receptionist/profile/self";
+  } else if (staffType === "storeKepper") {
+    profileUrl = "/staff/store/profile/self";
+  }
+
+  const handleProfileClick = () => {
+    if (profileUrl !== "/") {
+      navigate(profileUrl);
+    } else {
+      console.error("Không thể xác định loại nhân viên để điều hướng hồ sơ.");
+    }
+  };
+
+  const avatarUrl = user?.avatar 
+    ? `${API_BASE}/${user.avatar.replace(/\\/g, '/')}` 
+    : "https://via.placeholder.com/40";
+
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -75,6 +96,8 @@ function StaffLayout() {
     return null; 
   }
 
+  console.log("LOẠI NHÂN VIÊN HIỆN TẠI:", staffType);
+
   return (
     <div className="staff-layout">
       <div className="background-glow"></div>
@@ -85,8 +108,22 @@ function StaffLayout() {
             <i className="fas fa-envelope fa-lg"></i>
             <i className="fas fa-bell fa-lg"></i>
             <i className="fas fa-sign-out-alt fa-lg" onClick={logout} title="Đăng xuất" style={{ cursor: 'pointer' }}></i>
-            <span>Xin chào, {user.fullName || 'Staff'}!</span>
-            <img src={user.avatar || "https://via.placeholder.com/40"} alt="User Avatar" />
+            
+            <img 
+               src={avatarUrl} // <-- Dùng avatarUrl đã xử lý
+               alt="User Avatar" 
+               onClick={handleProfileClick} // <-- Thêm sự kiện click
+               title="Hồ sơ cá nhân" // <-- Thêm tooltip
+               style={{ // <-- Thêm kiểu dáng
+                 cursor: 'pointer',
+                 width: '40px',
+                 height: '40px',
+                 borderRadius: '50%',
+                 objectFit: 'cover',
+                 marginLeft: '15px' // Thêm khoảng cách
+               }} 
+             />
+            
           </div>
         </div>
       </header>
@@ -94,7 +131,9 @@ function StaffLayout() {
       <div className="layout-body">
         <aside className="staff-sidebar">
           <ul className="staff-sidebar-nav">
-            <li><NavLink to="." end><i className="fas fa-tachometer-alt nav-icon"></i>Dashboard</NavLink></li>
+            <li><NavLink to="work-schedule"><i className="fas fa-tachometer-alt nav-icon"></i>Lịch Làm Việc</NavLink></li>
+
+            
             <li><NavLink to="appointments"><i className="fas fa-table nav-icon"></i>Lịch hẹn</NavLink></li>
             <li>
               <NavLink to="contacts" className="position-relative">
@@ -107,9 +146,19 @@ function StaffLayout() {
                 )}
               </NavLink>
             </li>
-            <li><NavLink to="patients"><i className="fas fa-user-injured nav-icon"></i>Bệnh nhân</NavLink></li>
+            {/* <li><NavLink to="patients"><i className="fas fa-user-injured nav-icon"></i>Bệnh nhân</NavLink></li> */}
             <li><NavLink to="invoices"><i className="fas fa-file-invoice nav-icon"></i>Thanh toán</NavLink></li>
             <li><NavLink to="payment-history"><i className="fas fa-history nav-icon"></i>Lịch sử hóa đơn</NavLink></li>
+            
+            
+            
+            
+            <li><NavLink to="inventory"><i className="fas fa-pills nav-icon"></i>Quản lý Thuốc</NavLink></li>
+            <li><NavLink to="equipment"><i className="fas fa-tools nav-icon"></i>Quản lý Thiết bị</NavLink></li>
+            <li><NavLink to="report-issue"><i className="fas fa-exclamation-triangle nav-icon"></i>Báo cáo Hỏng</NavLink></li>
+            
+          
+          
           </ul>
         </aside>
         <main className="staff-main-content">

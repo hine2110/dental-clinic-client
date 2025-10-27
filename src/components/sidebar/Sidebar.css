@@ -292,3 +292,23 @@
 .sidebar-nav::-webkit-scrollbar-thumb:hover {
   background: rgba(117, 113, 249, 0.8);
 }
+
+.add-location-item {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.add-location-link {
+  color: #c7cdeb !important;
+}
+
+.add-location-link:hover {
+  color: #fff !important;
+  background-color: rgba(117, 113, 249, 0.2);
+}
+
+.add-location-link.active {
+  background-color: rgba(117, 113, 249, 0.25);
+  border-left-color: #a7abc3;
+}

@@ -1,0 +1,97 @@
+/* ScheduleManagement.css */
+
+.schedule-management-container {
+    padding: 24px;
+    background-color: #f9faff; /* Thêm màu nền nhẹ */
+    min-height: 100vh;
+  }
+  
+  .filter-card {
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e8e8e8;
+    margin-bottom: 24px;
+  }
+  
+  /* Tùy chỉnh Calendar */
+  .calendar-card-admin {
+    border-radius: 8px !important;
+    border: 1px solid #e8e8e8 !important;
+  }
+  
+  .calendar-card-admin .ant-picker-calendar-date-content {
+    height: auto; /* Cho phép nội dung co giãn */
+    min-height: 90px;
+  }
+  
+  /* Danh sách sự kiện trong ô lịch */
+  .admin-events {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 100px;
+    overflow-y: auto;
+    font-size: 12px;
+  }
+  
+  /* Ẩn thanh cuộn cho gọn */
+  .admin-events::-webkit-scrollbar {
+    width: 4px;
+  }
+  .admin-events::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 4px;
+  }
+  
+  .admin-events li {
+    margin-bottom: 4px;
+    white-space: normal;
+  }
+  .admin-events .ant-badge-status-text {
+    font-size: 11px;
+  }
+  
+  /* Sidebar chi tiết ngày */
+  .daily-schedule-card-admin {
+    border-radius: 8px;
+    border: 1px solid #e8e8e8;
+    /* Đặt chiều cao tối đa để sidebar cuộn được */
+    max-height: 750px; 
+    overflow-y: auto;
+  }
+  
+  .schedule-item-admin {
+    border: 1px solid #f0f0f0;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+    background: #fafafa;
+    transition: all 0.3s ease;
+  }
+  
+  .schedule-item-admin:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+    border-color: #d9d9d9;
+  }
+  
+  .schedule-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    border-bottom: 1px dashed #e8e8e8;
+    padding-bottom: 8px;
+  }
+  
+  .schedule-item-body div {
+    display: flex;
+    align-items: center;
+    color: #555;
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+  
+  .schedule-item-body .anticon {
+    margin-right: 8px;
+    color: #888;
+  }
