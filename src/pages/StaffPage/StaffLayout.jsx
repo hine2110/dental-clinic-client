@@ -1,19 +1,21 @@
+// StaffLayout.jsx
+// (ĐÃ SỬA LỖI KẾT NỐI SOCKET.IO)
+
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/authContext";
 import { useNavigate, Outlet, NavLink } from "react-router-dom";
 import { io } from "socket.io-client";
 import "./staff.css";
 
-// THÊM DÒNG NÀY ĐỂ SỬA LỖI 'API_BASE' is not defined
+// 1. Đảm bảo API_BASE được định nghĩa (Giống như các file khác)
 const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 function StaffLayout() {
-  const { user, staff, loading, logout } = useAuth();
+  // 2. Lấy state toàn cục từ context (Như chúng ta đã làm ở bước trước)
+  const { user, staff, loading, logout, unreadCount, setUnreadCount } = useAuth();
   const navigate = useNavigate();
-  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    // Phần 1: Bảo vệ route
     if (!loading) {
       if (!user || user.role !== "staff") {
         console.log("Redirecting: User is not staff or not logged in.");
@@ -21,51 +23,38 @@ function StaffLayout() {
       }
     }
 
-    // Phần 2: Thiết lập thông báo real-time
     if (!loading && user && user.staffType === 'receptionist') {
       
-      const fetchInitialCount = async () => {
-        try {
-          const token = localStorage.getItem('token');
-          const response = await fetch(`${API_BASE}/contact/unread-count`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          const data = await response.json();
-          if (data.success) {
-            setUnreadCount(data.data.count);
-          }
-        } catch (error) {
-          console.error("Failed to fetch initial unread count:", error);
-        }
-      };
+      // 3. XÓA hàm fetchInitialCount() (Context đã làm)
       
-      fetchInitialCount();
-
-      const socket = io('http://localhost:5000');
+      // ===== BƯỚC 2: SỬA LỖI KẾT NỐI SOCKET =====
+      const token = localStorage.getItem('token'); // Lấy token
+      const socket = io(API_BASE.replace("/api", ""), { // Dùng API_BASE
+        auth: { token: token } // Gửi token xác thực
+      });
+      // =========================================
 
       socket.on("new_contact_received", () => {
         setUnreadCount(prevCount => prevCount + 1);
       });
 
-      // Dọn dẹp kết nối socket khi component unmount
       return () => {
         socket.disconnect();
         document.body.classList.remove("dashboard-active");
       };
     }
 
-    // Phần 3: Quản lý class cho body
     document.body.classList.add("dashboard-active");
-    // Hàm return để dọn dẹp khi user không hợp lệ hoặc đang loading
     return () => {
       document.body.classList.remove("dashboard-active");
     };
 
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, setUnreadCount]); 
 
+  // ... (Toàn bộ code còn lại của StaffLayout giữ nguyên) ...
   const staffType = staff?.staffType || user?.staffType;
 
-  let profileUrl = "/"; // Đường dẫn dự phòng
+  let profileUrl = "/";
   if (staffType === "receptionist") {
     profileUrl = "/staff/receptionist/profile/self";
   } else if (staffType === "storeKepper") {
@@ -96,8 +85,6 @@ function StaffLayout() {
     return null; 
   }
 
-  console.log("LOẠI NHÂN VIÊN HIỆN TẠI:", staffType);
-
   return (
     <div className="staff-layout">
       <div className="background-glow"></div>
@@ -108,22 +95,20 @@ function StaffLayout() {
             <i className="fas fa-envelope fa-lg"></i>
             <i className="fas fa-bell fa-lg"></i>
             <i className="fas fa-sign-out-alt fa-lg" onClick={logout} title="Đăng xuất" style={{ cursor: 'pointer' }}></i>
-            
             <img 
-               src={avatarUrl} // <-- Dùng avatarUrl đã xử lý
+               src={avatarUrl}
                alt="User Avatar" 
-               onClick={handleProfileClick} // <-- Thêm sự kiện click
-               title="Hồ sơ cá nhân" // <-- Thêm tooltip
-               style={{ // <-- Thêm kiểu dáng
+               onClick={handleProfileClick}
+               title="Hồ sơ cá nhân"
+               style={{
                  cursor: 'pointer',
                  width: '40px',
                  height: '40px',
                  borderRadius: '50%',
                  objectFit: 'cover',
-                 marginLeft: '15px' // Thêm khoảng cách
+                 marginLeft: '15px'
                }} 
              />
-            
           </div>
         </div>
       </header>
@@ -132,8 +117,6 @@ function StaffLayout() {
         <aside className="staff-sidebar">
           <ul className="staff-sidebar-nav">
             <li><NavLink to="work-schedule"><i className="fas fa-tachometer-alt nav-icon"></i>Lịch Làm Việc</NavLink></li>
-
-            
             <li><NavLink to="appointments"><i className="fas fa-table nav-icon"></i>Lịch hẹn</NavLink></li>
             <li>
               <NavLink to="contacts" className="position-relative">
@@ -146,19 +129,11 @@ function StaffLayout() {
                 )}
               </NavLink>
             </li>
-            {/* <li><NavLink to="patients"><i className="fas fa-user-injured nav-icon"></i>Bệnh nhân</NavLink></li> */}
             <li><NavLink to="invoices"><i className="fas fa-file-invoice nav-icon"></i>Thanh toán</NavLink></li>
             <li><NavLink to="payment-history"><i className="fas fa-history nav-icon"></i>Lịch sử hóa đơn</NavLink></li>
-            
-            
-            
-            
             <li><NavLink to="inventory"><i className="fas fa-pills nav-icon"></i>Quản lý Thuốc</NavLink></li>
             <li><NavLink to="equipment"><i className="fas fa-tools nav-icon"></i>Quản lý Thiết bị</NavLink></li>
             <li><NavLink to="report-issue"><i className="fas fa-exclamation-triangle nav-icon"></i>Báo cáo Hỏng</NavLink></li>
-            
-          
-          
           </ul>
         </aside>
         <main className="staff-main-content">

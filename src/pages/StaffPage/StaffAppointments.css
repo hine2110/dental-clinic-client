@@ -1,0 +1,315 @@
+/* StaffAppointments.css */
+/* Các kiểu này được thiết kế để phù hợp với file staff.css của bạn */
+
+/* Biến màu (lấy từ bootstrap để tham chiếu, bạn có thể thay bằng biến của mình) */
+:root {
+  --color-success: #198754;
+  --color-warning-text: #664d03;
+  --color-warning-bg: rgba(255, 193, 7, 0.1);
+  --color-success-text: #0f5132;
+  --color-success-bg: rgba(25, 135, 84, 0.1);
+  --color-error-text: #842029;
+  --color-error-bg: #f8d7da;
+  --color-error-border: #f5c2c7;
+  --color-light-gray: #f8f9fa;
+  --color-border: #ddd;
+  --header-purple: #7571f9; /* Lấy từ staff.css */
+  --shadow-soft: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.05); /* Lấy từ staff.css */
+}
+
+.content-title {
+  font-weight: 600;
+  color: var(--text-dark, #333);
+  margin-bottom: 1.5rem;
+}
+
+/* --- Filter Buttons --- */
+.filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.filter-btn {
+  font-family: var(--font-sans, 'Poppins', sans-serif);
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border);
+  background-color: #fff;
+  color: var(--text-dark, #333);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-soft);
+}
+
+.filter-btn:hover {
+  background-color: var(--color-light-gray);
+  transform: translateY(-2px);
+}
+
+.filter-btn.active {
+  background-color: var(--header-purple);
+  color: #fff;
+  border-color: var(--header-purple);
+}
+
+/* --- Loading and Error States --- */
+.loading-indicator {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.error-message {
+  background-color: var(--color-error-bg);
+  border: 1px solid var(--color-error-border);
+  color: var(--color-error-text);
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+}
+
+/* --- Table Styles --- */
+.table-responsive {
+  overflow-x: auto;
+}
+
+.staff-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.staff-table th,
+.staff-table td {
+  padding: 0.9rem 1rem;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid #eee;
+}
+
+.staff-table thead th {
+  background-color: var(--color-light-gray);
+  font-weight: 600;
+  border-bottom-width: 2px;
+}
+
+.staff-table tbody tr:nth-child(even) {
+  background-color: rgba(248, 249, 250, 0.5); /* Sọc ngựa vằn nhẹ */
+}
+
+.staff-table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* --- Action Buttons & Badges (Trong bảng) --- */
+.btn-action {
+  padding: 0.35rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.btn-action:hover {
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+
+.btn-checkin {
+  background-color: var(--color-success);
+  color: white;
+}
+
+.status-badge {
+  padding: 0.4em 0.65em;
+  font-size: 0.85em;
+  font-weight: 600;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.status-checked-in {
+  background-color: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.status-no-show {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+/* --- Pagination --- */
+.pagination-nav {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.pagination-list {
+  display: flex;
+  padding-left: 0;
+  list-style: none;
+  border-radius: 8px;
+  box-shadow: var(--shadow-soft);
+  overflow: hidden; /* Giúp bo góc các .page-link bên trong */
+}
+
+.pagination-nav .page-link {
+  position: relative;
+  display: block;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  background-color: #fff;
+  border: 1px solid var(--color-border);
+  color: var(--header-purple);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.pagination-nav .page-item + .page-item .page-link {
+  margin-left: -1px; /* Gộp border */
+}
+
+.pagination-nav .page-link:hover {
+  background-color: var(--color-light-gray);
+}
+
+.pagination-nav .page-item.disabled .page-link {
+  color: #6c757d;
+  pointer-events: none;
+  background-color: #e9ecef;
+  border-color: var(--color-border);
+}
+
+.pagination-nav .page-item.disabled span.page-link {
+  color: #6c757d;
+  background-color: #f5f5f5;
+}
+
+.search-date-controls {
+  display: flex;
+  flex-wrap: wrap; /* Cho phép xuống hàng trên màn hình nhỏ */
+  gap: 1rem;
+  margin-bottom: 1.5rem; /* Tách biệt khỏi các nút filter */
+}
+
+.search-input,
+.date-input {
+  font-family: var(--font-sans, 'Poppins', sans-serif);
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border);
+  background-color: #fff;
+  color: var(--text-dark, #333);
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-soft);
+  font-size: 0.95rem;
+  height: 40px; /* Đồng bộ chiều cao */
+  line-height: 1.5;
+}
+
+.search-input:focus,
+.date-input:focus {
+  outline: none;
+  border-color: var(--header-purple);
+  box-shadow: 0 0 0 2px rgba(117, 113, 249, 0.25);
+}
+
+.search-input {
+  flex-grow: 1; /* Cho phép ô search co giãn */
+  min-width: 250px;
+}
+
+.date-input {
+  min-width: 180px;
+  /* Trình duyệt sẽ thêm icon lịch */
+}
+
+.btn-create-walkin {
+  background-color: var(--color-success, #198754);
+  color: #fff;
+  border-color: var(--color-success, #198754);
+}
+
+.btn-create-walkin:hover {
+  background-color: #157347;
+  border-color: #146c43;
+}
+
+/* (Thêm vào cuối file StaffAppointments.css) */
+
+/* --- Toast Notification --- */
+.toast-notification {
+  position: fixed;
+  top: 80px; /* Ngay dưới header */
+  right: 20px;
+  z-index: 2000; /* Phải cao hơn modal overlay (1050, 1060) */
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 300px;
+  max-width: 400px;
+  animation: toast-slide-in 0.3s ease-out;
+}
+
+.toast-notification p {
+  margin: 0;
+  font-weight: 500;
+  flex-grow: 1;
+}
+
+/* Kiểu 'success' (giống màu .btn-create-walkin) */
+.toast-notification.success {
+  background-color: #d1e7dd; /* Bootstrap success bg */
+  color: #0f5132;
+  border: 1px solid #badbcc;
+}
+
+/* Kiểu 'error' */
+.toast-notification.error {
+  background-color: var(--color-error-bg, #f8d7da);
+  color: var(--color-error-text, #842029);
+  border: 1px solid var(--color-error-border, #f5c2c7);
+}
+
+.toast-notification i {
+  font-size: 1.25rem;
+}
+
+.toast-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+.toast-close-btn:hover {
+  opacity: 1;
+}
+
+/* Animation trượt vào */
+@keyframes toast-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

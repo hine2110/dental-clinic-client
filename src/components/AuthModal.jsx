@@ -1,3 +1,6 @@
+// File: src/components/AuthModal.jsx
+// (Nội dung này đã chính xác, không cần thay đổi)
+
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";

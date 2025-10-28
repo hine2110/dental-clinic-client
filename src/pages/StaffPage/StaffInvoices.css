@@ -1,0 +1,106 @@
+/* src/pages/staff/StaffInvoices.css */
+/* (Tạo file mới này) */
+
+/* Kế thừa các biến từ staff.css */
+:root {
+  --header-purple: #7571f9;
+  --shadow-soft: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.05);
+  --color-border: #e5e7eb;
+  --text-dark: #333;
+  --text-light: #6c757d;
+}
+
+.payment-queue-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.payment-queue-card {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease-in-out;
+}
+
+.payment-queue-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.pq-card-header {
+  padding: 1.25rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.pq-patient-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--header-purple);
+  margin: 0;
+}
+
+.pq-patient-phone {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.pq-card-body {
+  padding: 1rem 1.5rem;
+  flex-grow: 1;
+}
+
+.pq-info-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0.75rem;
+  color: var(--text-dark);
+}
+
+.pq-info-row i {
+  color: var(--text-light);
+  width: 16px;
+  text-align: center;
+}
+
+.pq-card-footer {
+  padding: 1rem 1.5rem;
+  background-color: #f8f9fa;
+  border-top: 1px solid var(--color-border);
+  border-radius: 0 0 12px 12px;
+}
+
+.pq-card-footer .btn-primary {
+  width: 100%;
+  font-size: 1rem;
+  padding: 0.75rem;
+  background-color: var(--header-purple);
+  border-color: var(--header-purple);
+}
+
+.pq-card-footer .btn-primary:hover {
+  opacity: 0.9;
+}
+
+.no-patients-message {
+  grid-column: 1 / -1; /* Chiếm toàn bộ hàng */
+  text-align: center;
+  padding: 3rem;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--color-border);
+}
+
+.no-patients-message h4 {
+  color: var(--text-dark);
+  font-weight: 500;
+}
+.no-patients-message p {
+  color: var(--text-light);
+}

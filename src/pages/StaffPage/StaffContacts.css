@@ -1,0 +1,113 @@
+/* src/pages/StaffPage/StaffContacts.css */
+/* (Tạo file mới này) */
+
+/* Kế thừa các biến từ file staff.css của bạn */
+:root {
+  --header-purple: #7571f9;
+  --shadow-soft: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.05);
+  --color-border: #ddd;
+  --text-dark: #333;
+}
+
+/* Container cho danh sách card */
+.contact-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; /* Khoảng cách giữa các card */
+  margin-bottom: 1.5rem;
+}
+
+/* Giao diện mỗi card tin nhắn */
+.contact-item-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-soft);
+  transition: all 0.2s ease-in-out;
+  border-left: 5px solid transparent; /* Dùng để chỉ thị status */
+}
+
+.contact-item-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+}
+
+/* Style cho tin nhắn MỚI (chưa đọc) */
+.contact-item-card.status-new {
+  background-color: #f8f9fa; /* Nền hơi xám */
+  border-left-color: var(--header-purple); /* Vạch tím bên trái */
+}
+.contact-item-card.status-new .contact-sender,
+.contact-item-card.status-new .contact-subject {
+  font-weight: 600; /* In đậm chữ */
+  color: #000;
+}
+
+/* Style cho tin nhắn ĐÃ TRẢ LỜI */
+.contact-item-card.status-replied {
+  background-color: #fff;
+  opacity: 0.8; /* Làm mờ đi một chút */
+}
+
+/* Phần nội dung chính (Tên, Chủ đề, Cơ sở) */
+.contact-info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  overflow: hidden; /* Ngăn text dài vỡ layout */
+}
+
+/* Hàng trên cùng (Tên + Ngày) */
+.contact-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.contact-sender {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  white-space: nowrap;
+}
+
+.contact-date {
+  font-size: 0.85rem;
+  color: #6c757d;
+  white-space: nowrap;
+  margin-left: 1rem;
+}
+
+.contact-subject {
+  font-size: 0.95rem;
+  color: #555;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Thêm ... nếu chủ đề quá dài */
+}
+
+.contact-location {
+  font-size: 0.85rem;
+  color: #6c757d;
+  white-space: nowrap;
+}
+.contact-location i {
+  margin-right: 5px;
+}
+
+/* Nút hành động bên phải */
+.contact-actions {
+  flex-shrink: 0; /* Không co lại */
+  margin-left: 1rem;
+}
+
+/* Style cho nút (Bootstrap đã có, nhưng căn chỉnh lại) */
+.contact-actions .btn {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+}
