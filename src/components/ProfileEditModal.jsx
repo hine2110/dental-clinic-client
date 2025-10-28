@@ -294,20 +294,22 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
 
             <div className="form-row">
               <div className="form-group">
-                <label>Province/State</label>
+                <label>District *</label>
                 <input
                   type="text"
                   value={formData.contactInfo.address.state}
                   onChange={(e) => handleAddressChange('state', e.target.value)}
+                  className={errors.state ? 'error' : ''}
                 />
               </div>
               
               <div className="form-group">
-                <label>Postal Code</label>
+                <label>Ward *</label>
                 <input
                   type="text"
                   value={formData.contactInfo.address.zipCode}
                   onChange={(e) => handleAddressChange('zipCode', e.target.value)}
+                  className={errors.zipCode ? 'error' : ''}
                 />
               </div>
             </div>

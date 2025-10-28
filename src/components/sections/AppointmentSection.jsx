@@ -321,9 +321,6 @@ function AppointmentSection() {
   const handleInputChange = (e) => {
     // ... (Giữ nguyên) ...
     const { name, value } = e.target;
-    if (isLoggedIn && (name === 'name' || name === 'email' || name === 'phone')) {
-      return;
-    }
     setFormData(prev => ({ ...prev, [name]: value }));
     if (name === 'location') {
       setFormData(prev => ({ ...prev, date: '', timeSlot: '', doctor: '' }));
@@ -472,8 +469,6 @@ function AppointmentSection() {
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  readOnly={isLoggedIn}
-                  style={isLoggedIn ? { backgroundColor: '#e9ecef', cursor: 'not-allowed' } : {}}
                 />
               </div>
               <div className="col-md-4">
@@ -487,8 +482,6 @@ function AppointmentSection() {
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  readOnly={isLoggedIn}
-                  style={isLoggedIn ? { backgroundColor: '#e9ecef', cursor: 'not-allowed' } : {}}
                 />
               </div>
               <div className="col-md-4">
@@ -502,8 +495,6 @@ function AppointmentSection() {
                   value={formData.phone}
                   onChange={handleInputChange}
                   required
-                  readOnly={isLoggedIn}
-                  style={isLoggedIn ? { backgroundColor: '#e9ecef', cursor: 'not-allowed' } : {}}
                 />
               </div>
             </div>

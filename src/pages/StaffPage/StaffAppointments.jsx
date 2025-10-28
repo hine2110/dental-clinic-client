@@ -1,6 +1,10 @@
-import React, { useEffect, useState } from 'react';
+// src/pages/staff/StaffAppointments.jsx (ĐÃ CẬP NHẬT)
+
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../../context/authContext';
 import './StaffAppointments.css'; 
+import WalkInModal from '../../components/staff/WalkInModal';
+import Toast from '../../components/common/Toast'; // <-- BƯỚC 1: IMPORT TOAST
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -10,25 +14,60 @@ function StaffAppointments() {
   const [error, setError] = useState('');
   const [appointments, setAppointments] = useState([]);
   
-  // State cho các bộ lọc
   const [activeFilter, setActiveFilter] = useState('upcoming');
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  const [selectedDate, setSelectedDate] = useState(''); // Định dạng YYYY-MM-DD
-
-  // State cho phân trang
+  const [selectedDate, setSelectedDate] = useState(''); 
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationInfo, setPaginationInfo] = useState({
     totalPages: 1,
     totalAppointments: 0
   });
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // useEffect (MỚI) để debounce (tạo độ trễ) cho thanh tìm kiếm
-  // Chỉ thực hiện tìm kiếm sau khi người dùng ngừng gõ 500ms
+  // ===== BƯỚC 2: THÊM STATE CHO TOAST =====
+  const [toast, setToast] = useState(null); // null hoặc { message: '', type: 'success' | 'error' }
+  // ======================================
+
+  const fetchAppointments = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const token = localStorage.getItem('token');
+      
+      let apiUrl = `${API_BASE}/staff/receptionist/appointments?page=${currentPage}&limit=10`;
+
+      if (activeFilter !== 'upcoming') {
+        apiUrl += `&status=${activeFilter}`;
+      }
+      if (debouncedSearchTerm) { 
+        apiUrl += `&search=${debouncedSearchTerm}`;
+      }
+      if (selectedDate) {
+        apiUrl += `&date=${selectedDate}`;
+      }
+
+      const res = await fetch(apiUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to load appointments');
+      }
+      setAppointments(data.data);
+      setPaginationInfo(data.pagination);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [user, activeFilter, currentPage, debouncedSearchTerm, selectedDate]);
+
   useEffect(() => {
     const timerId = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-      setCurrentPage(1); // Reset về trang 1 khi thực hiện tìm kiếm mới
+      setCurrentPage(1); 
     }, 500);
 
     return () => {
@@ -36,58 +75,20 @@ function StaffAppointments() {
     };
   }, [searchTerm]);
 
-  // useEffect (CẬP NHẬT) để tải dữ liệu
   useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        setLoading(true);
-        setError('');
-        const token = localStorage.getItem('token');
-        
-        // Xây dựng URL động
-        let apiUrl = `${API_BASE}/staff/receptionist/appointments?page=${currentPage}&limit=10`;
-
-        if (activeFilter !== 'upcoming') {
-          apiUrl += `&status=${activeFilter}`;
-        }
-        if (debouncedSearchTerm) { // Sử dụng giá trị đã debounce
-          apiUrl += `&search=${debouncedSearchTerm}`;
-        }
-        if (selectedDate) {
-          apiUrl += `&date=${selectedDate}`;
-        }
-
-        const res = await fetch(apiUrl, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          throw new Error(data.message || 'Failed to load appointments');
-        }
-        setAppointments(data.data);
-        setPaginationInfo(data.pagination);
-      } catch (e) {
-        setError(e.message);
-      } finally {
-        setLoading(false);
-      }
-    };
     if (user && user.role === 'staff') {
       fetchAppointments();
     }
-  // CẬP NHẬT mảng phụ thuộc: thêm debouncedSearchTerm và selectedDate
-  }, [user, activeFilter, currentPage, debouncedSearchTerm, selectedDate]);
+  }, [user, fetchAppointments]);
   
   const handleFilterChange = (filter) => {
     setActiveFilter(filter);
-    setCurrentPage(1); // Reset trang
+    setCurrentPage(1); 
   };
 
-  // Handler (MỚI) cho việc thay đổi ngày
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value);
-    setCurrentPage(1); // Reset trang
+    setCurrentPage(1); 
   };
 
   const handlePageChange = (newPage) => {
@@ -113,31 +114,16 @@ function StaffAppointments() {
         throw new Error(data.message || 'Cập nhật thất bại');
       }
 
-      // Tải lại dữ liệu ở trang hiện tại để cập nhật danh sách
-      const fetchCurrentPage = async () => {
-        let apiUrl = `${API_BASE}/staff/receptionist/appointments?page=${currentPage}&limit=10`;
-        if (activeFilter !== 'upcoming') {
-          apiUrl += `&status=${activeFilter}`;
-        }
-        if (debouncedSearchTerm) {
-          apiUrl += `&search=${debouncedSearchTerm}`;
-        }
-        if (selectedDate) {
-          apiUrl += `&date=${selectedDate}`;
-        }
-        
-        const response = await fetch(apiUrl, { headers: { Authorization: `Bearer ${token}` } });
-        const updatedData = await response.json();
-        setAppointments(updatedData.data);
-        setPaginationInfo(updatedData.pagination);
-      };
-
-      fetchCurrentPage();
-      alert('Thao tác thành công!');
+      fetchAppointments(); 
+      // ===== BƯỚC 3: THAY THẾ ALERT BẰNG SETTOAST =====
+      setToast({ message: 'Thao tác thành công!', type: 'success' });
+      // alert('Thao tác thành công!'); // <-- XÓA DÒNG NÀY
 
     } catch (e) {
       setError(e.message);
-      alert(`Lỗi: ${e.message}`);
+      // ===== BƯỚC 3: THAY THẾ ALERT BẰNG SETTOAST =====
+      setToast({ message: `Lỗi: ${e.message}`, type: 'error' });
+      // alert(`Lỗi: ${e.message}`); // <-- XÓA DÒNG NÀY
     }
   };
 
@@ -147,9 +133,19 @@ function StaffAppointments() {
 
   return (
     <div className="content-card">
+      {/* ===== BƯỚC 4: RENDER TOAST ===== */}
+      {toast && (
+        <Toast 
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+      {/* ================================ */}
+
       <h2 className="content-title">Danh sách lịch hẹn</h2>
       
-      {/* THÊM MỚI: Thanh tìm kiếm và lọc ngày */}
+      {/* ... (phần input search và date giữ nguyên) ... */}
       <div className="search-date-controls">
         <input
           type="text"
@@ -166,22 +162,32 @@ function StaffAppointments() {
         />
       </div>
 
-      {/* Cập nhật: Giao diện nút lọc */}
-      <div className="filter-controls">
+      {/* ... (phần filter-controls giữ nguyên) ... */}
+      <div className="filter-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div> 
+          <button 
+            className={`filter-btn ${activeFilter === 'upcoming' ? 'active' : ''}`}
+            onClick={() => handleFilterChange('upcoming')}>
+            Lịch hẹn sắp tới
+          </button>
+          <button 
+            className={`filter-btn ${activeFilter === 'checked-in' ? 'active' : ''}`}
+            onClick={() => handleFilterChange('checked-in')}>
+            Đã Check-in
+          </button>
+          <button 
+            className={`filter-btn ${activeFilter === 'no-show' ? 'active' : ''}`}
+            onClick={() => handleFilterChange('no-show')}>
+            Vắng mặt
+          </button>
+        </div>
+        
         <button 
-          className={`filter-btn ${activeFilter === 'upcoming' ? 'active' : ''}`}
-          onClick={() => handleFilterChange('upcoming')}>
-          Lịch hẹn sắp tới
-        </button>
-        <button 
-          className={`filter-btn ${activeFilter === 'checked-in' ? 'active' : ''}`}
-          onClick={() => handleFilterChange('checked-in')}>
-          Đã Check-in
-        </button>
-        <button 
-          className={`filter-btn ${activeFilter === 'no-show' ? 'active' : ''}`}
-          onClick={() => handleFilterChange('no-show')}>
-          Vắng mặt
+          className="filter-btn btn-create-walkin"
+          onClick={() => setIsModalOpen(true)}
+        >
+          <i className="fas fa-plus" style={{ marginRight: '8px' }}></i>
+          Tạo Lịch Vãng Lai
         </button>
       </div>
 
@@ -190,8 +196,10 @@ function StaffAppointments() {
       
       {!loading && !error && (
         <>
+          {/* ... (Phần table và pagination giữ nguyên) ... */}
           <div className="table-responsive">
             <table className="staff-table">
+              {/* ... (thead) ... */}
               <thead>
                 <tr>
                   <th>#</th>
@@ -236,6 +244,7 @@ function StaffAppointments() {
             </table>
           </div>
 
+          {/* ... (pagination) ... */}
           {paginationInfo && paginationInfo.totalPages > 1 && (
             <nav className="pagination-nav">
               <ul className="pagination-list">
@@ -258,6 +267,18 @@ function StaffAppointments() {
             </nav>
           )}
         </>
+      )}
+
+      {/* ===== BƯỚC 5: CẬP NHẬT PROP ONSUCCESS ===== */}
+      {isModalOpen && (
+        <WalkInModal 
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={(message) => { // <-- Nhận message từ modal
+            setIsModalOpen(false); 
+            fetchAppointments();    
+            setToast({ message: message, type: 'success' }); // <-- Kích hoạt toast
+          }}
+        />
       )}
     </div>
   );

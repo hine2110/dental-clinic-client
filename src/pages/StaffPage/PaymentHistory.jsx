@@ -161,6 +161,7 @@ const handleFilterChange = (e) => {
                   <option value="all">Tất cả</option>
                   <option value="cash">Tiền mặt</option>
                   <option value="transfer">Chuyển khoản</option>
+                  
                 </select>
               </div>
             </div>

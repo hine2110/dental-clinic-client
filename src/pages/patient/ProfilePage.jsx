@@ -1,5 +1,3 @@
-// File: dental-clinic-client/src/pages/patient/ProfilePage.jsx
-// ĐÃ SỬA: Thêm code để hiển thị Emergency Contact và Medical Info
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/authContext';
@@ -7,6 +5,7 @@ import { getPatientProfile } from '../../services/patientService';
 import ProfileEditModal from '../../components/ProfileEditModal';
 import './ProfilePage.css';
 import PatientAppointmentList from '../../components/PatientAppointmentList';
+import { Link } from 'react-router-dom';
 
 const ProfilePage = () => {
   const { user } = useAuth();
@@ -89,6 +88,11 @@ const ProfilePage = () => {
   // Nếu profile đã tồn tại
   return (
     <div className="profile-page">
+      <div className="back-to-home-container">
+        <Link to="/" className="btn-back-to-home">
+          &larr; Back to Home
+        </Link>
+      </div>
       <div className="profile-container">
         {/* Header (Giữ nguyên) */}
         <div className="profile-header">
@@ -101,7 +105,7 @@ const ProfilePage = () => {
             <h3>{profile.basicInfo?.fullName || 'Tên bệnh nhân'}</h3>
             <p className="profile-email">{user.email}</p>
             <span className={`profile-status ${profile.isProfileComplete ? 'completed' : 'incomplete'}`}>
-              {profile.isProfileComplete ? 'Đã hoàn thành' : 'Chưa hoàn thành'}
+              {profile.isProfileComplete ? 'completed' : 'incomplete'}
             </span>
           </div>
           <button onClick={() => setShowEditModal(true)} className="btn btn-edit">
@@ -149,8 +153,24 @@ const ProfilePage = () => {
               <div className="info-item full-width">
                 <strong>Address</strong>
                 <span>
-                  {profile.contactInfo?.address?.street || 'N/A'}
-                  {profile.contactInfo?.address?.city ? `, ${profile.contactInfo.address.city}` : ''}
+                  {(() => {
+                    // Gom các phần của địa chỉ lại
+                    const address = profile.contactInfo?.address;
+                    if (!address) return '-'; // Nếu không có object address
+
+                    const parts = [];
+                    // 1. Thêm Số nhà, Đường
+                    if (address.street) parts.push(address.street);
+                    // 2. Thêm Phường (đang lưu trong zipCode)
+                    if (address.zipCode) parts.push(address.zipCode);
+                    // 3. Thêm Quận (đang lưu trong state)
+                    if (address.state) parts.push(address.state);
+                    // 4. Thêm Thành phố
+                    if (address.city) parts.push(address.city);
+
+                    // Nối tất cả lại bằng dấu phẩy
+                    return parts.length > 0 ? parts.join(', ') : '-';
+                  })()}
                 </span>
               </div>
             </div>
@@ -206,7 +226,7 @@ const ProfilePage = () => {
           {/* Lịch sử cuộc hẹn */}
           <div className="profile-section">
             <h2>My Appointments</h2>
-            <PatientAppointmentList />
+            <PatientAppointmentList initialLimit={3} incrementBy={5} />
           </div>
           
         </div>

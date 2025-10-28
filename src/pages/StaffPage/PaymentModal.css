@@ -1,4 +1,5 @@
-/* PaymentModal.css (ĐÃ SỬA LỖI GIAO DIỆN) */
+/* src/pages/staff/PaymentModal.css */
+/* (ĐÃ SỬA LỖI CUỘN CỘT PHẢI) */
 
 .payment-modal-overlay {
   position: fixed;
@@ -21,10 +22,11 @@
   box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
   width: 90%;
   max-width: 900px;
-  max-height: 90vh; /* <-- Giới hạn chiều cao tổng thể */
+  height: 90vh; /* Giữ cố định chiều cao */
   display: flex;
   flex-direction: column;
   animation: slideInUp 0.4s ease-out;
+  overflow: hidden; /* Quan trọng */
 }
 
 .payment-modal-header {
@@ -33,16 +35,7 @@
   align-items: center;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #dee2e6;
-  flex-shrink: 0; /* Không co lại */
-}
-
-.payment-modal-body {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
-  padding: 0;
-  overflow: hidden; /* <-- QUAN TRỌNG: Ẩn cuộn ở body */
-  flex-grow: 1;
+  flex-shrink: 0; 
 }
 
 .modal-loading, .modal-error {
@@ -50,183 +43,113 @@
   text-align: center;
 }
 
-/* Cột 1: Danh sách dịch vụ */
+.payment-modal-body {
+  display: grid;
+  grid-template-columns: 55% 45%;
+  gap: 0;
+  padding: 0;
+  flex-grow: 1;
+  overflow: hidden; /* Quan trọng */
+}
+
+/* Cột 1: Danh sách dịch vụ (Giữ nguyên) */
 .service-list-panel {
-  padding: 1.5rem;
   border-right: 1px solid #dee2e6;
   display: flex;
   flex-direction: column;
-  overflow-y: auto; /* <-- Cột 1 tự cuộn */
+  height: 100%; 
+  overflow: hidden; 
+}
+.service-search-bar {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #dee2e6;
+  flex-shrink: 0;
+}
+.service-search-bar input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
 }
 .service-list-items {
-  /* Bỏ giới hạn chiều cao ở đây, để service-list-panel xử lý */
-  padding-right: 10px;
+  overflow-y: auto; /* Cột này cuộn độc lập */
+  flex-grow: 1; 
+  padding: 1rem 1.5rem;
 }
-.service-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #eee;
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.service-item:hover {
-  background-color: #f8f9fa;
-  border-color: #5D5FEF;
-}
-.service-name {
-  font-weight: 500;
-}
-.service-price {
-  font-weight: 600;
-  color: #5D5FEF;
-}
+/* ... (style của .service-item, .service-info, .service-add-btn giữ nguyên) ... */
+.service-item { display: flex; align-items: center; padding: 0.75rem; border-radius: 8px; margin-bottom: 8px; transition: background-color 0.2s ease; }
+.service-item:hover { background-color: #f8f9fa; }
+.service-info { flex-grow: 1; }
+.service-name { font-weight: 500; }
+.service-price { font-size: 0.9rem; color: #6c757d; }
+.service-add-btn { border: none; background: none; color: var(--header-purple, #7571f9); font-size: 1.5rem; cursor: pointer; transition: transform 0.2s ease; }
+.service-add-btn:hover { transform: scale(1.1); }
 
-/* === SỬA LỖI GIAO DIỆN Ở ĐÂY === */
 
-/* Cột 2: Giỏ hàng */
+/* === SỬA LỖI Ở CỘT 2 === */
+
+/* Cột 2: Giỏ hàng & Thanh toán */
 .cart-panel {
-  padding: 1.5rem;
   background-color: #fcfdff;
   display: flex;
   flex-direction: column;
-  overflow-y: auto; /* <-- 1. LÀM CHO CẢ CỘT 2 CUỘN */
-  /* Không cần max-height vì .payment-modal-body đã xử lý */
+  height: 100%; 
+  overflow-y: auto; /* <-- 1. CHO PHÉP TOÀN BỘ CỘT NÀY CUỘN */
 }
+
+.cart-header {
+  padding: 1.5rem 1.5rem 1rem;
+  flex-shrink: 0; /* Không co lại */
+}
+.cart-header h5 { margin-bottom: 0.25rem; }
+.cart-header p { color: #6c757d; margin: 0; }
+
+/* Phần danh sách item trong giỏ */
 .cart-items-list {
-  /* 2. Bỏ các thuộc tính cuộn và co giãn ở đây */
+  /* 2. Bỏ cuộn và các thuộc tính giới hạn ở đây */
   overflow-y: visible; 
-  /* max-height: 35vh; (Xóa) */
-  /* min-height: 0; (Xóa) */
   /* flex-grow: 1; (Xóa) */
-  padding: 5px;
-  flex-shrink: 0; /* Ngăn co lại */
+  /* min-height: 100px; (Xóa) */
+  padding: 0 1.5rem; /* Giữ padding */
+  flex-shrink: 0; /* Quan trọng: Không co lại */
 }
 
-/* Phần thanh toán */
+/* Style cho cart-item (giữ nguyên) */
+.cart-item { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid #eee; }
+.cart-item-info { display: flex; flex-direction: column; flex-grow: 1; }
+.cart-item-info span:first-child { font-weight: 500; }
+.cart-item-info span:last-child { font-size: 0.9rem; color: #6c757d; }
+.cart-item-controls { display: flex; align-items: center; }
+.cart-item-controls button { width: 28px; height: 28px; border: 1px solid #ccc; background: #fff; border-radius: 50%; font-weight: bold; }
+.cart-item-controls input { width: 40px; text-align: center; border: none; font-weight: 600; background: transparent; }
+
+
+/* Phần Tóm tắt (Bây giờ sẽ nằm trong vùng cuộn của .cart-panel) */
 .payment-summary {
-  /* 3. Bỏ margin-top: auto */
-  /* margin-top: auto; (Xóa) */
-  padding-top: 1rem;
-  border-top: 1px dashed #ccc;
-  flex-shrink: 0; /* Ngăn co lại */
+  flex-shrink: 0; /* Quan trọng: Không co lại */
+  padding: 1.5rem;
+  margin-top: auto; /* <-- Đẩy xuống cuối cùng nếu cột chưa đầy */
+  border-top: 1px solid #dee2e6;
+  background-color: #fff; /* Nền trắng để che nội dung cuộn bên dưới */
+  box-shadow: 0 -5px 15px -5px rgba(0,0,0,0.05); /* Bóng đổ nhẹ lên trên */
 }
 
-/* === KẾT THÚC SỬA LỖI GIAO DIỆN === */
+/* ... (Toàn bộ style còn lại của .summary-row, discount, QR, nút bấm giữ nguyên) ... */
+.summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 1rem; }
+.summary-row label { font-weight: 500; }
+.discount-input-group { display: flex; gap: 5px; flex-basis: 60%; max-width: 250px; }
+.discount-input-group input { flex-grow: 1; }
+.summary-row.original-total-row .total-amount.original-total { text-decoration: line-through; color: #6c757d; font-size: 1rem; font-weight: 400; }
+.summary-row.discount-applied span:last-child { font-weight: 600; color: #198754; }
+.summary-row .total-amount { font-size: 1.5rem; font-weight: 700; color: #d9534f; }
+.summary-row.final-total-row .total-amount.final-total { font-size: 1.5rem; font-weight: 700; color: #d9534f; }
+.summary-row.highlight .change-amount { font-size: 1.25rem; font-weight: 700; color: #198754; }
+.transfer-payment-section { width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: 10px; }
+.qr-code-image { width: 180px; height: 180px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; }
+.btn-finalize-payment { width: 100%; padding: 0.85rem; font-size: 1.1rem; font-weight: 600; }
 
 
-.cart-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 15px;
-}
-.cart-item-info {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-.cart-item-controls {
-  display: flex;
-  align-items: center;
-}
-.cart-item-controls button {
-  width: 28px;
-  height: 28px;
-  border: 1px solid #ccc;
-  background: #fff;
-  border-radius: 50%;
-  font-weight: bold;
-}
-.cart-item-controls input {
-  width: 40px;
-  text-align: center;
-  border: none;
-  font-weight: 600;
-}
-
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  font-size: 1rem;
-}
-.summary-row label {
-  font-weight: 500;
-}
-.summary-row .total-amount {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #d9534f;
-}
-.summary-row.highlight .change-amount {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #5cb85c;
-}
-
-/* CSS cho animation (từ staff.css) */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes slideInUp {
-  from { transform: translateY(30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-/* CSS CHO DISCOUNT */
-.discount-input-group {
-  display: flex;
-  gap: 5px;
-  flex-basis: 60%;
-  max-width: 250px;
-}
-
-.discount-input-group input {
-  flex-grow: 1;
-}
-
-.summary-row.original-total-row .total-amount.original-total {
-  text-decoration: line-through;
-  color: #6c757d;
-  font-size: 1rem;
-  font-weight: 400;
-}
-
-.summary-row.discount-applied span:last-child {
-  font-weight: 600;
-  color: #5cb85c;
-}
-
-.summary-row.final-total-row .total-amount.final-total {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #d9534f;
-}
-
-/* === CSS MỚI CHO THANH TOÁN QR === */
-.transfer-payment-section {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 10px;
-}
-
-.qr-code-image {
-  width: 200px;
-  height: 200px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-bottom: 15px;
-}
-
-.payment-summary {
-  flex: 0 0 auto !important; /* KHÔNG dãn, KHÔNG co, kích thước tự động */
-  height: auto !important; /* Ghi đè mọi 'height: 100%' */
-  margin-top: 0 !important;  /* Ghi đè mọi 'margin-top: auto' */
-}
+/* Animation (Giữ nguyên) */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideInUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

@@ -108,3 +108,57 @@
   color: #6c757d; /* Gray color */
   padding-right: 10px; /* Add some spacing */
 }
+
+/* File: src/components/PatientAppointmentList.css */
+/* (Toàn bộ code cũ của bạn ở trên được giữ nguyên) */
+/* ... */
+
+.rescheduled-text {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #6c757d; /* Gray color */
+  padding-right: 10px; /* Add some spacing */
+}
+
+
+/* === THÊM MỚI CSS CHO NÚT "XEM TẤT CẢ" === */
+
+.toggle-view-container {
+  display: flex; /* Sắp xếp các nút */
+  justify-content: center; /* Căn giữa */
+  gap: 0.75rem; /* Khoảng cách giữa 2 nút */
+  flex-wrap: wrap; /* Xuống hàng nếu không đủ chỗ */
+  
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.btn-toggle-view {
+  background-color: transparent;
+  border: 1px solid #6f42c1;
+  color: #6f42c1;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-toggle-view:hover {
+  background-color: #6f42c1;
+  color: white;
+}
+
+.btn-toggle-view.btn-collapse {
+  background-color: transparent;
+  border-color: #6c757d; /* Màu xám */
+  color: #6c757d;
+}
+
+.btn-toggle-view.btn-collapse:hover {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: white;
+}

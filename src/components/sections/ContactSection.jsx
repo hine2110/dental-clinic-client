@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import ContactService from '../../services/contactService';
 import './ContactSection.css';
-
+import { useAuth } from '../../context/authContext';
+import { getPatientProfile } from '../../services/patientService';
 // Lấy API_BASE từ biến môi trường
 const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -43,6 +44,8 @@ function ContactSection() {
   const [locations, setLocations] = useState([]);
   const [locationsLoading, setLocationsLoading] = useState(true);
 
+  const { user } = useAuth();
+
   // THÊM MỚI: useEffect để tải danh sách cơ sở
   useEffect(() => {
     const fetchLocations = async () => {
@@ -71,6 +74,49 @@ function ContactSection() {
     };
     fetchLocations();
   }, []); // Chạy 1 lần khi component mount
+
+  useEffect(() => {
+    const fetchProfileAndPopulateForm = async () => {
+      if (user) {
+        // Nếu người dùng đăng nhập, lấy profile
+        try {
+          const profileData = await getPatientProfile();
+          if (profileData && profileData.success && profileData.data) {
+            const profile = profileData.data;
+            setFormData(prev => ({
+              ...prev,
+              name: profile.basicInfo?.fullName || '',
+              email: profile.contactInfo?.email || user.email || ''
+            }));
+          } else {
+            // Nếu không có profile, dùng email từ 'user'
+             setFormData(prev => ({
+              ...prev,
+              name: '', // Không có tên
+              email: user.email || ''
+            }));
+          }
+        } catch (err) {
+          console.error('Error fetching profile for contact form:', err);
+          // Nếu lỗi, vẫn điền email từ 'user'
+           setFormData(prev => ({
+            ...prev,
+            email: user.email || ''
+          }));
+        }
+      } else {
+        // Nếu người dùng đăng xuất, xóa trường name và email
+        setFormData(prev => ({
+          ...prev,
+          name: '',
+          email: ''
+        }));
+      }
+    };
+
+    fetchProfileAndPopulateForm();
+  }, [user]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -94,7 +140,21 @@ function ContactSection() {
       setNotification({ message: response.message, type: 'success' });
       
       // CẬP NHẬT: Reset cả 'locationId'
-      setFormData({ name: '', email: '', subject: '', message: '', locationId: '' });
+      setFormData({ 
+        name: user ? formData.name : '', 
+        email: user ? formData.email : '', 
+        subject: '', 
+        message: '', 
+        locationId: '' 
+      });
+      
+      // Chỉnh sửa logic reset tốt hơn:
+      setFormData(prev => ({
+        ...prev, // Giữ lại name và email đã được auto-fill
+        subject: '',
+        message: '',
+        locationId: ''
+      }));
     } catch (err) {
       setNotification({ message: err.message, type: 'error' });
     } finally {
@@ -125,7 +185,36 @@ function ContactSection() {
            </div>
            <div className="row gy-4">
              <div className="col-lg-6">
-                {/* (Phần info-box giữ nguyên) */}
+                <div className="row gy-4">
+                  <div className="col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div className="info-box">
+                      <i className="bi bi-geo-alt"></i>
+                      <h3>Address</h3>
+                      <p>K47/32 Hoang Van Thai<br />Da Nang</p>
+                    </div>
+                  </div>
+                  <div className="col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div className="info-box">
+                      <i className="bi bi-telephone"></i>
+                      <h3>Call Us</h3>
+                      <p>+84 935 655 266<br />+84 888 708 368</p>
+                    </div>
+                  </div>
+                  <div className="col-md-6" data-aos="fade-up" data-aos-delay="400">
+                    <div className="info-box">
+                      <i className="bi bi-envelope"></i>
+                      <h3>Email Us</h3>
+                      <p>huy26102101@gmail.com<br />huyntgde170695@fpt.edu.vn</p>
+                    </div>
+                  </div>
+                  <div className="col-md-6" data-aos="fade-up" data-aos-delay="500">
+                    <div className="info-box">
+                      <i className="bi bi-clock"></i>
+                      <h3>Open Hours</h3>
+                      <p>Monday - Friday<br />9:00AM - 05:00PM</p>
+                    </div>
+                  </div>
+                </div>
              </div>
           
             <div className="col-lg-6" data-aos="fade-up" data-aos-delay="100">

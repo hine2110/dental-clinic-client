@@ -2,11 +2,37 @@
 
 .profile-page {
   display: flex;
-  justify-content: center;
+  flex-direction: column; /* THAY ĐỔI: Sắp xếp theo chiều dọc */
+  align-items: center; /* THAY ĐỔI: Căn giữa các item theo chiều ngang */
   padding: 2rem 1rem;
   background-color: #f0f2f5;
-  min-height: calc(100vh - 60px); /* Điều chỉnh nếu header của bạn có chiều cao khác */
+  min-height: calc(100vh - 60px); 
 }
+
+/* === BẮT ĐẦU STYLE NÚT BACK TO HOME === */
+.back-to-home-container {
+  width: 100%;
+  max-width: 900px; /* Đảm bảo nó căn lề giống .profile-container */
+  margin-bottom: 1rem; /* Khoảng cách với card profile bên dưới */
+}
+
+.btn-back-to-home {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.25rem;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #6f42c1; /* Màu tím chủ đạo của hệ thống */
+  border-radius: 6px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-back-to-home:hover {
+  background-color: #f0eefc; /* Màu nền tím rất nhạt khi hover */
+  color: #5a32a8; /* Màu tím đậm hơn một chút */
+}
+/* === KẾT THÚC STYLE NÚT BACK TO HOME === */
 
 .profile-container {
   width: 100%;

@@ -1,5 +1,5 @@
 // File: src/pages/patient/ReschedulePage.jsx
-// (Rewritten completely to support the 4-step process and translated to English)
+// ĐÃ CẬP NHẬT: Thêm logic "Back" (quay lại 1 bước)
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
@@ -32,13 +32,11 @@ function ReschedulePage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
 
-    // Helper function to fetch API (you can put this in a service file)
+    // Helper function to fetch API (Giữ nguyên)
     const apiFetch = async (url) => {
-        // Patient token might be needed for some authenticated endpoints like fetching locations
+        // ... (code giữ nguyên)
         const patientToken = localStorage.getItem('token'); 
-        const headers = {
-            'Content-Type': 'application/json',
-        };
+        const headers = { 'Content-Type': 'application/json' };
         if (patientToken) {
             headers['Authorization'] = `Bearer ${patientToken}`;
         }
@@ -50,17 +48,17 @@ function ReschedulePage() {
         return data.data;
     };
 
-    // Step 1: Verify token and load locations
+    // Step 1: Verify token and load locations (Giữ nguyên)
     useEffect(() => {
         if (!token) {
-            setError("Invalid reschedule token. Please check the link."); // Translate error
+            // ... (code giữ nguyên)
+            setError("Invalid reschedule token. Please check the link.");
             setIsLoading(false);
             return;
         }
-
         const initialize = async () => {
             try {
-                // 1. Call the new verify API
+                // ... (code giữ nguyên)
                 const verifyRes = await fetch(`${API_BASE}/patient/reschedule/verify?token=${token}`);
                 const verifyData = await verifyRes.json();
                 if (!verifyRes.ok || !verifyData.success) {
@@ -68,33 +66,31 @@ function ReschedulePage() {
                 }
                 setOldAppointment(verifyData.data);
 
-                // 2. Load the list of Locations (clinics)
-                const locsData = await apiFetch('/patient/locations'); // Use helper
+                const locsData = await apiFetch('/patient/locations');
                 setLocations(locsData);
-
                 setIsLoading(false);
             } catch (err) {
                 setError(err.message);
                 setIsLoading(false);
             }
         };
-
         initialize();
     }, [token]);
 
-    // Step 2: Load available times when Date & Location are selected
+    // Step 2: Load available times (Giữ nguyên)
     useEffect(() => {
         if (selectedLocation && selectedDate) {
+            // ... (code giữ nguyên)
             const fetchTimes = async () => {
                 setIsLoading(true);
                 setError('');
                 try {
-                    const timesData = await apiFetch( // Use helper
+                    const timesData = await apiFetch(
                         `/patient/appointments/available-times?locationId=${selectedLocation._id}&date=${selectedDate}`
                     );
                     setAvailableTimes(timesData.timeSlots.filter(slot => slot.isAvailable));
                 } catch (err) {
-                    setError('Could not load available times. Please try again.'); // Translate error
+                    setError('Could not load available times. Please try again.');
                 } finally {
                     setIsLoading(false);
                 }
@@ -103,19 +99,20 @@ function ReschedulePage() {
         }
     }, [selectedLocation, selectedDate]);
 
-    // Step 3: Load available doctors when Date, Location & Time are selected
+    // Step 3: Load available doctors (Giữ nguyên)
     useEffect(() => {
         if (selectedLocation && selectedDate && selectedTime) {
+            // ... (code giữ nguyên)
             const fetchDoctors = async () => {
                 setIsLoading(true);
                 setError('');
                 try {
-                    const doctorsData = await apiFetch( // Use helper
+                    const doctorsData = await apiFetch(
                         `/patient/appointments/available-doctors?locationId=${selectedLocation._id}&date=${selectedDate}&time=${selectedTime}`
                     );
                     setAvailableDoctors(doctorsData.doctors);
                 } catch (err) {
-                    setError('Could not load available doctors. Please try again.'); // Translate error
+                    setError('Could not load available doctors. Please try again.');
                 } finally {
                     setIsLoading(false);
                 }
@@ -125,17 +122,29 @@ function ReschedulePage() {
     }, [selectedLocation, selectedDate, selectedTime]);
 
 
-    // Final Submit handler
+    // === THÊM MỚI HÀM NÀY ===
+    // Hàm mới để quay lại 1 bước
+    const handleBack = () => {
+        // Đơn giản là lùi lại 1 step.
+        // Các hàm onChange/onClick của các bước trước đã xử lý việc
+        // reset các state con khi giá trị thay đổi.
+        setStep(prev => prev - 1);
+        setError(''); // Xóa lỗi (nếu có) khi quay lại
+    };
+    // === KẾT THÚC PHẦN MỚI ===
+
+
+    // Final Submit handler (Giữ nguyên)
     const handleSubmit = async () => {
         if (!selectedLocation || !selectedDate || !selectedTime || !selectedDoctor || !token) {
-            setError("Please complete all selection steps."); // Translate error
+            // ... (code giữ nguyên)
+            setError("Please complete all selection steps.");
             return;
         }
-
         setIsSubmitting(true);
         setError('');
-
         try {
+            // ... (code call API giữ nguyên)
             const res = await fetch(`${API_BASE}/patient/reschedule/confirm`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -147,15 +156,11 @@ function ReschedulePage() {
                     time: selectedTime
                 })
             });
-
             const data = await res.json();
             if (!res.ok || !data.success) {
                 throw new Error(data.message);
             }
-            
-            // Translate success message
             setSuccessMessage(`Reschedule successful! Your new appointment is at ${selectedTime} on ${new Date(selectedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} with Dr. ${selectedDoctor.user.fullName}.`);
-
         } catch (err) {
             setError(err.message);
         } finally {
@@ -163,34 +168,27 @@ function ReschedulePage() {
         }
     };
 
-    // --- Render Functions for each step ---
+    // --- Render Functions for each step (Giữ nguyên) ---
 
-    // Renders the details of the original appointment
+    // renderOldAppointmentInfo (Giữ nguyên)
     const renderOldAppointmentInfo = () => oldAppointment && (
         <div className="old-appointment-info">
-            <p>Your current appointment:</p> {/* Translate */}
-            <span>
-                <strong>Doctor:</strong> {oldAppointment.doctor?.user?.fullName}
-            </span>
-            <span>
-                <strong>Date:</strong> {new Date(oldAppointment.appointmentDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} {/* Format date */}
-            </span>
-            <span>
-                <strong>Time:</strong> {oldAppointment.startTime}
-            </span>
-            <span>
-                <strong>Location:</strong> {oldAppointment.location?.name}
-            </span>
+            {/* ... (code giữ nguyên) ... */}
+            <p>Your current appointment:</p>
+            <span><strong>Doctor:</strong> {oldAppointment.doctor?.user?.fullName}</span>
+            <span><strong>Date:</strong> {new Date(oldAppointment.appointmentDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            <span><strong>Time:</strong> {oldAppointment.startTime}</span>
+            <span><strong>Location:</strong> {oldAppointment.location?.name}</span>
         </div>
     );
 
-    // Renders the content based on the current step
+    // renderStepContent (Giữ nguyên)
     const renderStepContent = () => {
         switch(step) {
             case 1: // Select Location
                 return (
                     <div className="step-content">
-                        <h4>Step 1: Choose a new location</h4> {/* Translate */}
+                        <h4>Step 1: Choose a new location</h4>
                         <div className="selection-grid">
                             {locations.map(loc => (
                                 <button
@@ -201,8 +199,8 @@ function ReschedulePage() {
                                         setStep(2); // Move to step 2
                                     }}
                                 >
+                                    {/* ... (code giữ nguyên) ... */}
                                     <h5>{loc.name}</h5>
-                                    {/* Display address fields */}
                                     <p>{loc.address?.street}, {loc.address?.city}</p>
                                 </button>
                             ))}
@@ -213,12 +211,12 @@ function ReschedulePage() {
             case 2: // Select Date
                 return (
                     <div className="step-content">
-                        <h4>Step 2: Choose a new date</h4> {/* Translate */}
+                        <h4>Step 2: Choose a new date</h4>
                         <input
                             type="date"
                             className="date-input"
                             value={selectedDate}
-                            min={new Date().toISOString().split('T')[0]} // Prevent past dates
+                            min={new Date().toISOString().split('T')[0]} 
                             onChange={(e) => {
                                 setSelectedDate(e.target.value);
                                 setSelectedTime(''); // Reset subsequent steps
@@ -234,9 +232,8 @@ function ReschedulePage() {
             case 3: // Select Time
                 return (
                     <div className="step-content">
-                         {/* Translate date format */}
                         <h4>Step 3: Choose a new time (for {new Date(selectedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })})</h4>
-                        {isLoading && <p>Loading available times...</p>} {/* Translate */}
+                        {isLoading && <p>Loading available times...</p>}
                         <div className="selection-grid time-grid">
                             {availableTimes.length > 0 ? availableTimes.map(slot => (
                                 <button
@@ -248,10 +245,8 @@ function ReschedulePage() {
                                         setStep(4); // Move to step 4
                                     }}
                                 >
-                                    {/* Format time if needed, e.g., 8h -> 08:00 AM */}
                                     {slot.time} 
                                 </button>
-                             // Translate message
                             )) : !isLoading && <p>No available times for this date. Please select another date.</p>}
                         </div>
                     </div>
@@ -260,9 +255,8 @@ function ReschedulePage() {
             case 4: // Select Doctor
                 return (
                     <div className="step-content">
-                        {/* Translate */}
                         <h4>Step 4: Choose a doctor (for {selectedTime} on {new Date(selectedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })})</h4>
-                        {isLoading && <p>Loading available doctors...</p>} {/* Translate */}
+                        {isLoading && <p>Loading available doctors...</p>}
                         <div className="selection-grid">
                             {availableDoctors.length > 0 ? availableDoctors.map(doc => (
                                 <button
@@ -270,7 +264,7 @@ function ReschedulePage() {
                                     className={`selection-card doctor-card ${selectedDoctor?._id === doc._id ? 'selected' : ''}`}
                                     onClick={() => setSelectedDoctor(doc)}
                                 >
-                                    {/* Use div for avatar to handle potential null URL */}
+                                    {/* ... (code giữ nguyên) ... */}
                                     <div
                                         className="doctor-avatar"
                                         style={{backgroundImage: `url(${doc.user?.avatar || 'https://via.placeholder.com/60'})`}}
@@ -280,7 +274,6 @@ function ReschedulePage() {
                                         <p>{doc.specializations?.join(', ') || 'General Dentist'}</p>
                                     </div>
                                 </button>
-                            // Translate message
                             )) : !isLoading && <p>No available doctors for this time slot. Please select another time.</p>}
                         </div>
                     </div>
@@ -292,34 +285,27 @@ function ReschedulePage() {
 
     // --- Main Render ---
 
-    // Initial loading state while verifying token
+    // (Tất cả các phần render "if (isLoading...", "if (successMessage...", "if (error..." đều giữ nguyên)
     if (isLoading && !oldAppointment) {
-         // Translate
-        return <div className="reschedule-container"><p>Verifying token...</p></div>;
+         return <div className="reschedule-container"><p>Verifying token...</p></div>;
     }
-
-    // Success state after confirmation
     if (successMessage) {
         return (
             <div className="reschedule-container">
                 <div className="success-message">
-                    <h2> Reschedule Successful!</h2> {/* Translate */}
+                    <h2> Reschedule Successful!</h2>
                     <p>{successMessage}</p>
-                    {/* Translate button */}
                     <Link to="/profile" className="btn-primary">Back to Profile</Link>
                 </div>
             </div>
         );
     }
-
-    // Critical error state (e.g., invalid token)
     if (error && !oldAppointment) {
         return (
             <div className="reschedule-container">
                 <div className="error-message">
-                    <h2>Verification Error</h2> {/* Translate */}
+                    <h2>Verification Error</h2>
                     <p>{error}</p>
-                     {/* Translate button */}
                     <Link to="/" className="btn-secondary">Back to Home</Link>
                 </div>
             </div>
@@ -329,44 +315,37 @@ function ReschedulePage() {
     // Main rescheduling form
     return (
         <div className="reschedule-container">
-            <h1>Reschedule Appointment</h1> {/* Translate */}
+            <h1>Reschedule Appointment</h1>
             {renderOldAppointmentInfo()}
 
             <div className="reschedule-form">
-                <h2>Select New Appointment</h2> {/* Translate */}
+                <h2>Select New Appointment</h2>
 
-                {/* Display specific errors during selection */}
                 {error && <div className="error-message"><p>{error}</p></div>}
 
                 {/* Render steps 1, 2, 3, 4 */}
                 {step >= 1 && renderStepContent()}
 
+                {/* === THAY ĐỔI LOGIC NÚT NÀY === */}
                 {/* Display reset/back button */}
                 {step > 1 && (
                     <button
                         className="btn-link"
-                        onClick={() => {
-                            setStep(1); // Reset to step 1
-                            setSelectedLocation(null);
-                            setSelectedDate('');
-                            setSelectedTime('');
-                            setSelectedDoctor(null);
-                            setAvailableTimes([]);
-                            setAvailableDoctors([]);
-                            setError(''); // Clear errors on reset
-                        }}
+                        // Sửa onClick: Thay vì reset, gọi hàm handleBack
+                        onClick={handleBack} 
                     >
-                        Start Over {/* Translate */}
+                        Back {/* Sửa Text: "Start Over" -> "Back" */}
                     </button>
                 )}
+                {/* === KẾT THÚC THAY ĐỔI === */}
 
-                {/* Display final confirmation section */}
+
+                {/* Display final confirmation section (Giữ nguyên) */}
                 {selectedDoctor && step === 4 && (
                     <div className="confirmation-section">
-                        <h4>Confirm Selection:</h4> {/* Translate */}
+                        <h4>Confirm Selection:</h4>
                         <p><strong>Location:</strong> {selectedLocation.name}</p>
                         <p><strong>Doctor:</strong> {selectedDoctor.user.fullName}</p>
-                        {/* Translate format */}
                         <p><strong>Time:</strong> {selectedTime} - {new Date(selectedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
 
                         <button
@@ -374,7 +353,6 @@ function ReschedulePage() {
                             onClick={handleSubmit}
                             disabled={isSubmitting}
                         >
-                            {/* Translate button text */}
                             {isSubmitting ? 'Processing...' : 'Confirm Reschedule'}
                         </button>
                     </div>

@@ -232,3 +232,84 @@
   min-width: 180px;
   /* Trình duyệt sẽ thêm icon lịch */
 }
+
+.btn-create-walkin {
+  background-color: var(--color-success, #198754);
+  color: #fff;
+  border-color: var(--color-success, #198754);
+}
+
+.btn-create-walkin:hover {
+  background-color: #157347;
+  border-color: #146c43;
+}
+
+/* (Thêm vào cuối file StaffAppointments.css) */
+
+/* --- Toast Notification --- */
+.toast-notification {
+  position: fixed;
+  top: 80px; /* Ngay dưới header */
+  right: 20px;
+  z-index: 2000; /* Phải cao hơn modal overlay (1050, 1060) */
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 300px;
+  max-width: 400px;
+  animation: toast-slide-in 0.3s ease-out;
+}
+
+.toast-notification p {
+  margin: 0;
+  font-weight: 500;
+  flex-grow: 1;
+}
+
+/* Kiểu 'success' (giống màu .btn-create-walkin) */
+.toast-notification.success {
+  background-color: #d1e7dd; /* Bootstrap success bg */
+  color: #0f5132;
+  border: 1px solid #badbcc;
+}
+
+/* Kiểu 'error' */
+.toast-notification.error {
+  background-color: var(--color-error-bg, #f8d7da);
+  color: var(--color-error-text, #842029);
+  border: 1px solid var(--color-error-border, #f5c2c7);
+}
+
+.toast-notification i {
+  font-size: 1.25rem;
+}
+
+.toast-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+.toast-close-btn:hover {
+  opacity: 1;
+}
+
+/* Animation trượt vào */
+@keyframes toast-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

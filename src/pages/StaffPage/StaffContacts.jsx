@@ -1,14 +1,18 @@
 // src/pages/StaffPage/StaffContacts.jsx
+// (ĐÃ CẬP NHẬT GIAO DIỆN)
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/authContext';
-import { io } from "socket.io-client"; // THÊM MỚI
+import { io } from "socket.io-client";
 import './staff.css'; 
+import './StaffContacts.css'; // <-- BƯỚC 1: IMPORT FILE CSS MỚI
+import Toast from '../../components/common/Toast';
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
 
 function StaffContacts() {
-  const { user } = useAuth();
+  // Lấy hàm fetchUnreadCount từ context
+  const { user, fetchUnreadCount } = useAuth(); 
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -22,15 +26,14 @@ function StaffContacts() {
   const [selectedContact, setSelectedContact] = useState(null);
   const [replyMessage, setReplyMessage] = useState('');
   const [isReplying, setIsReplying] = useState(false);
+  const [toast, setToast] = useState(null); 
 
-  // === BƯỚC 1: Tách hàm fetchContacts ra ngoài ===
-  // Gói trong useCallback để nó ổn định và có thể được sử dụng trong các useEffect khác
+  // ... (Toàn bộ logic: fetchContacts, useEffects, handleOpenReplyModal, handleCloseReplyModal giữ nguyên) ...
   const fetchContacts = useCallback(async (page) => {
     try {
       setLoading(true);
       setError('');
       const token = localStorage.getItem('token');
-      // API endpoint này không đổi, backend sẽ tự động lọc
       const response = await fetch(`${API_BASE}/contact?page=${page}&limit=10`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -46,37 +49,27 @@ function StaffContacts() {
     } finally {
       setLoading(false);
     }
-  }, []); // Hàm này không phụ thuộc vào gì (vì token lấy từ localStorage)
+  }, []); 
 
-  // === BƯỚC 2: useEffect gốc, chỉ gọi fetchContacts ===
   useEffect(() => {
     if (user) {
       fetchContacts(currentPage);
     }
-  }, [user, currentPage, fetchContacts]); // Thêm fetchContacts vào dependency
+  }, [user, currentPage, fetchContacts]); 
 
-  // === BƯỚC 3: useEffect MỚI cho Socket.io ===
   useEffect(() => {
-    if (!user) return; // Chỉ chạy khi user đã đăng nhập
-
+    if (!user) return; 
     const token = localStorage.getItem('token');
-    
-    // 1. Kết nối tới Socket server
-    const socket = io(API_BASE.replace("/api", ""), { // Kết nối tới root (vd: http://localhost:5000)
-      auth: { token: token } // Gửi token để xác thực (nếu backend có)
+    const socket = io(API_BASE.replace("/api", ""), { 
+      auth: { token: token } 
     });
-
-    // 2. Lấy danh sách cơ sở làm việc HÔM NAY của nhân viên
     const fetchLocationsAndJoinRooms = async () => {
       try {
-        // Gọi API mới (Giả định là /api/staff/my-locations-today)
         const response = await fetch(`${API_BASE}/staff/my-locations-today`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
-
         if (data.success && Array.isArray(data.data)) {
-          // 3. Tham gia vào "room" của từng cơ sở
           data.data.forEach(location => {
             if(location._id) {
               socket.emit('join_location_room', location._id);
@@ -87,41 +80,30 @@ function StaffContacts() {
         console.error("Failed to fetch locations for socket rooms:", err);
       }
     };
-    
     fetchLocationsAndJoinRooms();
-
-    // 4. Lắng nghe sự kiện "new_contact_received"
     socket.on('new_contact_received', () => {
       console.log("Socket: New contact received! Refetching...");
-      // Khi có tin nhắn mới, tải lại danh sách ở trang hiện tại
       fetchContacts(currentPage); 
-      // (Bạn cũng có thể gọi API đếm số tin chưa đọc ở đây)
     });
-
-    // 5. Cleanup: Ngắt kết nối socket khi component unmount
     return () => {
       socket.disconnect();
     };
-
-  }, [user, currentPage, fetchContacts]); // Chạy lại nếu user, trang, hoặc hàm fetch thay đổi
-
-  // === CÁC HÀM KHÁC (giữ nguyên) ===
+  }, [user, currentPage, fetchContacts]); 
 
   const handleOpenReplyModal = (contact) => {
     setSelectedContact(contact);
     setReplyMessage('');
-    
-    // (Tùy chọn: Đánh dấu là 'read' ở đây nếu cần)
   };
 
   const handleCloseReplyModal = () => {
     setSelectedContact(null);
   };
-
+  
+  // Logic gửi trả lời (đã cập nhật không reload trang)
   const handleReplySubmit = async (e) => {
     e.preventDefault();
     if (!replyMessage.trim()) {
-      alert('Vui lòng nhập nội dung trả lời.');
+      setToast({ message: 'Vui lòng nhập nội dung trả lời.', type: 'error' });
       return;
     }
 
@@ -147,30 +129,20 @@ function StaffContacts() {
           c._id === selectedContact._id ? data.data : c
         )
       );
-
-      alert('Gửi trả lời thành công!');
+      setToast({ message: 'Gửi trả lời thành công!', type: 'success' });
       handleCloseReplyModal();
 
+      if (fetchUnreadCount) {
+        fetchUnreadCount();
+      }
     } catch (e) {
-      setError(e.message);
-      alert(`Lỗi: ${e.message}`);
+      setToast({ message: `Lỗi: ${e.message}`, type: 'error' });
     } finally {
       setIsReplying(false);
     }
   };
-
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'new':
-        return <span className="badge bg-primary">Mới</span>;
-      case 'replied':
-        return <span className="badge bg-success">Đã trả lời</span>;
-      case 'archived':
-        return <span className="badge bg-secondary">Đã lưu trữ</span>;
-      default:
-        return <span className="badge bg-light text-dark">{status}</span>;
-    }
-  };
+  
+  // Hàm `getStatusBadge` không còn cần thiết nữa
 
   const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= paginationInfo.totalPages) {
@@ -180,6 +152,15 @@ function StaffContacts() {
   
    return (
     <div className="container-fluid">
+      {/* (Toast giữ nguyên) */}
+      {toast && (
+        <Toast 
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       <h1 className="h3 mb-4">Hộp thư liên hệ</h1>
 
       {loading && <p>Đang tải danh sách...</p>}
@@ -187,50 +168,50 @@ function StaffContacts() {
       
       {!loading && !error && (
         <>
-          <div className="table-responsive">
-            <table className="table table-hover">
-              <thead className="table-light">
-                <tr>
-                  <th>#</th>
-                  <th>Cơ sở</th> {/* THÊM MỚI */}
-                  <th>Ngày gửi</th>
-                  <th>Người gửi</th>
-                  <th>Email</th>
-                  <th>Chủ đề</th>
-                  <th>Trạng thái</th>
-                  <th>Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-                {contacts.length > 0 ? contacts.map((contact, index) => (
-                  <tr key={contact._id}>
-                    <td>{(currentPage - 1) * 10 + index + 1}</td>
-                    {/* THÊM MỚI: Hiển thị tên cơ sở */}
-                    <td>{contact.location?.name || 'N/A'}</td>
-                    <td>{new Date(contact.createdAt).toLocaleDateString('vi-VN')}</td>
-                    <td>{contact.name}</td>
-                    <td>{contact.email}</td>
-                    <td>{contact.subject}</td>
-                    <td>{getStatusBadge(contact.status)}</td>
-                    <td>
-                      <button 
-                        className="btn btn-primary btn-sm"
-                        onClick={() => handleOpenReplyModal(contact)}
-                        disabled={contact.status === 'replied'}
-                      >
-                        {contact.status === 'replied' ? 'Đã trả lời' : 'Xem & Trả lời'}
-                      </button>
-                    </td>
-                  </tr>
-                )) : (
-                  <tr>
-                    {/* CẬP NHẬT: Tăng colSpan */}
-                    <td colSpan="8" className="text-center">Không có tin nhắn nào.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          {/* ===== BƯỚC 2: THAY THẾ TABLE BẰNG CARD LIST ===== */}
+          <div className="contact-list-container">
+            {contacts.length > 0 ? contacts.map((contact) => (
+              <div 
+                key={contact._id} 
+                // Thêm class 'status-new' hoặc 'status-replied'
+                className={`contact-item-card status-${contact.status}`}
+              >
+                {/* Phần nội dung chính (Tên, Chủ đề, Cơ sở) */}
+                <div className="contact-info">
+                  <div className="contact-header">
+                    <span className="contact-sender">{contact.name}</span>
+                    <span className="contact-date">
+                      {new Date(contact.createdAt).toLocaleDateString('vi-VN')}
+                    </span>
+                  </div>
+                  <div className="contact-subject">
+                    {contact.subject}
+                  </div>
+                  <div className="contact-location">
+                    <i className="fas fa-map-marker-alt"></i>
+                    {contact.location?.name || 'N/A'} - ({contact.email})
+                  </div>
+                </div>
+
+                {/* Phần nút hành động */}
+                <div className="contact-actions">
+                  <button 
+                    className={`btn btn-sm ${contact.status === 'replied' ? 'btn-outline-secondary' : 'btn-primary'}`}
+                    onClick={() => handleOpenReplyModal(contact)}
+                    disabled={contact.status === 'replied'}
+                  >
+                    {contact.status === 'replied' ? 'Đã trả lời' : 'Xem & Trả lời'}
+                  </button>
+                </div>
+              </div>
+            )) : (
+              <div className="text-center p-5">
+                <h4>Không có tin nhắn nào.</h4>
+              </div>
+            )}
           </div>
+          {/* ============================================== */}
+
 
           {/* (Phần Phân trang giữ nguyên) */}
           {paginationInfo && paginationInfo.totalPages > 1 && (
@@ -266,7 +247,6 @@ function StaffContacts() {
               <button type="button" className="btn-close" onClick={handleCloseReplyModal}></button>
             </div>
             <div className="modal-body">
-               {/* THÊM MỚI: Hiển thị cơ sở */}
               <div className="mb-3">
                 <label className="form-label"><strong>Cơ sở:</strong> {selectedContact.location?.name || 'N/A'}</label>
               </div>
@@ -293,7 +273,7 @@ function StaffContacts() {
                   ></textarea>
                 </div>
                 <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={handleCloseReplyModal}>Hủy</button>
+                  <button type="button" className="btn-secondary" onClick={handleCloseReplyModal}>Hủy</button>
                   <button type="submit" className="btn btn-primary" disabled={isReplying}>
                     {isReplying ? 'Đang gửi...' : 'Gửi trả lời'}
                   </button>
