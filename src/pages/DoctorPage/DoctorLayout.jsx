@@ -10,7 +10,8 @@ import {
   SettingOutlined,
   LogoutOutlined,
   BellOutlined,
-  MenuOutlined
+  MenuOutlined,
+  DownOutlined
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/authContext';
@@ -106,36 +107,71 @@ const DoctorLayout = ({ children }) => {
           <div className="header-left">
             <Button
               type="text"
-              icon={collapsed ? <MenuOutlined /> : <MenuOutlined />}
+              icon={<MenuOutlined />}
               onClick={() => setCollapsed(!collapsed)}
-              style={{ fontSize: '16px', width: 64, height: 64 }}
+              className="menu-toggle-btn"
             />
+            <div className="header-brand">
+              <h2>Beauty Clinic</h2>
+              <span className="brand-subtitle">Hệ thống quản lý phòng khám</span>
+            </div>
+          </div>
+          
+          <div className="header-center">
+            <div className="current-time">
+              <CalendarOutlined />
+              <span>{new Date().toLocaleDateString('vi-VN', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}</span>
+            </div>
           </div>
           
           <div className="header-right">
-            <Badge count={0} size="small">
+            <div className="header-actions">
+              <Badge count={0} size="small" className="notification-badge">
+                <Button 
+                  type="text" 
+                  icon={<BellOutlined />} 
+                  className="action-btn notification-btn"
+                  title="Thông báo"
+                />
+              </Badge>
+              
               <Button 
                 type="text" 
-                icon={<BellOutlined />} 
-                size="large"
-                className="notification-btn"
+                icon={<SettingOutlined />} 
+                className="action-btn settings-btn"
+                title="Cài đặt"
+                onClick={() => navigate('/doctor/profile')}
               />
-            </Badge>
+            </div>
             
             <Dropdown
               menu={{ items: userMenuItems }}
               placement="bottomRight"
               arrow
+              trigger={['click']}
             >
-              <div className="user-info">
-                <Avatar 
-                  src={user?.avatar} 
-                  icon={<UserOutlined />}
-                  size="large"
-                />
-                <div className="user-details">
-                  <span className="user-name">{user?.fullName}</span>
-                  <span className="user-role">Bác sĩ</span>
+              <div className="user-profile">
+                <div className="user-avatar">
+                  <Avatar 
+                    src={user?.avatar} 
+                    icon={<UserOutlined />}
+                    size={40}
+                  />
+                  <div className="status-indicator online"></div>
+                </div>
+                <div className="user-info">
+                  <div className="user-name">{user?.fullName || 'Bác sĩ'}</div>
+                  <div className="user-role">
+                    <span className="role-badge">BÁC SĨ</span>
+                  </div>
+                </div>
+                <div className="dropdown-arrow">
+                  <DownOutlined />
                 </div>
               </div>
             </Dropdown>

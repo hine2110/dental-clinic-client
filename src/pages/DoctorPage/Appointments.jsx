@@ -391,7 +391,7 @@ const Appointments = () => {
   const columns = [
     {
       title: 'Bệnh nhân',
-      dataIndex: ['patient', 'user', 'fullName'],
+      dataIndex: ['patient', 'basicInfo', 'fullName'],
       key: 'patientName',
       render: (text, record) => (
         <div style={{ padding: '8px 0' }}>
@@ -746,7 +746,7 @@ const Appointments = () => {
           <div>
             <p>
               Bạn có chắc chắn muốn đánh dấu bệnh nhân{' '}
-              <strong>{selectedAppointment.patient?.user?.fullName}</strong> không đến khám vào{' '}
+              <strong>{selectedAppointment.patient?.basicInfo?.fullName || selectedAppointment.patient?.user?.fullName}</strong> không đến khám vào{' '}
               <strong>{dayjs(selectedAppointment.appointmentDate).format('DD/MM/YYYY')}</strong> lúc{' '}
               <strong>{selectedAppointment.startTime}</strong>?
             </p>
@@ -778,7 +778,7 @@ const Appointments = () => {
           <div>
             <p>
               Bạn có chắc chắn muốn tạm hoãn khám bệnh cho{' '}
-              <strong>{selectedAppointment.patient?.user?.fullName}</strong> vào{' '}
+              <strong>{selectedAppointment.patient?.basicInfo?.fullName || selectedAppointment.patient?.user?.fullName}</strong> vào{' '}
               <strong>{dayjs(selectedAppointment.appointmentDate).format('DD/MM/YYYY')}</strong> lúc{' '}
               <strong>{selectedAppointment.startTime}</strong>?
             </p>
@@ -820,15 +820,21 @@ const Appointments = () => {
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <p><strong>Họ tên:</strong> {safeRender(selectedAppointment.patient.user?.fullName)}</p>
-                  <p><strong>Email:</strong> {safeRender(selectedAppointment.patient.user?.email)}</p>
+                  <p><strong>Họ tên:</strong> {safeRender(selectedAppointment.patient.basicInfo?.fullName || selectedAppointment.patient.user?.fullName)}</p>
+                  <p><strong>Email:</strong> {safeRender(selectedAppointment.patient.contactInfo?.email || selectedAppointment.patient.user?.email)}</p>
                   <p><strong>Số điện thoại:</strong> {safeRender(selectedAppointment.patient.contactInfo?.phone)}</p>
                 </div>
                 <div>
                   <p><strong>Ngày sinh:</strong> {selectedAppointment.patient.basicInfo?.dateOfBirth ? 
                     dayjs(selectedAppointment.patient.basicInfo.dateOfBirth).format('DD/MM/YYYY') : 'N/A'}</p>
-                  <p><strong>Giới tính:</strong> {safeRender(selectedAppointment.patient.basicInfo?.gender)}</p>
-                  <p><strong>CCCD:</strong> {safeRender(selectedAppointment.patient.basicInfo?.idCard)}</p>
+                  <p><strong>Giới tính:</strong> {(() => {
+                    const g = selectedAppointment.patient.basicInfo?.gender;
+                    if (g === 'male') return 'Nam';
+                    if (g === 'female') return 'Nữ';
+                    if (g === 'other') return 'Khác';
+                    return 'Chưa cập nhật';
+                  })()}</p>
+                  <p><strong>CCCD:</strong> {safeRender(selectedAppointment.patient.basicInfo?.idCard?.idNumber)}</p>
                 </div>
               </div>
             </div>

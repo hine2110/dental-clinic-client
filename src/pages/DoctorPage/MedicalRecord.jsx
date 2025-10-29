@@ -235,7 +235,6 @@ const MedicalRecord = () => {
             medicine: p.medicine,
             dosage: p.dosage,
             frequency: p.frequency,
-            duration: p.duration,
             instructions: p.instructions
           }));
           setPrescriptionItems(prescriptions);
@@ -430,7 +429,6 @@ const MedicalRecord = () => {
         medicine: item.medicine,
         dosage: item.dosage,
         frequency: item.frequency,
-        duration: item.duration,
         instructions: item.instructions
       }));
       
@@ -467,7 +465,6 @@ const MedicalRecord = () => {
       medicine: values.medicine,
       dosage: values.dosage,
       frequency: values.frequency,
-      duration: values.duration,
       instructions: values.instructions
     };
     
@@ -643,7 +640,7 @@ const MedicalRecord = () => {
                 )}
               </div>
               <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: '16px' }}>
-                Bệnh nhân: {safeRender(appointment?.patient?.user?.fullName)}
+                Bệnh nhân: {safeRender(appointment?.patient?.basicInfo?.fullName || appointment?.patient?.user?.fullName)}
               </Text>
               <div style={{ marginTop: '12px' }}>
                 <Space>
@@ -668,7 +665,7 @@ const MedicalRecord = () => {
             <Col xs={24} sm={12} md={6}>
               <Statistic
                 title="Họ tên"
-                value={safeRender(appointment?.patient?.user?.fullName)}
+                value={safeRender(appointment?.patient?.basicInfo?.fullName || appointment?.patient?.user?.fullName)}
                 prefix={<UserOutlined />}
                 valueStyle={{ color: '#1890ff', fontSize: '16px' }}
               />
@@ -676,7 +673,13 @@ const MedicalRecord = () => {
             <Col xs={24} sm={12} md={6}>
               <Statistic
                 title="Tuổi"
-                value={safeRender(appointment?.patient?.basicInfo?.age)}
+                value={safeRender((() => {
+                  const dob = appointment?.patient?.basicInfo?.dateOfBirth;
+                  if (!dob) return 'Chưa cập nhật';
+                  const birth = dayjs(dob);
+                  if (!birth.isValid()) return 'Chưa cập nhật';
+                  return dayjs().diff(birth, 'year');
+                })())}
                 prefix={<HeartOutlined />}
                 valueStyle={{ color: '#1890ff' }}
               />
@@ -684,7 +687,12 @@ const MedicalRecord = () => {
             <Col xs={24} sm={12} md={6}>
               <Statistic
                 title="Giới tính"
-                value={safeRender(appointment?.patient?.basicInfo?.gender)}
+                value={safeRender(
+                  appointment?.patient?.basicInfo?.gender === 'male' ? 'Nam' :
+                  appointment?.patient?.basicInfo?.gender === 'female' ? 'Nữ' :
+                  appointment?.patient?.basicInfo?.gender === 'other' ? 'Khác' :
+                  'Chưa cập nhật'
+                )}
                 prefix={<UserOutlined />}
                 valueStyle={{ color: '#1890ff' }}
               />
@@ -702,7 +710,7 @@ const MedicalRecord = () => {
             <Col xs={24} sm={12} md={8}>
               <Statistic
                 title="Email"
-                value={safeRender(appointment?.patient?.user?.email)}
+                value={safeRender(appointment?.patient?.contactInfo?.email || appointment?.patient?.user?.email)}
                 prefix={<MailOutlined />}
                 valueStyle={{ color: '#1890ff', fontSize: '14px' }}
               />
@@ -710,11 +718,29 @@ const MedicalRecord = () => {
             <Col xs={24} sm={12} md={8}>
               <Statistic
                 title="Địa chỉ"
-                value={safeRender(appointment?.patient?.contactInfo?.address)}
+                value={safeRender(
+                  appointment?.patient?.contactInfo?.address 
+                    ? `${appointment.patient.contactInfo.address.street}, ${appointment.patient.contactInfo.address.city}, ${appointment.patient.contactInfo.address.state}`
+                    : 'Chưa cập nhật'
+                )}
                 prefix={<HomeOutlined />}
                 valueStyle={{ color: '#1890ff', fontSize: '14px' }}
               />
             </Col>
+            <Col xs={24} sm={12} md={8}>
+              <Statistic
+                title="Ngày sinh"
+                value={safeRender(
+                  appointment?.patient?.basicInfo?.dateOfBirth 
+                    ? dayjs(appointment.patient.basicInfo.dateOfBirth).format('DD/MM/YYYY')
+                    : 'Chưa cập nhật'
+                )}
+                prefix={<CalendarOutlined />}
+                valueStyle={{ color: '#1890ff', fontSize: '14px' }}
+              />
+            </Col>
+          </Row>
+          <Row gutter={[24, 16]} style={{ marginTop: '16px' }}>
             <Col xs={24} sm={12} md={8}>
               <Statistic
                 title="Lý do khám"
@@ -973,10 +999,14 @@ const MedicalRecord = () => {
                     <Select
                       mode="multiple"
                       placeholder="Chọn các xét nghiệm và chẩn đoán cần thiết"
-                      options={serviceDoctors.map(service => ({
-                        label: service.serviceName,
-                        value: service._id
-                      }))}
+                      options={serviceDoctors.map(service => {
+                        const priceValue = (service.price ?? service.servicePrice ?? 0);
+                        const priceText = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(priceValue);
+                        return {
+                          label: `${service.serviceName} - ${priceText}`,
+                          value: service._id
+                        };
+                      })}
                     />
                   </Form.Item>
 
@@ -1575,11 +1605,22 @@ const MedicalRecord = () => {
                 return medicine.name.toLowerCase().indexOf(input.toLowerCase()) >= 0;
               }}
             >
-              {medicines.map(medicine => (
-                <Option key={medicine._id} value={medicine.name}>
-                  {medicine.name} - {medicine.description}
-                </Option>
-              ))}
+              {medicines.map(medicine => {
+                const stock = medicine.currentStock ?? 0;
+                const stockStatus = stock > 0 ? '✓' : '✗';
+                const stockColor = stock > 0 ? '#52c41a' : '#ff4d4f';
+                return (
+                  <Option key={medicine._id} value={medicine.name}>
+                    <span>
+                      <span style={{ marginRight: 8, color: stockColor }}>{stockStatus}</span>
+                      {medicine.name} - {medicine.description}
+                      <span style={{ marginLeft: 8, color: stockColor, fontWeight: 'bold' }}>
+                        (Tồn: {stock})
+                      </span>
+                    </span>
+                  </Option>
+                );
+              })}
             </Select>
           </Form.Item>
 
@@ -1603,14 +1644,6 @@ const MedicalRecord = () => {
               </Form.Item>
             </Col>
           </Row>
-
-          <Form.Item
-            name="duration"
-            label="Thời gian sử dụng"
-            rules={[{ required: true, message: 'Vui lòng nhập thời gian sử dụng' }]}
-          >
-            <Input placeholder="VD: 7 ngày" />
-          </Form.Item>
 
           <Form.Item
             name="instructions"

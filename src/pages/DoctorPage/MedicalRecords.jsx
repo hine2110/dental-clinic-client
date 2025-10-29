@@ -147,7 +147,9 @@ const MedicalRecords = () => {
       key: 'patient',
       render: (_, record) => (
         <div>
-          <div style={{ fontWeight: 500 }}>{record.patient?.user?.fullName || 'N/A'}</div>
+          <div style={{ fontWeight: 500 }}>
+            {record.patient?.basicInfo?.fullName || record.patient?.user?.fullName || record.patient?.user?.email?.split('@')[0] || 'N/A'}
+          </div>
           <div style={{ fontSize: '12px', color: '#8c8c8c' }}>
             {record.patient?.contactInfo?.phone || 'N/A'}
           </div>
@@ -390,6 +392,17 @@ const MedicalRecords = () => {
         className="modal-enhanced"
         style={{ top: 20 }}
       >
+        {/* Thông tin phòng khám - chỉ hiển thị khi in */}
+        <div className="clinic-header print-only" style={{ display: 'none' }}>
+          <div className="clinic-name">PHÒNG KHÁM ĐA KHOA BEAUTY CLINIC</div>
+          <div className="clinic-info">
+            <div>📍 Địa chỉ: 123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh</div>
+            <div>📞 Điện thoại: (028) 1234-5678 | Hotline: 0901-234-567</div>
+            <div>📧 Email: info@beautyclinic.com | Website: www.beautyclinic.com</div>
+            <div>🕒 Giờ làm việc: Thứ 2 - CN: 7:00 - 20:00</div>
+          </div>
+        </div>
+        
         {selectedRecord && (
           <div style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto', padding: '8px' }}>
             {/* Thông tin bệnh nhân */}
@@ -405,22 +418,28 @@ const MedicalRecords = () => {
             >
               <Descriptions bordered column={2} size="small">
                 <Descriptions.Item label="Họ và tên" span={1}>
-                  <strong>{selectedRecord.patient?.user?.fullName || 'N/A'}</strong>
+                  <strong>{selectedRecord.patient?.basicInfo?.fullName || selectedRecord.patient?.user?.fullName || 'N/A'}</strong>
                 </Descriptions.Item>
                 <Descriptions.Item label="Mã lịch hẹn" span={1}>
                   <Tag color="blue">{selectedRecord.appointmentId}</Tag>
                 </Descriptions.Item>
                 <Descriptions.Item label="Ngày sinh" span={1}>
-                  {selectedRecord.patient?.dateOfBirth ? dayjs(selectedRecord.patient.dateOfBirth).format('DD/MM/YYYY') : 'N/A'}
+                  {selectedRecord.patient?.basicInfo?.dateOfBirth ? dayjs(selectedRecord.patient.basicInfo.dateOfBirth).format('DD/MM/YYYY') : 'N/A'}
                 </Descriptions.Item>
                 <Descriptions.Item label="Giới tính" span={1}>
-                  {selectedRecord.patient?.gender === 'male' ? 'Nam' : selectedRecord.patient?.gender === 'female' ? 'Nữ' : 'Khác'}
+                  {(() => {
+                    const g = selectedRecord.patient?.basicInfo?.gender;
+                    if (g === 'male') return 'Nam';
+                    if (g === 'female') return 'Nữ';
+                    if (g === 'other') return 'Khác';
+                    return 'N/A';
+                  })()}
                 </Descriptions.Item>
-                <Descriptions.Item label="Số điện thoại" span={1}>
+                <Descriptions.Item label="Số điện thoại" span={1} className="print-hide">
                   {selectedRecord.patient?.contactInfo?.phone || 'N/A'}
                 </Descriptions.Item>
-                <Descriptions.Item label="Email" span={1}>
-                  {selectedRecord.patient?.user?.email || 'N/A'}
+                <Descriptions.Item label="Email" span={1} className="print-hide">
+                  {selectedRecord.patient?.contactInfo?.email || selectedRecord.patient?.user?.email || 'N/A'}
                 </Descriptions.Item>
                 <Descriptions.Item label="Địa chỉ" span={2}>
                   {selectedRecord.patient?.contactInfo?.address 
@@ -438,7 +457,7 @@ const MedicalRecords = () => {
                 <Descriptions.Item label="Ngày khám" span={1}>
                   <Tag color="green">{dayjs(selectedRecord.appointmentDate).format('DD/MM/YYYY HH:mm')}</Tag>
                 </Descriptions.Item>
-                <Descriptions.Item label="Trạng thái" span={1}>
+                <Descriptions.Item label="Trạng thái" span={1} className="print-hide">
                   <Tag color="success">Đã hoàn thành</Tag>
                 </Descriptions.Item>
               </Descriptions>
@@ -454,6 +473,7 @@ const MedicalRecords = () => {
               }
               size="small" 
               style={{ marginBottom: '16px' }}
+              className="print-hide"
             >
               <Descriptions bordered column={1} size="small">
                 <Descriptions.Item label="Lý do đến khám">
@@ -486,6 +506,7 @@ const MedicalRecords = () => {
               }
               size="small" 
               style={{ marginBottom: '16px' }}
+              className="print-hide"
             >
               {selectedRecord.physicalExamination || selectedRecord.chiefComplaint ? (
                 <Descriptions bordered column={1} size="small">
@@ -534,6 +555,7 @@ const MedicalRecords = () => {
                 }
                 size="small" 
                 style={{ marginBottom: '16px' }}
+                className="print-hide"
               >
                 <Descriptions bordered column={1} size="small">
                   {(selectedRecord.testServices && selectedRecord.testServices.length > 0) ? (
@@ -731,7 +753,16 @@ const MedicalRecords = () => {
                   )}
                   {selectedRecord.followUpType && (
                     <Descriptions.Item label="Loại tái khám">
-                      {selectedRecord.followUpType}
+                      {(() => {
+                        const map = {
+                          'routine': 'Tái khám định kỳ (6 tháng)',
+                          'urgent': 'Tái khám khẩn cấp (1-3 ngày)',
+                          'follow-up': 'Theo dõi điều trị (1-2 tuần)',
+                          'check-up': 'Kiểm tra sau điều trị (1 tháng)',
+                          'orthodontic': 'Tái khám chỉnh nha (1-2 tháng)'
+                        };
+                        return map[selectedRecord.followUpType] || selectedRecord.followUpType;
+                      })()}
                     </Descriptions.Item>
                   )}
                   {selectedRecord.followUpInstructions && (

@@ -14,94 +14,241 @@
 }
 
 .doctor-header {
-  background: linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%);
-  padding: 0 32px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 4px 20px rgba(24, 144, 255, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   position: sticky;
   top: 0;
   z-index: 100;
-  border-bottom: 2px solid rgba(24, 144, 255, 0.1);
-  backdrop-filter: blur(10px);
-  height: 64px;
+  border-bottom: 1px solid #e2e8f0;
+  backdrop-filter: blur(20px);
+  height: 70px;
+  min-height: 70px;
 }
 
 .header-left {
   display: flex;
   align-items: center;
+  gap: 20px;
+  flex: 1;
+  height: 100%;
+}
+
+.menu-toggle-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  background: #f1f5f9;
+  color: #64748b;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.menu-toggle-btn:hover {
+  background: #e2e8f0;
+  color: #1890ff;
+  transform: scale(1.05);
+}
+
+.header-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  justify-content: center;
+  height: 100%;
+}
+
+.header-brand h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+}
+
+.brand-subtitle {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 400;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+.header-center {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+  height: 100%;
+}
+
+.current-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #f8fafc;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 500;
+  height: 40px;
+  box-sizing: border-box;
+}
+
+.current-time .anticon {
+  color: #1890ff;
+  font-size: 16px;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
+  flex: 1;
+  justify-content: flex-end;
+  height: 100%;
 }
 
-.notification-btn {
-  border: none;
-  box-shadow: none;
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+}
+
+.action-btn {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  transition: all 0.3s ease;
+  border-radius: 8px;
+  border: none;
+  background: #f8fafc;
+  color: #64748b;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.notification-btn:hover {
-  background: #e6f7ff !important;
-  color: #1890ff !important;
-  transform: scale(1.1);
+.action-btn:hover {
+  background: #e2e8f0;
+  color: #1890ff;
+  transform: scale(1.05);
 }
 
-.user-info {
+.notification-badge .ant-badge-count {
+  background: #ef4444;
+  font-size: 10px;
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
+  border-radius: 8px;
+}
+
+.user-profile {
   display: flex;
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  padding: 14px 16px;
-  border-radius: 50px;
-  transition: all 0.3s ease;
-  background: rgba(24, 144, 255, 0.05);
-  border: 1.5px solid rgba(24, 144, 255, 0.2);
-  height: 48px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  min-width: 200px;
+  height: 56px;
+  box-sizing: border-box;
 }
 
-.user-info:hover {
-  background: rgba(24, 144, 255, 0.1);
-  border-color: rgba(24, 144, 255, 0.4);
-  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.15);
+.user-profile:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
 
-.user-info .ant-avatar {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+.user-avatar {
+  position: relative;
   flex-shrink: 0;
 }
 
-.user-details {
+.user-avatar .ant-avatar {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid #ffffff;
+}
+
+.status-indicator {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+}
+
+.status-indicator.online {
+  background: #10b981;
+}
+
+.user-info {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
 }
 
 .user-name {
   font-weight: 600;
-  color: #262626;
+  color: #1e293b;
   font-size: 14px;
-  line-height: 1;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .user-role {
-  background: #1890ff;
+  display: flex;
+  align-items: center;
+}
+
+.role-badge {
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
   color: white;
-  font-size: 11px;
-  line-height: 1;
-  padding: 4px 10px;
-  border-radius: 10px;
-  font-weight: 500;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dropdown-arrow {
+  color: #64748b;
+  font-size: 12px;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-profile:hover .dropdown-arrow {
+  transform: rotate(180deg);
 }
 
 .doctor-content {
@@ -110,22 +257,87 @@
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  min-height: calc(100vh - 112px);
+  min-height: calc(100vh - 118px);
 }
 
 /* Responsive */
+@media (max-width: 1200px) {
+  .header-center {
+    display: none;
+  }
+  
+  .header-brand .brand-subtitle {
+    display: none;
+  }
+}
+
 @media (max-width: 768px) {
+  .doctor-header {
+    padding: 0 16px;
+    height: 60px;
+    min-height: 60px;
+  }
+  
+  .header-left {
+    gap: 12px;
+    height: 100%;
+  }
+  
+  .header-brand h2 {
+    font-size: 18px;
+  }
+  
+  .header-brand .brand-subtitle {
+    display: none;
+  }
+  
+  .header-actions {
+    gap: 4px;
+    height: 100%;
+  }
+  
+  .action-btn {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .user-profile {
+    min-width: 160px;
+    padding: 6px 12px;
+    height: 48px;
+  }
+  
+  .user-name {
+    font-size: 13px;
+  }
+  
+  .role-badge {
+    font-size: 9px;
+    padding: 1px 6px;
+  }
+  
   .doctor-content {
     margin: 16px;
     padding: 16px;
   }
+}
+
+@media (max-width: 480px) {
+  .header-brand h2 {
+    font-size: 16px;
+  }
   
-  .user-details {
+  .user-profile {
+    min-width: 120px;
+    gap: 8px;
+  }
+  
+  .user-info {
     display: none;
   }
   
-  .header-right {
-    gap: 8px;
+  .dropdown-arrow {
+    display: none;
   }
 }
 
