@@ -58,9 +58,6 @@ const Profile = () => {
         // Credentials - use array notation
         'credentials.medicalLicense': doctorData.credentials?.medicalLicense,
         'credentials.dentalLicense': doctorData.credentials?.dentalLicense,
-        // Status
-        isAcceptingNewPatients: doctorData.isAcceptingNewPatients,
-        isActive: doctorData.isActive,
       });
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -77,9 +74,7 @@ const Profile = () => {
       // Doctor không cập nhật workSchedule - do Admin/Staff quản lý
       const updateData = {
         phone: values['user.phone'],
-        specializations: values.specializations,
-        isAcceptingNewPatients: values.isAcceptingNewPatients,
-        isActive: values.isActive
+        specializations: values.specializations
       };
 
       await updateDoctorProfile(updateData);
@@ -108,10 +103,6 @@ const Profile = () => {
           form={form}
           layout="vertical"
           onFinish={handleSave}
-          initialValues={{
-            isAcceptingNewPatients: true,
-            isActive: true
-          }}
         >
           {/* Basic Information */}
           <Card title="Thông tin cơ bản" size="small" style={{ marginBottom: '16px' }}>
@@ -187,30 +178,6 @@ const Profile = () => {
                 style={{ width: '100%' }}
               />
             </Form.Item>
-          </Card>
-
-          {/* Status */}
-          <Card title="Trạng thái" size="small" style={{ marginBottom: '16px' }}>
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  name="isAcceptingNewPatients"
-                  label="Nhận bệnh nhân mới"
-                  valuePropName="checked"
-                >
-                  <Switch />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="isActive"
-                  label="Trạng thái hoạt động"
-                  valuePropName="checked"
-                >
-                  <Switch />
-                </Form.Item>
-              </Col>
-            </Row>
           </Card>
 
           <Form.Item style={{ marginTop: '24px', textAlign: 'center' }}>

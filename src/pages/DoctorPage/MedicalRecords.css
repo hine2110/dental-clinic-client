@@ -413,3 +413,190 @@
 .medical-records-container::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #096dd9 0%, #1890ff 100%);
 }
+
+/* ===== Print styles for Medical Records modal ===== */
+@media print {
+  html, body { 
+    font-size: 12px; 
+    color: #000; 
+    margin: 0 !important; 
+    padding: 0 !important; 
+  }
+  
+  body * { visibility: hidden; }
+  .ant-modal, .ant-modal * { visibility: visible !important; }
+  
+  .ant-modal { 
+    position: static !important; 
+    top: 0 !important; 
+    left: 0 !important; 
+    width: 100% !important; 
+    height: auto !important; 
+    margin: 0 !important; 
+    padding: 0 !important; 
+  }
+  
+  .ant-modal-content { 
+    box-shadow: none !important; 
+    border: none !important; 
+    width: 100% !important; 
+    max-width: none !important; 
+    margin: 0 !important; 
+    padding: 0 !important; 
+  }
+  
+  .ant-modal-body { 
+    padding: 4mm !important; 
+    margin: 0 !important; 
+    width: 100% !important; 
+    max-width: none !important; 
+    overflow: visible !important; 
+  }
+  
+  .ant-modal-header, .ant-modal-footer { display: none !important; }
+  .medical-records-header, .filters-section, .stats-cards, .table-container { display: none !important; }
+  .print-hide { display: none !important; }
+  
+  /* Thông tin phòng khám */
+  .clinic-header {
+    text-align: center !important;
+    margin-bottom: 12px !important;
+    padding: 8px 0 !important;
+    border-bottom: 2px solid #1890ff !important;
+  }
+  
+  .clinic-name {
+    font-size: 18px !important;
+    font-weight: bold !important;
+    color: #1890ff !important;
+    margin-bottom: 4px !important;
+  }
+  
+  .clinic-info {
+    font-size: 11px !important;
+    color: #666 !important;
+    line-height: 1.4 !important;
+  }
+  
+  .clinic-info div {
+    margin-bottom: 2px !important;
+  }
+  
+  /* Hiển thị thông tin phòng khám khi in */
+  .print-only {
+    display: block !important;
+  }
+  
+  .ant-card { 
+    border: 1px solid #d9d9d9 !important; 
+    box-shadow: none !important; 
+    margin-bottom: 8px !important; 
+    page-break-inside: avoid !important; 
+  }
+  
+  .ant-card-head { 
+    background: #fff !important; 
+    border-bottom: 1px solid #d9d9d9 !important; 
+    padding: 6px 10px !important; 
+  }
+  
+  .ant-card-head-title { font-size: 13px !important; }
+  .ant-card-body { padding: 8px 10px !important; }
+  
+  .ant-tag { 
+    border: 1px solid #999 !important; 
+    color: #000 !important; 
+    margin: 2px !important; 
+    font-size: 11px !important; 
+  }
+  
+  .ant-descriptions-bordered .ant-descriptions-view { 
+    border: 1px solid #d9d9d9 !important; 
+  }
+  
+  .ant-descriptions-bordered .ant-descriptions-row { 
+    border-bottom: 1px solid #eee !important; 
+  }
+  
+  .ant-descriptions-bordered .ant-descriptions-item-label,
+  .ant-descriptions-bordered .ant-descriptions-item-content { 
+    padding: 4px 8px !important; 
+  }
+  
+  .ant-descriptions-item-label { 
+    width: 30% !important; 
+    font-weight: 600 !important; 
+    font-size: 11px !important; 
+  }
+  
+  .ant-descriptions-item-content { 
+    width: 70% !important; 
+    font-size: 11px !important; 
+  }
+  
+  .ant-image-img { 
+    border-radius: 4px !important; 
+    max-width: 100% !important; 
+    height: auto !important; 
+  }
+  
+  .prewrap { white-space: pre-wrap; }
+  
+  .rx-table { 
+    width: 100% !important; 
+    border-collapse: collapse !important; 
+    margin-top: 4px !important; 
+    font-size: 11px !important; 
+  }
+  
+  .rx-table th, .rx-table td { 
+    border: 1px solid #d9d9d9 !important; 
+    padding: 4px 6px !important; 
+    text-align: left !important; 
+  }
+  
+  .rx-table th { 
+    font-weight: 600 !important; 
+    background: #f5f5f5 !important; 
+  }
+  
+  /* Đảm bảo không bị cắt */
+  .ant-row { 
+    margin: 0 !important; 
+    padding: 0 !important; 
+  }
+  
+  .ant-col { 
+    padding: 0 4px !important; 
+  }
+  
+  /* Tối ưu cho A4 */
+  @page { 
+    size: A4; 
+    margin: 6mm; 
+  }
+  
+  /* Đảm bảo nội dung không bị cắt */
+  * { 
+    box-sizing: border-box !important; 
+  }
+  
+  /* Ẩn scrollbar khi in */
+  ::-webkit-scrollbar {
+    display: none !important;
+  }
+  
+  * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  
+  /* Loại bỏ overflow scroll khi in */
+  .ant-modal-body {
+    overflow: visible !important;
+  }
+  
+  .ant-modal-content {
+    overflow: visible !important;
+  }
+}
