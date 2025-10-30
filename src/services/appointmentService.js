@@ -234,6 +234,35 @@ class AppointmentService {
     }
   }
 
+  static async retryCheckoutSession(appointmentId) {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Vui lòng đăng nhập');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/stripe/retry-checkout-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ appointmentId })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Lỗi khi tạo lại phiên thanh toán');
+      }
+      
+      return data; // Trả về { success: true, url: '...' }
+    } catch (error) {
+      console.error('Error retrying Stripe session:', error);
+      throw error;
+    }
+  }
+
 }
 
 export default AppointmentService;

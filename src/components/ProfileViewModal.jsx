@@ -85,7 +85,7 @@ const ProfileViewModal = ({ isOpen, onClose, onEdit }) => {
                     <span>{profile.gender || 'Not provided'}</span>
                   </div>
                   <div className="profile-field">
-                    <label>ID Number:</label>
+                    <label>Person ID:</label>
                     <span>{profile.idNumber || 'Not provided'}</span>
                   </div>
                 </div>

@@ -50,7 +50,7 @@ const ScheduleManagement = () => {
   });
 
   // 1. Tải dữ liệu cho bộ lọc (nhân viên, chi nhánh) khi component mount
-  useEffect(() => {
+useEffect(() => {
     const fetchFilterData = async () => {
       try {
         const [userRes, branchRes] = await Promise.all([
@@ -58,12 +58,13 @@ const ScheduleManagement = () => {
           adminService.getAllLocations(), 
         ]);
 
-        const validUsers = userRes.data.users.filter(u => 
-          ['staff', 'doctor', 'management'].includes(u.role)
+
+        const usersToFilter = userRes.data?.users || []; 
+        const validUsers = usersToFilter.filter(u => 
+            ['staff', 'doctor', 'management'].includes(u.role)
         );
-        setEmployees(validUsers || []);
-        
-        const branchData = branchRes.data.locations || []; 
+        setEmployees(validUsers); 
+        const branchData = branchRes.data?.data || [];
         setBranches(branchData);
 
         const bMap = new Map();

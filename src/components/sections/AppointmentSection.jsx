@@ -354,7 +354,6 @@ function AppointmentSection() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(''); // Clear previous errors
-
     // 1. Check login status
     // --- THAY ĐỔI: PHỤC HỒI LOGIC GỐC ---
     if (!isLoggedIn) {
@@ -364,9 +363,7 @@ function AppointmentSection() {
       return;
     }
     // --- KẾT THÚC THAY ĐỔI ---
-
     // 2. Profile check already handled by UI rendering
-
     // 3. Check required fields
     if (!formData.location || !formData.date || !formData.timeSlot || !formData.doctor) {
       setError("Please select location, date, time, and doctor.");
@@ -394,8 +391,13 @@ function AppointmentSection() {
 
     } catch (err) {
       console.error('Error submitting appointment:', err);
-      setError(err.message || "An error occurred while creating the appointment. Please try again.");
-      setLoading(false); // Stop loading on error
+      let message = err.message || "An error occurred. Please try again.";
+
+      if (message.includes("Rất tiếc, giờ hẹn này")) {
+        message = "Sorry, this time slot was just booked by someone else. Please select a different time.";
+      }
+      setError(message); 
+      setLoading(false);
     }
   };
 

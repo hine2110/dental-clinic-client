@@ -1,4 +1,6 @@
 // File: dental-clinic-client/src/components/ProfileEditModal.jsx
+// (ĐÃ CẬP NHẬT: Validate "on-blur" và xóa bỏ alert)
+
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { createOrUpdateProfile } from '../services/patientService';
@@ -37,7 +39,7 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Khởi tạo form data từ initialData
+  // Khởi tạo form data từ initialData (Giữ nguyên)
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -60,10 +62,8 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
             zipCode: initialData.contactInfo?.address?.zipCode || ''
           }
         },
-        medicalHistory: initialData.medicalHistory?.length > 0 ? 
-          initialData.medicalHistory[0]?.condition || '' : '',
-        allergies: initialData.allergies?.length > 0 ? 
-          initialData.allergies[0]?.allergen || '' : '',
+        medicalHistory: initialData.medicalHistory?.map(item => item.condition).join(', ') || '',
+        allergies: initialData.allergies?.map(item => item.allergen).join(', ') || '',
         emergencyContact: {
           name: initialData.emergencyContact?.name || '',
           relationship: initialData.emergencyContact?.relationship || '',
@@ -74,21 +74,15 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
     }
   }, [initialData]);
 
-  // Xử lý thay đổi input
+  // Xử lý thay đổi input (Giữ nguyên)
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleNestedInputChange = (parent, field, value) => {
     setFormData(prev => ({
       ...prev,
-      [parent]: {
-        ...prev[parent],
-        [field]: value
-      }
+      [parent]: { ...prev[parent], [field]: value }
     }));
   };
 
@@ -97,10 +91,7 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
       ...prev,
       contactInfo: {
         ...prev.contactInfo,
-        address: {
-          ...prev.contactInfo.address,
-          [field]: value
-        }
+        address: { ...prev.contactInfo.address, [field]: value }
       }
     }));
   };
@@ -110,68 +101,134 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
       ...prev,
       basicInfo: {
         ...prev.basicInfo,
-        idCard: {
-          idNumber: value
-        }
+        idCard: { idNumber: value }
       }
     }));
   };
 
-  // Validate form
+  // ==========================================================
+  // === BẮT ĐẦU CẬP NHẬT: LOGIC VALIDATE MỚI ===
+  // ==========================================================
+
+  /**
+   * (MỚI) Hàm kiểm tra logic cho một trường duy nhất
+   * Trả về 'null' nếu hợp lệ, hoặc 'string' (thông báo lỗi) nếu không hợp lệ
+   */
+  const validateField = (fieldName, value) => {
+    const idRegex = /^\d{12}$/; // 12 số
+    const phoneRegex = /^0\d{9}$/; // 10 số, bắt đầu bằng 0
+
+    switch (fieldName) {
+      case 'fullName':
+        return value.trim() ? null : 'Full name is required';
+      case 'dateOfBirth':
+        return value ? null : 'Date of birth is required';
+      case 'gender':
+        return value ? null : 'Gender is required';
+      case 'idNumber':
+        if (!value.trim()) return 'ID number is required';
+        if (!idRegex.test(value)) return 'ID number must be exactly 12 digits';
+        return null; // Hợp lệ
+      case 'phone':
+        if (!value.trim()) return 'Phone number is required';
+        if (!phoneRegex.test(value)) return 'Phone must be 10 digits and start with 0';
+        return null; // Hợp lệ
+      case 'email':
+        if (!value.trim()) return 'Email is required';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Invalid email address';
+        return null; // Hợp lệ
+      case 'street':
+        return value.trim() ? null : 'Street address is required';
+      case 'city':
+        return value.trim() ? null : 'City is required';
+      default:
+        return null;
+    }
+  };
+
+  /**
+   * (MỚI) Hàm xử lý khi người dùng rời khỏi một ô input (onBlur)
+   */
+  const handleBlur = (fieldName, value) => {
+    const errorMessage = validateField(fieldName, value);
+    // Cập nhật lỗi cho trường cụ thể đó
+    setErrors(prevErrors => ({
+      ...prevErrors,
+      [fieldName]: errorMessage
+    }));
+  };
+
+  /**
+   * (CẬP NHẬT) Hàm validate này giờ sẽ chạy tất cả các hàm validateField
+   * để kiểm tra toàn bộ form trước khi submit
+   */
   const validateForm = () => {
     const newErrors = {};
+    const fieldsToValidate = {
+      fullName: formData.basicInfo.fullName,
+      dateOfBirth: formData.basicInfo.dateOfBirth,
+      gender: formData.basicInfo.gender,
+      idNumber: formData.basicInfo.idCard.idNumber,
+      phone: formData.contactInfo.phone,
+      email: formData.contactInfo.email,
+      street: formData.contactInfo.address.street,
+      city: formData.contactInfo.address.city,
+    };
 
-    if (!formData.basicInfo.fullName.trim()) {
-      newErrors.fullName = 'Full name is required';
-    }
-    if (!formData.basicInfo.dateOfBirth) {
-      newErrors.dateOfBirth = 'Date of birth is required';
-    }
-    if (!formData.basicInfo.gender) {
-      newErrors.gender = 'Gender is required';
-    }
-    if (!formData.basicInfo.idCard.idNumber.trim()) {
-      newErrors.idNumber = 'ID number is required';
-    }
-    if (!formData.contactInfo.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
-    }
-    if (!formData.contactInfo.email.trim()) {
-      newErrors.email = 'Email is required';
-    }
-    if (!formData.contactInfo.address.street.trim()) {
-      newErrors.street = 'Street address is required';
-    }
-    if (!formData.contactInfo.address.city.trim()) {
-      newErrors.city = 'City is required';
+    let isValid = true;
+    for (const [field, value] of Object.entries(fieldsToValidate)) {
+      const errorMessage = validateField(field, value);
+      if (errorMessage) {
+        newErrors[field] = errorMessage;
+        isValid = false;
+      }
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return isValid;
   };
 
-  // Xử lý submit
+  /**
+   * (CẬP NHẬT) Xóa bỏ `alert()`
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // `validateForm()` sẽ chạy, cập nhật tất cả lỗi và trả về true/false
     if (!validateForm()) {
+      // (ĐÃ XÓA ALERT)
+      // Người dùng sẽ tự thấy các ô màu đỏ
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const response = await createOrUpdateProfile(formData);
+      const dataToSend = {
+        ...formData,
+        medicalHistory: formData.medicalHistory ? [{ condition: formData.medicalHistory, recordedAt: new Date() }] : [],
+        allergies: formData.allergies ? [{ allergen: formData.allergies, reaction: 'N/A', recordedAt: new Date() }] : []
+      };
+
+      const response = await createOrUpdateProfile(dataToSend);
+      
       if (response.success) {
         onSave(response.data);
+        onClose();
       } else {
+        alert(`Error saving profile: ${response.message || 'Unknown error'}`);
         console.error('Error saving profile:', response.message);
       }
     } catch (error) {
+      alert(`Error saving profile: ${error.message || 'Unknown error'}`);
       console.error('Error saving profile:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // ==========================================================
+  // === KẾT THÚC CẬP NHẬT: LOGIC VALIDATE MỚI ===
+  // ==========================================================
 
   if (!isOpen) return null;
 
@@ -183,7 +240,8 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
         
-        <form onSubmit={handleSubmit} className="profile-edit-modal-form">
+        {/* (Thêm noValidate để tắt validate mặc định của trình duyệt) */}
+        <form onSubmit={handleSubmit} className="profile-edit-modal-form" noValidate>
           {/* Thông tin cơ bản */}
           <div className="form-section">
             <h3>Basic Information</h3>
@@ -194,6 +252,8 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
                   type="text"
                   value={formData.basicInfo.fullName}
                   onChange={(e) => handleNestedInputChange('basicInfo', 'fullName', e.target.value)}
+                  // (THÊM MỚI onBlur)
+                  onBlur={(e) => handleBlur('fullName', e.target.value)}
                   className={errors.fullName ? 'error' : ''}
                 />
                 {errors.fullName && <span className="error-text">{errors.fullName}</span>}
@@ -205,6 +265,8 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
                   type="date"
                   value={formData.basicInfo.dateOfBirth}
                   onChange={(e) => handleNestedInputChange('basicInfo', 'dateOfBirth', e.target.value)}
+                  // (THÊM MỚI onBlur)
+                  onBlur={(e) => handleBlur('dateOfBirth', e.target.value)}
                   className={errors.dateOfBirth ? 'error' : ''}
                 />
                 {errors.dateOfBirth && <span className="error-text">{errors.dateOfBirth}</span>}
@@ -217,6 +279,8 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
                 <select
                   value={formData.basicInfo.gender}
                   onChange={(e) => handleNestedInputChange('basicInfo', 'gender', e.target.value)}
+                  // (THÊM MỚI onBlur)
+                  onBlur={(e) => handleBlur('gender', e.target.value)}
                   className={errors.gender ? 'error' : ''}
                 >
                   <option value="">Select Gender</option>
@@ -228,13 +292,16 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
               </div>
               
               <div className="form-group">
-                <label>ID Number *</label>
+                <label>ID Number (12 digits) *</label>
                 <input
                   type="text"
                   value={formData.basicInfo.idCard.idNumber}
                   onChange={(e) => handleIdCardChange(e.target.value)}
+                  // (THÊM MỚI onBlur)
+                  onBlur={(e) => handleBlur('idNumber', e.target.value)}
                   className={errors.idNumber ? 'error' : ''}
-                  placeholder="Enter your ID number"
+                  placeholder="Enter your 12-digit ID"
+                  maxLength={12}
                 />
                 {errors.idNumber && <span className="error-text">{errors.idNumber}</span>}
               </div>
@@ -246,12 +313,16 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
             <h3>Contact Information</h3>
             <div className="form-row">
               <div className="form-group">
-                <label>Phone Number *</label>
+                <label>Phone (10 digits, start with 0) *</label>
                 <input
                   type="tel"
                   value={formData.contactInfo.phone}
                   onChange={(e) => handleNestedInputChange('contactInfo', 'phone', e.target.value)}
+                  // (THÊM MỚI onBlur)
+                  onBlur={(e) => handleBlur('phone', e.target.value)}
                   className={errors.phone ? 'error' : ''}
+                  placeholder="0xxxxxxxxx"
+                  maxLength={10}
                 />
                 {errors.phone && <span className="error-text">{errors.phone}</span>}
               </div>
@@ -262,6 +333,8 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
                   type="email"
                   value={formData.contactInfo.email}
                   onChange={(e) => handleNestedInputChange('contactInfo', 'email', e.target.value)}
+                  // (THÊM MỚI onBlur)
+                  onBlur={(e) => handleBlur('email', e.target.value)}
                   className={errors.email ? 'error' : ''}
                 />
                 {errors.email && <span className="error-text">{errors.email}</span>}
@@ -275,6 +348,8 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
                   type="text"
                   value={formData.contactInfo.address.street}
                   onChange={(e) => handleAddressChange('street', e.target.value)}
+                  // (THÊM MỚI onBlur)
+                  onBlur={(e) => handleBlur('street', e.target.value)}
                   className={errors.street ? 'error' : ''}
                 />
                 {errors.street && <span className="error-text">{errors.street}</span>}
@@ -286,6 +361,8 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
                   type="text"
                   value={formData.contactInfo.address.city}
                   onChange={(e) => handleAddressChange('city', e.target.value)}
+                  // (THÊM MỚI onBlur)
+                  onBlur={(e) => handleBlur('city', e.target.value)}
                   className={errors.city ? 'error' : ''}
                 />
                 {errors.city && <span className="error-text">{errors.city}</span>}
@@ -294,28 +371,30 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
 
             <div className="form-row">
               <div className="form-group">
-                <label>District *</label>
+                <label>District</label>
                 <input
                   type="text"
                   value={formData.contactInfo.address.state}
                   onChange={(e) => handleAddressChange('state', e.target.value)}
                   className={errors.state ? 'error' : ''}
+                  placeholder="(Optional)"
                 />
               </div>
               
               <div className="form-group">
-                <label>Ward *</label>
+                <label>Ward</label>
                 <input
                   type="text"
                   value={formData.contactInfo.address.zipCode}
                   onChange={(e) => handleAddressChange('zipCode', e.target.value)}
                   className={errors.zipCode ? 'error' : ''}
+                  placeholder="(Optional)"
                 />
               </div>
             </div>
           </div>
 
-          {/* Liên hệ khẩn cấp */}
+          {/* Liên hệ khẩn cấp (Giữ nguyên) */}
           <div className="form-section">
             <h3>Emergency Contact (Optional)</h3>
             <div className="form-row">
@@ -348,7 +427,7 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
             </div>
           </div>
 
-          {/* Thông tin y tế */}
+          {/* Thông tin y tế (Giữ nguyên) */}
           <div className="form-section">
             <h3>Medical Information (Optional)</h3>
             <div className="form-group">
@@ -356,7 +435,7 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
               <textarea
                 value={formData.medicalHistory}
                 onChange={(e) => handleInputChange('medicalHistory', e.target.value)}
-                placeholder="Describe health conditions or medical history"
+                placeholder="Describe health conditions (e.g., Diabetes, Hypertension)"
                 rows="3"
               />
             </div>
@@ -366,13 +445,13 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, initialData = null }) => {
               <textarea
                 value={formData.allergies}
                 onChange={(e) => handleInputChange('allergies', e.target.value)}
-                placeholder="List allergies or adverse reactions"
+                placeholder="List allergies (e.g., Penicillin, Peanuts)"
                 rows="3"
               />
             </div>
           </div>
 
-          {/* Nút hành động */}
+          {/* Nút hành động (Giữ nguyên) */}
           <div className="form-actions">
             <button type="button" onClick={onClose} className="btn-secondary">
               Cancel

@@ -162,3 +162,90 @@
   border-color: #6c757d;
   color: white;
 }
+.status-badge.pending-payment {
+  background-color: #fff3cd; /* Nền vàng nhạt */
+  color: #664d03; /* Chữ vàng đậm */
+  border: 1px solid #ffecb5;
+}
+
+/* Container cho đồng hồ và nút */
+.pending-payment-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  width: 100%;
+}
+
+.timer-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.timer-wrapper .bi-clock-history {
+  font-size: 1rem;
+  color: #007bff;
+}
+
+.countdown-timer {
+  font-family: 'monospace'; /* Giúp số không bị nhảy khi đếm ngược */
+  letter-spacing: 0.5px;
+  background-color: #f1f1f1;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.countdown-timer.expired {
+  background-color: #f8d7da;
+  color: #721c24;
+  font-family: inherit;
+  font-weight: 600;
+}
+
+.retry-error {
+  font-size: 0.85rem;
+  color: #721c24;
+  text-align: right;
+  width: 100%;
+}
+
+/* Nút "Pay Now" */
+.btn-pay-now {
+  background-color: #28a745; /* Màu xanh lá cây */
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+  width: 100%; /* Hoặc 'auto' nếu bạn muốn nút nhỏ hơn */
+}
+
+.btn-pay-now:hover {
+  background-color: #218838;
+}
+
+.btn-pay-now:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Căn chỉnh lại trên mobile */
+@media (max-width: 576px) {
+  .appointment-actions {
+    margin-top: 15px;
+    width: 100%;
+  }
+  .pending-payment-actions {
+    align-items: stretch; /* Nút chiếm toàn bộ chiều rộng */
+  }
+  .timer-wrapper {
+    justify-content: flex-end;
+  }
+}

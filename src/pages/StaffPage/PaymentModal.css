@@ -1,5 +1,5 @@
 /* src/pages/staff/PaymentModal.css */
-/* (ĐÃ SỬA LỖI CUỘN CỘT PHẢI) */
+/* (ĐÃ SỬA LỖI CUỘN CỘT PHẢI VÀ TỐI ƯU UI CỘT TRÁI) */
 
 .payment-modal-overlay {
   position: fixed;
@@ -52,7 +52,7 @@
   overflow: hidden; /* Quan trọng */
 }
 
-/* Cột 1: Danh sách dịch vụ (Giữ nguyên) */
+/* Cột 1: Danh sách dịch vụ */
 .service-list-panel {
   border-right: 1px solid #dee2e6;
   display: flex;
@@ -73,49 +73,62 @@
   font-size: 1rem;
 }
 .service-list-items {
-  overflow-y: auto; /* Cột này cuộn độc lập */
+  overflow-y: auto; 
   flex-grow: 1; 
-  padding: 1rem 1.5rem;
+  padding: 0; /* <-- ĐÃ SỬA: Xóa padding ở đây */
 }
-/* ... (style của .service-item, .service-info, .service-add-btn giữ nguyên) ... */
-.service-item { display: flex; align-items: center; padding: 0.75rem; border-radius: 8px; margin-bottom: 8px; transition: background-color 0.2s ease; }
-.service-item:hover { background-color: #f8f9fa; }
-.service-info { flex-grow: 1; }
+
+.service-item { 
+  display: flex; 
+  align-items: center; 
+  padding: 0.65rem 0; /* <-- ĐÃ SỬA: Giảm padding dọc để item mỏng hơn */
+  border-radius: 0; 
+  margin-bottom: 0; 
+  transition: background-color 0.2s ease; 
+  border-bottom: 1px solid #eee; 
+}
+.service-item:last-child {
+  border-bottom: none; 
+}
+.service-item:hover { 
+  background-color: #f8f9fa; /* <-- ĐÃ SỬA: Màu hover chuẩn */
+}
+.service-info { 
+  flex-grow: 1; 
+  padding: 0 1.5rem; /* <-- ĐÃ SỬA: Thêm padding trái/phải (căn lề) */
+}
 .service-name { font-weight: 500; }
 .service-price { font-size: 0.9rem; color: #6c757d; }
-.service-add-btn { border: none; background: none; color: var(--header-purple, #7571f9); font-size: 1.5rem; cursor: pointer; transition: transform 0.2s ease; }
+.service-add-btn { 
+  border: none; 
+  background: none; 
+  color: var(--header-purple, #7571f9); 
+  font-size: 1.25rem; 
+  cursor: pointer; 
+  transition: transform 0.2s ease; 
+  padding: 0.25rem;
+  margin-right: 1.5rem; /* <-- ĐÃ THÊM: Căn lề cho nút + */
+}
 .service-add-btn:hover { transform: scale(1.1); }
-
-
-/* === SỬA LỖI Ở CỘT 2 === */
-
-/* Cột 2: Giỏ hàng & Thanh toán */
 .cart-panel {
   background-color: #fcfdff;
   display: flex;
   flex-direction: column;
   height: 100%; 
-  overflow-y: auto; /* <-- 1. CHO PHÉP TOÀN BỘ CỘT NÀY CUỘN */
+  overflow-y: auto; 
 }
 
 .cart-header {
   padding: 1.5rem 1.5rem 1rem;
-  flex-shrink: 0; /* Không co lại */
+  flex-shrink: 0;
 }
 .cart-header h5 { margin-bottom: 0.25rem; }
 .cart-header p { color: #6c757d; margin: 0; }
-
-/* Phần danh sách item trong giỏ */
 .cart-items-list {
-  /* 2. Bỏ cuộn và các thuộc tính giới hạn ở đây */
   overflow-y: visible; 
-  /* flex-grow: 1; (Xóa) */
-  /* min-height: 100px; (Xóa) */
-  padding: 0 1.5rem; /* Giữ padding */
-  flex-shrink: 0; /* Quan trọng: Không co lại */
+  padding: 0 1.5rem; 
+  flex-shrink: 0;
 }
-
-/* Style cho cart-item (giữ nguyên) */
 .cart-item { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid #eee; }
 .cart-item-info { display: flex; flex-direction: column; flex-grow: 1; }
 .cart-item-info span:first-child { font-weight: 500; }
@@ -125,17 +138,16 @@
 .cart-item-controls input { width: 40px; text-align: center; border: none; font-weight: 600; background: transparent; }
 
 
-/* Phần Tóm tắt (Bây giờ sẽ nằm trong vùng cuộn của .cart-panel) */
+/* Phần Tóm tắt */
 .payment-summary {
-  flex-shrink: 0; /* Quan trọng: Không co lại */
+  flex-shrink: 0; 
   padding: 1.5rem;
-  margin-top: auto; /* <-- Đẩy xuống cuối cùng nếu cột chưa đầy */
+  margin-top: auto; 
   border-top: 1px solid #dee2e6;
-  background-color: #fff; /* Nền trắng để che nội dung cuộn bên dưới */
-  box-shadow: 0 -5px 15px -5px rgba(0,0,0,0.05); /* Bóng đổ nhẹ lên trên */
+  background-color: #fff; 
+  box-shadow: 0 -5px 15px -5px rgba(0,0,0,0.05); 
 }
 
-/* ... (Toàn bộ style còn lại của .summary-row, discount, QR, nút bấm giữ nguyên) ... */
 .summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 1rem; }
 .summary-row label { font-weight: 500; }
 .discount-input-group { display: flex; gap: 5px; flex-basis: 60%; max-width: 250px; }
@@ -149,7 +161,11 @@
 .qr-code-image { width: 180px; height: 180px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; }
 .btn-finalize-payment { width: 100%; padding: 0.85rem; font-size: 1.1rem; font-weight: 600; }
 
+/* THÊM MỚI: Sửa lỗi tương phản khi hover */
+.service-item:hover .service-price {
+  color: #343a40; /* Đổi màu giá tiền thành màu tối khi hover */
+}
 
-/* Animation (Giữ nguyên) */
+/* Animation */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideInUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
