@@ -30,8 +30,6 @@ class StaffService {
 
 // === THÊM HÀM MỚI 2: XẾP HÀNG TỰ ĐỘNG ===
   static async queueWalkInPatient(payload) {
-    // payload sẽ là: { locationId, existingPatientId }
-    // hoặc { locationId, patientData: { ... } }
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('Yêu cầu đăng nhập (Lễ tân)');
@@ -51,7 +49,7 @@ class StaffService {
          error.data = data; 
          throw error;
       }
-      return data; // { success: true, message: "...", data: ... }
+      return data;
       
     } catch (error) {
       console.error('Error queuing walk-in patient:', error);
@@ -80,7 +78,7 @@ class StaffService {
          error.data = data; 
          throw error;
       }
-      return data; // Trả về { success: true, data: [doctorList] }
+      return data;
       
     } catch (error) {
       console.error('Error getting available doctors:', error);

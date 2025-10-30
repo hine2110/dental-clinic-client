@@ -132,7 +132,7 @@ const ProfilePage = () => {
                 <span>{profile.basicInfo?.gender || '-'}</span>
               </div>
               <div className="info-item">
-                <strong>ID Number</strong>
+                <strong>Person ID</strong>
                 <span>{profile.basicInfo?.idCard?.idNumber || '-'}</span>
               </div>
             </div>

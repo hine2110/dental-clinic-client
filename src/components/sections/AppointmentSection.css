@@ -1,3 +1,8 @@
+/* File: src/components/AppointmentSection.css */
+
+/* ======================================= */
+/* === PHẦN CSS NOTIFICATION (Giữ nguyên) === */
+/* ======================================= */
 .custom-notification {
   position: fixed;
   top: 80px;
@@ -48,13 +53,39 @@
   to { width: 0%; }
 }
 
-.error-message {
-  color: #842029;
-  background-color: #f8d7da;
-  border-color: #f5c2c7;
-  padding: 1rem;
-  border: 1px solid transparent;
-  border-radius: .25rem;
-  margin-top: 1rem;
-  text-align: center;
+/* ========================================================== */
+/* === BẮT ĐẦU NÂNG CẤP: LÀM CHO CSS CỤ THỂ HƠN === */
+/* ========================================================== */
+
+/* Chúng ta thêm ".appointment-form" ở trước để tăng độ ưu tiên (specificity)
+  để đảm bảo nó không bị CSS của Bootstrap ghi đè
+*/
+.appointment-form .error-message {
+  color: #c0521e; /* Màu chữ cam đất dịu hơn */
+  background-color: #fff4e5; /* Nền màu kem/cam nhạt */
+  border: 1px solid #ffcc80; /* Viền màu cam nhạt */
+  
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  border-radius: 0.5rem; /* Bo góc nhiều hơn cho mềm mại */
+  
+  font-weight: 500;
+  text-align: left;
+  
+  display: flex;
+  align-items: flex-start; /* Căn trên cùng nếu nội dung dài */
+  gap: 0.75rem; /* Khoảng cách giữa icon và chữ */
+  
+  /* Thêm đổ bóng nhẹ để tạo chiều sâu, không quá nổi bật */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); 
+}
+
+.appointment-form .error-message::before {
+  content: '\F62A'; /* Icon Bootstrap 'exclamation-triangle-fill' */
+  font-family: 'bootstrap-icons';
+  /* margin-right: 0.75rem; (Đã thay bằng gap) */
+  font-weight: 600;
+  font-size: 1.25rem; /* Icon lớn hơn một chút */
+  line-height: 1; /* Đảm bảo icon căn chỉnh tốt */
+  color: #e08e0b; /* Màu icon cam nổi bật */
 }

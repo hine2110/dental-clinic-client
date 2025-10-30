@@ -1,5 +1,6 @@
 // src/pages/staff/PaymentModal.jsx
-// (ĐÃ SỬA LỖI THỨ TỰ HOOK)
+// (ĐÃ SỬA LỖI BUG THÊM/XÓA ITEM VÀ TÍNH TIỀN THỐI)
+// (Phiên bản cuối cùng, xử lý item là String hoặc Object)
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
@@ -10,6 +11,16 @@ const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/ap
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 };
+
+// === HELPER FUNCTION (ĐÃ THÊM) ===
+// Hàm này giúp lấy ID từ item một cách nhất quán
+const getItemId = (item) => {
+  if (!item) return null;
+  // Nếu item.item là object (do FE thêm vào), lấy item.item._id
+  // Nếu item.item là string (do BE trả về), dùng chính nó
+  return item.item?._id || item.item; 
+};
+
 
 function PaymentModal({ appointment, onClose, onPaymentSuccess }) {
   const [allServices, setAllServices] = useState([]);
@@ -77,8 +88,7 @@ function PaymentModal({ appointment, onClose, onPaymentSuccess }) {
     }
   }, [searchTerm, allServices]);
 
-  // ===== BƯỚC 1: DI CHUYỂN KHỐI NÀY LÊN TRÊN =====
-  // 3. Logic tính toán tiền (Phải khai báo trước khi sử dụng)
+  // 3. Logic tính toán tiền (Giữ nguyên)
   const totalAmount = useMemo(() => activeInvoice?.totalAmount || 0, [activeInvoice]);
   
   const finalTotal = useMemo(() => {
@@ -95,11 +105,10 @@ function PaymentModal({ appointment, onClose, onPaymentSuccess }) {
     }
     return 0;
   }, [amountGiven, finalTotal, paymentMethod]);
-  // =============================================
 
-  // 4. Tải QR Code (Giờ đã có thể truy cập 'finalTotal' an toàn)
+  // 4. Tải QR Code (Giữ nguyên)
   useEffect(() => {
-    if (paymentMethod === 'transfer' && activeInvoice && finalTotal > 0) {
+    if (paymentMethod === 'transfer' && activeInvoice && finalTotal >= 0) {
       const fetchQrCode = async () => {
         setIsFetchingQR(true);
         setError(''); 
@@ -107,7 +116,11 @@ function PaymentModal({ appointment, onClose, onPaymentSuccess }) {
           const token = localStorage.getItem('token');
           const response = await fetch(`${API_BASE}/staff/receptionist/invoices/${activeInvoice._id}/generate-qr`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ amount: finalTotal })
           });
           const data = await response.json();
           if (!data.success) throw new Error(data.message);
@@ -122,20 +135,45 @@ function PaymentModal({ appointment, onClose, onPaymentSuccess }) {
     } else {
       setQrInfo({ qrCodeUrl: '', memo: '', amount: 0 });
     }
-  }, [paymentMethod, activeInvoice, finalTotal]); // Phụ thuộc vào finalTotal
+  }, [paymentMethod, activeInvoice, finalTotal]);
 
-  // ... (Toàn bộ logic nghiệp vụ còn lại: updateInvoiceItems, handleAddItem, handleUpdateQuantity... giữ nguyên) ...
+
+  // ==============================================================
+  // === BẮT ĐẦU SỬA LỖI LOGIC GIỎ HÀNG (3 HÀM) ===
+  // ==============================================================
+
+  /**
+   * (ĐÃ SỬA LỖI 1)
+   * Gửi dữ liệu giỏ hàng mới nhất lên server.
+   * Đọc 'itemModel' từ cấp ANH EM (sibling) để tạo payload chính xác.
+   */
   const updateInvoiceItems = async (newItems) => {
     if (appliedDiscount) {
       handleRemoveDiscount(); 
       setError("Giỏ hàng đã thay đổi, vui lòng nhập lại mã giảm giá.");
     }
+    
+    // Cập nhật giao diện ngay
     const optimisticInvoice = { ...activeInvoice, items: newItems };
     setActiveInvoice(optimisticInvoice);
-    const itemsPayload = newItems.map(item => ({
-      itemId: item.item._id || item.item, 
-      quantity: item.quantity
-    }));
+
+    // Tạo payload chuẩn để gửi về BE
+    // Cấu trúc `newItems` LÀ: { item: {...} HOẶC "string", itemModel: "...", ... }
+    const itemsPayload = newItems.map(item => {
+      // Dùng helper function để lấy ID một cách an toàn
+      const id = getItemId(item); 
+      if (!id || !item.itemModel) {
+        // Ghi log lỗi nếu cấu trúc vẫn sai
+        console.error("Invalid item structure in updateInvoiceItems:", item);
+        return null;
+      }
+      return {
+        itemId: id,
+        quantity: item.quantity,
+        itemModel: item.itemModel
+      };
+    }).filter(Boolean); // Lọc bỏ bất kỳ item lỗi nào
+
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE}/staff/receptionist/invoices/${activeInvoice._id}/items`, {
@@ -145,44 +183,82 @@ function PaymentModal({ appointment, onClose, onPaymentSuccess }) {
       });
       const data = await response.json();
       if (!data.success) throw new Error(data.message);
+      
+      // Đồng bộ lại state với dữ liệu chính xác từ server
+      // data.data.items lúc này sẽ có item.item là Object (do BE populate)
       setActiveInvoice(data.data);
     } catch (e) {
       setError(e.message);
+      // (Nên thêm logic rollback (setActiveInvoice(activeInvoice)) nếu thất bại)
     }
   };
 
+  /**
+   * (ĐÃ SỬA LỖI 2)
+   * Thêm dịch vụ thủ công (từ cột trái).
+   * Tạo item mới với 'itemModel' là ANH EM (sibling) của 'item'.
+   */
   const handleAddItem = (service) => {
-    const existingItem = activeInvoice.items.find(item => (item.item._id || item.item) === service._id);
+    // 'service' là đối tượng đầy đủ từ `allServices`
+    // (đã bao gồm '_id', 'name', 'price', và 'itemModel')
+    
+    const existingItem = activeInvoice.items.find(
+        // Dùng helper function để so sánh ID một cách an toàn
+        item => getItemId(item) === service._id
+    );
+
     let newItems = [];
     if (existingItem) {
+      // Nếu đã tồn tại, chỉ tăng số lượng
       newItems = activeInvoice.items.map(item =>
-        (item.item._id || item.item) === service._id ? { ...item, quantity: item.quantity + 1 } : item
+        (getItemId(item) === service._id)
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
       );
     } else {
+      // Nếu chưa có, thêm item mới với cấu trúc CHUẨN
       newItems = [
         ...activeInvoice.items,
         {
-          item: service, 
+          item: service, // <-- `service` là đối tượng đầy đủ
+          itemModel: service.itemModel, // <-- QUAN TRỌNG: Thêm 'itemModel' làm anh em
           quantity: 1,
           priceAtPayment: service.price,
-          nameAtPayment: service.name
+          nameAtPayment: service.name // Dùng 'name' (đã chuẩn hóa ở BE)
         }
       ];
     }
     updateInvoiceItems(newItems);
   };
 
+  /**
+   * (ĐÃ SỬA LỖI 3)
+   * Cập nhật số lượng (tăng/giảm/xóa).
+   * Sử dụng logic tìm kiếm `getItemId` nhất quán.
+   */
   const handleUpdateQuantity = (serviceId, newQuantity) => {
     let newItems;
+    // Logic tìm kiếm nhất quán
+    const findLogic = (item) => getItemId(item) === serviceId;
+
     if (newQuantity <= 0) {
-      newItems = activeInvoice.items.filter(item => (item.item._id || item.item) !== serviceId);
+      // Xóa item
+      newItems = activeInvoice.items.filter(item => !findLogic(item));
     } else {
+      // Cập nhật số lượng
       newItems = activeInvoice.items.map(item =>
-        (item.item._id || item.item) === serviceId ? { ...item, quantity: newQuantity } : item
+        findLogic(item) ? { ...item, quantity: newQuantity } : item
       );
     }
     updateInvoiceItems(newItems);
   };
+
+  // ==============================================================
+  // === KẾT THÚC SỬA LỖI LOGIC GIỎ HÀNG ===
+  // ==============================================================
+
+
+  // ... (Các hàm logic khác: apply/remove discount) ...
   
   const handleApplyDiscount = async () => {
     if (!discountCode.trim()) return;
@@ -211,6 +287,10 @@ function PaymentModal({ appointment, onClose, onPaymentSuccess }) {
     setError('');
   };
 
+  /**
+   * (ĐÃ SỬA LỖI 4)
+   * Lấy tiền thối 'change' chính xác từ server trả về.
+   */
   const handleFinalizePayment = async () => {
     setIsSubmitting(true);
     setError('');
@@ -235,8 +315,13 @@ function PaymentModal({ appointment, onClose, onPaymentSuccess }) {
       const data = await response.json();
       if (!data.success) throw new Error(data.message);
       
-      const successMessage = `Thanh toán thành công! Tiền thối: ${formatCurrency(changeAmount)}`;
+      // === SỬA LỖI TÍNH TIỀN THỐI ===
+      // Lấy tiền thối chính xác từ server trả về (data.data.change)
+      const serverChangeAmount = data.data?.change || 0; 
+      const successMessage = `Thanh toán thành công! Tiền thối: ${formatCurrency(serverChangeAmount)}`;
       onPaymentSuccess({ message: successMessage, type: 'success' });
+      // === KẾT THÚC SỬA LỖI ===
+
     } catch (e) {
       setError(e.message);
     } finally {
@@ -244,7 +329,7 @@ function PaymentModal({ appointment, onClose, onPaymentSuccess }) {
     }
   };
 
-  // 5. Render JSX (Giữ nguyên từ trước)
+  // 5. Render JSX
   return createPortal(
     <div className="payment-modal-overlay">
       <div className="payment-modal-content">
@@ -299,23 +384,37 @@ function PaymentModal({ appointment, onClose, onPaymentSuccess }) {
                 {activeInvoice.items.length === 0 ? (
                   <p className="text-center text-muted p-3">Vui lòng chọn dịch vụ</p>
                 ) : (
-                  activeInvoice.items.map(item => (
-                    <div key={item.item._id || item.item} className="cart-item">
-                      <div className="cart-item-info">
-                        <span>{item.nameAtPayment}</span>
-                        <span>{formatCurrency(item.priceAtPayment)}</span>
+                  // ==============================================================
+                  // === (ĐÃ SỬA LỖI 5) SỬA LỖI JSX RENDER GIỎ HÀNG ===
+                  // ==============================================================
+                  activeInvoice.items.map(item => {
+                    // Dùng helper function để lấy ID
+                    const id = getItemId(item);
+                    if (!id) return null; // Bỏ qua nếu item bị hỏng
+                    
+                    return (
+                      <div key={id} className="cart-item">
+                        <div className="cart-item-info">
+                          {/* 'nameAtPayment' được đảm bảo tồn tại */}
+                          <span>{item.nameAtPayment}</span>
+                          <span>{formatCurrency(item.priceAtPayment)}</span>
+                        </div>
+                        <div className="cart-item-controls">
+                          {/* Dùng 'id' đã lấy được */}
+                          <button onClick={() => handleUpdateQuantity(id, item.quantity - 1)}>-</button>
+                          <input type="number" value={item.quantity} readOnly />
+                          <button onClick={() => handleUpdateQuantity(id, item.quantity + 1)}>+</button>
+                        </div>
                       </div>
-                      <div className="cart-item-controls">
-                        <button onClick={() => handleUpdateQuantity(item.item._id || item.item, item.quantity - 1)}>-</button>
-                        <input type="number" value={item.quantity} readOnly />
-                        <button onClick={() => handleUpdateQuantity(item.item._id || item.item, item.quantity + 1)}>+</button>
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
+                  // ==============================================================
+                  // === KẾT THÚC SỬA LỖI JSX RENDER GIỎ HÀNG ===
+                  // ==============================================================
                 )}
               </div>
               
-              {/* PHẦN TÓM TẮT (CỐ ĐỊNH Ở DƯỚI) */}
+              {/* PHẦN TÓM TẮT (CỐ ĐỊNH Ở Dưới) */}
               <div className="payment-summary">
                 
                 {/* Discount */}
@@ -431,7 +530,7 @@ function PaymentModal({ appointment, onClose, onPaymentSuccess }) {
                 <button 
                   className={`btn w-100 mt-3 btn-finalize-payment ${paymentMethod === 'transfer' ? 'btn-success' : 'btn-primary'}`}
                   onClick={handleFinalizePayment}
-                  disabled={isSubmitting || finalTotal === 0 || isFetchingQR}
+                  disabled={isSubmitting || (paymentMethod === 'cash' && finalTotal === 0 && amountGiven === 0) || (paymentMethod === 'transfer' && finalTotal === 0) || isFetchingQR}
                 >
                   {isSubmitting ? 'Đang xử lý...' : 
                     (paymentMethod === 'transfer' ? 
