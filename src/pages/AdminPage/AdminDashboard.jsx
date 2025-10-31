@@ -11,34 +11,27 @@ import {
   Button,
   Modal,
   message,
-  Tabs,
   Input,
   Select,
   Avatar,
   Dropdown,
-  Menu, 
-  Descriptions, 
-  List, 
-  Spin, 
+  Descriptions,
+  List,
+  Spin,
   Popconfirm,
 } from "antd";
 import {
   UserOutlined,
   PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  SearchOutlined,
-  MoreOutlined,
-  ExportOutlined,
   ReloadOutlined,
   SettingOutlined,
   LogoutOutlined,
   DashboardOutlined,
   TeamOutlined,
   BarChartOutlined,
-  EyeOutlined, 
-  CalendarOutlined, // <-- ĐÃ THÊM LẠI
-  HistoryOutlined, // Giữ lại cho History Modal
+  EyeOutlined,
+  CalendarOutlined,
+  HistoryOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../../context/authContext";
 import { useNavigate } from "react-router-dom";
@@ -49,10 +42,9 @@ import DiscountsManager from "./DiscountsManager";
 import ScheduleManagement from "./ScheduleManagement";
 import ServiceDoctorManager from "./ServiceDoctor";
 import "./AdminDashboard.css";
-import moment from "moment"; 
+import moment from "moment";
 
 const { Header, Content } = Layout;
-const { TabPane } = Tabs;
 const { Search } = Input;
 const { Option } = Select;
 
@@ -62,7 +54,6 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null); 
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -100,8 +91,8 @@ const AdminDashboard = () => {
 
   // Fetch users khi tab thay đổi
   useEffect(() => {
-    if (activeTab === 'users' || activeTab === 'dashboard') {
-        fetchUsers();
+    if (activeTab === "users" || activeTab === "dashboard") {
+      fetchUsers();
     }
   }, [activeTab]);
 
@@ -114,32 +105,10 @@ const AdminDashboard = () => {
   // Handle create account success
   const handleCreateSuccess = () => {
     setCreateModalVisible(false);
-    if (activeTab === 'users') { 
-        fetchUsers();
+    if (activeTab === "users") {
+      fetchUsers();
     }
     message.success("Account created successfully!");
-  };
-
-  // Handle delete user
-  const handleDeleteUser = async (userId) => {
-    Modal.confirm({
-      title: "Delete User",
-      content: "Are you sure you want to delete this user?",
-      okText: "Yes",
-      okType: "danger",
-      cancelText: "No",
-      onOk: async () => {
-        try {
-          await adminService.deleteUser(userId);
-          message.success("User deleted successfully");
-          fetchUsers();
-        } catch (error) {
-          message.error(
-            "Failed to delete user: " + (error.message || "Unknown error")
-          );
-        }
-      },
-    });
   };
 
   // Hàm mở/đóng modal view detail
@@ -155,33 +124,33 @@ const AdminDashboard = () => {
 
   // Hàm mở/đóng modal lịch sử
   const handleViewHistory = async (patient) => {
-      if (patient.role !== 'patient') {
-          message.info("Chỉ có thể xem lịch sử của bệnh nhân.");
-          return;
+    if (patient.role !== "patient") {
+      message.info("Chỉ có thể xem lịch sử của bệnh nhân.");
+      return;
+    }
+    setSelectedPatient(patient);
+    setHistoryLoading(true);
+    setHistoryModalVisible(true);
+    try {
+      const res = await adminService.getPatientHistory(patient._id);
+      if (res.success) {
+        setHistoryData(res.data || []);
+      } else {
+        message.error(res.message || "Failed to load history.");
+        setHistoryData([]);
       }
-      setSelectedPatient(patient);
-      setHistoryLoading(true);
-      setHistoryModalVisible(true);
-      try {
-          const res = await adminService.getPatientHistory(patient._id); 
-          if (res.success) {
-              setHistoryData(res.data || []);
-          } else {
-              message.error(res.message || "Failed to load history.");
-              setHistoryData([]); 
-          }
-      } catch (error) {
-          message.error(error.message || "Error fetching history.");
-          setHistoryData([]); 
-      } finally {
-          setHistoryLoading(false);
-      }
+    } catch (error) {
+      message.error(error.message || "Error fetching history.");
+      setHistoryData([]);
+    } finally {
+      setHistoryLoading(false);
+    }
   };
 
   const handleHistoryModalCancel = () => {
-      setHistoryModalVisible(false);
-      setHistoryData([]);
-      setSelectedPatient(null);
+    setHistoryModalVisible(false);
+    setHistoryData([]);
+    setSelectedPatient(null);
   };
 
   // Filter users
@@ -195,15 +164,15 @@ const AdminDashboard = () => {
 
   // SỬA LẠI USER MENU CHO ANTD V5
   const handleMenuClick = (e) => {
-      if (e.key === 'logout') {
-        handleLogout();
-      }
+    if (e.key === "logout") {
+      handleLogout();
+    }
   };
   const menuItems = [
-      { key: 'profile', icon: <UserOutlined />, label: 'Profile' },
-      { key: 'settings', icon: <SettingOutlined />, label: 'Settings' },
-      { type: 'divider' },
-      { key: 'logout', icon: <LogoutOutlined />, label: 'Logout', danger: true },
+    { key: "profile", icon: <UserOutlined />, label: "Profile" },
+    { key: "settings", icon: <SettingOutlined />, label: "Settings" },
+    { type: "divider" },
+    { key: "logout", icon: <LogoutOutlined />, label: "Logout", danger: true },
   ];
 
   const columns = [
@@ -213,10 +182,16 @@ const AdminDashboard = () => {
       key: "fullName",
       render: (text, record) => (
         <Space>
-          <Avatar size="small" style={{ backgroundColor: "#1890ff" }} icon={<UserOutlined />} />
+          <Avatar
+            size="small"
+            style={{ backgroundColor: "#1890ff" }}
+            icon={<UserOutlined />}
+          />
           <div>
             <div style={{ fontWeight: 500 }}>{text || "N/A"}</div>
-            <div style={{ fontSize: "12px", color: "#666" }}>{record.email}</div>
+            <div style={{ fontSize: "12px", color: "#666" }}>
+              {record.email}
+            </div>
           </div>
         </Space>
       ),
@@ -226,17 +201,44 @@ const AdminDashboard = () => {
       dataIndex: "role",
       key: "role",
       render: (role) => {
-        const color = { admin: "red", doctor: "blue", staff: "green", patient: "orange", management: "purple" };
+        const color = {
+          admin: "red",
+          doctor: "blue",
+          staff: "green",
+          patient: "orange",
+          management: "purple",
+        };
         const roleName = role || "unknown";
-        return <Tag color={color[roleName] || 'default'}>{roleName.toUpperCase()}</Tag>;
+        return (
+          <Tag color={color[roleName] || "default"}>
+            {roleName.toUpperCase()}
+          </Tag>
+        );
       },
     },
-    { title: "Phone", dataIndex: "phone", key: "phone", render: (phone) => phone || "N/A" },
+    {
+      title: "Phone",
+      dataIndex: "phone",
+      key: "phone",
+      render: (phone, record) => {
+        // 'phone' là giá trị từ record.phone
+        // 'record' là toàn bộ object user, bao gồm cả patientProfile
+        const patientPhone = record.patientProfile?.contactInfo?.phone;
+
+        // Ưu tiên SĐT của patient, nếu không có thì dùng SĐT gốc,
+        // nếu cả 2 không có thì mới hiện "N/A"
+        return patientPhone || phone || "N/A";
+      },
+    },
     {
       title: "Status",
       dataIndex: "isActive",
       key: "isActive",
-      render: (isActive) => <Tag color={isActive ? "green" : "red"}>{isActive ? "Active" : "Inactive"}</Tag>,
+      render: (isActive) => (
+        <Tag color={isActive ? "green" : "red"}>
+          {isActive ? "Active" : "Inactive"}
+        </Tag>
+      ),
     },
     {
       title: "Created",
@@ -255,8 +257,11 @@ const AdminDashboard = () => {
 
           {/* nut ban/unban */}
           <Popconfirm
-            title={`Are you sure you want to ${record.isActive ? 'ban' : 'unban'} this user?`}
-            onConfirm={async () => { // Logic onClick được chuyển vào đây
+            title={`Are you sure you want to ${
+              record.isActive ? "ban" : "unban"
+            } this user?`}
+            onConfirm={async () => {
+              // Logic onClick được chuyển vào đây
               try {
                 await adminService.toggleUserStatus(record._id || record.id);
                 message.success(record.isActive ? "User banned" : "User unbanned");
@@ -276,9 +281,9 @@ const AdminDashboard = () => {
               {record.isActive ? "Ban" : "Unban"}
             </Button>
           </Popconfirm>
-          
+
           {/* Nút History */}
-          {record.role === 'patient' && (
+          {record.role === "patient" && (
             <Button
               icon={<HistoryOutlined />}
               onClick={() => handleViewHistory(record)}
@@ -305,16 +310,52 @@ const AdminDashboard = () => {
     <div className="dashboard-content">
       {/* Statistics Cards */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-         <Col xs={24} sm={12} lg={6}><Card className="stat-card"><Statistic title="Total Users" value={stats.totalUsers} prefix={<UserOutlined style={{ color: "#1890ff" }} />} valueStyle={{ color: "#1890ff" }} /></Card></Col>
-         <Col xs={24} sm={12} lg={6}><Card className="stat-card"><Statistic title="Active Users" value={stats.activeUsers} prefix={<TeamOutlined style={{ color: "#52c41a" }} />} valueStyle={{ color: "#52c41a" }} /></Card></Col>
-         <Col xs={24} sm={12} lg={6}><Card className="stat-card"><Statistic title="Doctors" value={stats.doctors} prefix={<UserOutlined style={{ color: "#722ed1" }} />} valueStyle={{ color: "#722ed1" }} /></Card></Col>
-         <Col xs={24} sm={12} lg={6}><Card className="stat-card"><Statistic title="Patients" value={stats.patients} prefix={<UserOutlined style={{ color: "#fa8c16" }} />} valueStyle={{ color: "#fa8c16" }} /></Card></Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card className="stat-card">
+            <Statistic
+              title="Total Users"
+              value={stats.totalUsers}
+              prefix={<UserOutlined style={{ color: "#1890ff" }} />}
+              valueStyle={{ color: "#1890ff" }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card className="stat-card">
+            <Statistic
+              title="Active Users"
+              value={stats.activeUsers}
+              prefix={<TeamOutlined style={{ color: "#52c41a" }} />}
+              valueStyle={{ color: "#52c41a" }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card className="stat-card">
+            <Statistic
+              title="Doctors"
+              value={stats.doctors}
+              prefix={<UserOutlined style={{ color: "#722ed1" }} />}
+              valueStyle={{ color: "#722ed1" }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card className="stat-card">
+            <Statistic
+              title="Patients"
+              value={stats.patients}
+              prefix={<UserOutlined style={{ color: "#fa8c16" }} />}
+              valueStyle={{ color: "#fa8c16" }}
+            />
+          </Card>
+        </Col>
       </Row>
       {/* Recent Users */}
       <Card title="Recent Users" className="recent-users-card">
         <Table
-          columns={columns.slice(0, 4)} 
-          dataSource={users.slice(0, 5)} 
+          columns={columns.slice(0, 4)}
+          dataSource={users.slice(0, 5)}
           rowKey={(record) => record._id || record.id || record.email}
           pagination={false}
           size="small"
@@ -332,9 +373,43 @@ const AdminDashboard = () => {
     <div className="user-management">
       {/* Filters */}
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col xs={24} sm={12} md={8}><Search placeholder="Search users..." allowClear value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ width: "100%" }}/></Col>
-        <Col xs={24} sm={12} md={6}><Select placeholder="Filter by role" value={roleFilter} onChange={setRoleFilter} style={{ width: "100%" }}><Option value="all">All Roles</Option><Option value="admin">Admin</Option><Option value="doctor">Doctor</Option><Option value="staff">Staff</Option><Option value="patient">Patient</Option></Select></Col>
-        <Col xs={24} sm={24} md={10}><Space><Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateModalVisible(true)}>Create Account</Button><Button icon={<ReloadOutlined />} onClick={fetchUsers}>Refresh</Button></Space></Col>
+        <Col xs={24} sm={12} md={8}>
+          <Search
+            placeholder="Search users..."
+            allowClear
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ width: "100%" }}
+          />
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Select
+            placeholder="Filter by role"
+            value={roleFilter}
+            onChange={setRoleFilter}
+            style={{ width: "100%" }}
+          >
+            <Option value="all">All Roles</Option>
+            <Option value="admin">Admin</Option>
+            <Option value="doctor">Doctor</Option>
+            <Option value="staff">Staff</Option>
+            <Option value="patient">Patient</Option>
+          </Select>
+        </Col>
+        <Col xs={24} sm={24} md={10}>
+          <Space>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setCreateModalVisible(true)}
+            >
+              Create Account
+            </Button>
+            <Button icon={<ReloadOutlined />} onClick={fetchUsers}>
+              Refresh
+            </Button>
+          </Space>
+        </Col>
       </Row>
       {/* Users Table */}
       <Card>
@@ -343,7 +418,13 @@ const AdminDashboard = () => {
           dataSource={filteredUsers}
           loading={loading}
           rowKey={(record) => record._id || record.id || record.email}
-          pagination={{ pageSize: 10, showSizeChanger: true, showQuickJumper: true, showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} users` }}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} of ${total} users`,
+          }}
         />
       </Card>
     </div>
@@ -352,7 +433,9 @@ const AdminDashboard = () => {
   const renderAnalytics = () => (
     <Card>
       <div style={{ textAlign: "center", padding: "60px 20px" }}>
-        <BarChartOutlined style={{ fontSize: "64px", color: "#1890ff", marginBottom: "16px" }}/>
+        <BarChartOutlined
+          style={{ fontSize: "64px", color: "#1890ff", marginBottom: "16px" }}
+        />
         <h3>Analytics Dashboard</h3>
         <p>Detailed analytics and reporting features will be available here.</p>
       </div>
@@ -362,7 +445,9 @@ const AdminDashboard = () => {
   const renderSettings = () => (
     <Card>
       <div style={{ textAlign: "center", padding: "60px 20px" }}>
-        <SettingOutlined style={{ fontSize: "64px", color: "#1890ff", marginBottom: "16px" }}/>
+        <SettingOutlined
+          style={{ fontSize: "64px", color: "#1890ff", marginBottom: "16px" }}
+        />
         <h3>System Settings</h3>
         <p>System configuration and settings will be available here.</p>
       </div>
@@ -372,15 +457,24 @@ const AdminDashboard = () => {
   // === HÀM RENDER CONTENT ĐÃ THÊM LẠI CASE SCHEDULES ===
   const renderContent = () => {
     switch (activeTab) {
-      case "dashboard": return renderDashboard();
-      case "users": return renderUserManagement();
-      case "services": return <ServicesManager />;
-      case "doctor-services": return <ServiceDoctorManager />;
-      case "discounts": return <DiscountsManager />;
-      case "schedules": return <ScheduleManagement />; 
-      case "analytics": return renderAnalytics();
-      case "settings": return renderSettings();
-      default: return renderDashboard();
+      case "dashboard":
+        return renderDashboard();
+      case "users":
+        return renderUserManagement();
+      case "services":
+        return <ServicesManager />;
+      case "doctor-services":
+        return <ServiceDoctorManager />;
+      case "discounts":
+        return <DiscountsManager />;
+      case "schedules":
+        return <ScheduleManagement />;
+      case "analytics":
+        return renderAnalytics();
+      case "settings":
+        return renderSettings();
+      default:
+        return renderDashboard();
     }
   };
   // ===========================================
@@ -390,42 +484,92 @@ const AdminDashboard = () => {
       <Header className="admin-header">
         <div className="header-content">
           <div className="header-left">
-            <div className="admin-logo"><span>M</span></div>
+            <div className="admin-logo">
+              <span>M</span>
+            </div>
             <h1 className="admin-brand">Medilab</h1>
           </div>
           <div className="header-nav">
-             <Button type={activeTab === 'dashboard' ? 'primary' : 'default'} icon={<DashboardOutlined />} onClick={() => setActiveTab('dashboard')} className="nav-btn">Dashboard</Button>
-             <Button type={activeTab === 'users' ? 'primary' : 'default'} icon={<TeamOutlined />} onClick={() => setActiveTab('users')} className="nav-btn">Users</Button>
-             <Button type={activeTab === 'services' ? 'primary' : 'default'} icon={<SettingOutlined />} onClick={() => setActiveTab('services')} className="nav-btn">Services</Button>
-             <Button type={activeTab === 'discounts' ? 'primary' : 'default'} icon={<SettingOutlined />} onClick={() => setActiveTab('discounts')} className="nav-btn">Discount</Button>
-             <Button
-               type={activeTab === 'schedules' ? 'primary' : 'default'}
-               icon={<CalendarOutlined />}
-               onClick={() => setActiveTab('schedules')}
-               className="nav-btn"
-             >
-               Schedules
-             </Button>
-             <Button
-      type={activeTab === 'doctor-services' ? 'primary' : 'default'}
-      icon={<UserOutlined />} 
-      onClick={() => setActiveTab('doctor-services')}
-      className="nav-btn"
-    >
-      Doctor Services
-    </Button>
-             <Button type={activeTab === 'analytics' ? 'primary' : 'default'} icon={<BarChartOutlined />} onClick={() => setActiveTab('analytics')} className="nav-btn">Analytics</Button>
-             <Button type={activeTab === 'settings' ? 'primary' : 'default'} icon={<SettingOutlined />} onClick={() => setActiveTab('settings')} className="nav-btn">Settings</Button>
+            <Button
+              type={activeTab === "dashboard" ? "primary" : "default"}
+              icon={<DashboardOutlined />}
+              onClick={() => setActiveTab("dashboard")}
+              className="nav-btn"
+            >
+              Dashboard
+            </Button>
+            <Button
+              type={activeTab === "users" ? "primary" : "default"}
+              icon={<TeamOutlined />}
+              onClick={() => setActiveTab("users")}
+              className="nav-btn"
+            >
+              Users
+            </Button>
+            <Button
+              type={activeTab === "services" ? "primary" : "default"}
+              icon={<SettingOutlined />}
+              onClick={() => setActiveTab("services")}
+              className="nav-btn"
+            >
+              Services
+            </Button>
+            <Button
+              type={activeTab === "discounts" ? "primary" : "default"}
+              icon={<SettingOutlined />}
+              onClick={() => setActiveTab("discounts")}
+              className="nav-btn"
+            >
+              Discount
+            </Button>
+            <Button
+              type={activeTab === "schedules" ? "primary" : "default"}
+              icon={<CalendarOutlined />}
+              onClick={() => setActiveTab("schedules")}
+              className="nav-btn"
+            >
+              Schedules
+            </Button>
+            <Button
+              type={activeTab === "doctor-services" ? "primary" : "default"}
+              icon={<UserOutlined />}
+              onClick={() => setActiveTab("doctor-services")}
+              className="nav-btn"
+            >
+              Doctor Services
+            </Button>
+            <Button
+              type={activeTab === "analytics" ? "primary" : "default"}
+              icon={<BarChartOutlined />}
+              onClick={() => setActiveTab("analytics")}
+              className="nav-btn"
+            >
+              Analytics
+            </Button>
+            <Button
+              type={activeTab === "settings" ? "primary" : "default"}
+              icon={<SettingOutlined />}
+              onClick={() => setActiveTab("settings")}
+              className="nav-btn"
+            >
+              Settings
+            </Button>
           </div>
           {/* ======================================= */}
           <div className="header-right">
             {/* === DROPDOWN ĐÃ SỬA === */}
-            <Dropdown menu={{ items: menuItems, onClick: handleMenuClick }} placement="bottomRight">
-            {/* ======================= */}
+            <Dropdown
+              menu={{ items: menuItems, onClick: handleMenuClick }}
+              placement="bottomRight"
+            >
+              {/* ======================= */}
               <div className="user-profile">
-                <Avatar style={{ backgroundColor: '#1890ff', marginRight: 8 }} icon={<UserOutlined />} />
+                <Avatar
+                  style={{ backgroundColor: "#1890ff", marginRight: 8 }}
+                  icon={<UserOutlined />}
+                />
                 <div className="user-info">
-                  <div className="user-name">{user?.fullName || 'Admin'}</div>
+                  <div className="user-name">{user?.fullName || "Admin"}</div>
                   <div className="user-role">Administrator</div>
                 </div>
               </div>
@@ -448,29 +592,67 @@ const AdminDashboard = () => {
         title="User Account Details"
         open={isViewModalVisible}
         onCancel={handleViewModalCancel}
-        footer={[<Button key="close" onClick={handleViewModalCancel}>Close</Button>]}
+        footer={[
+          <Button key="close" onClick={handleViewModalCancel}>
+            Close
+          </Button>,
+        ]}
         width={600}
         destroyOnClose
       >
         {viewUser && (
           <Descriptions bordered column={1}>
-            <Descriptions.Item label="Full Name">{viewUser.fullName}</Descriptions.Item>
+            <Descriptions.Item label="Full Name">
+              {viewUser.fullName}
+            </Descriptions.Item>
             <Descriptions.Item label="Email">{viewUser.email}</Descriptions.Item>
-            <Descriptions.Item label="Phone">{viewUser.phone || "N/A"}</Descriptions.Item>
-            <Descriptions.Item label="Role"><Tag color="blue">{viewUser.role?.toUpperCase()}</Tag></Descriptions.Item>
-            <Descriptions.Item label="Status"><Tag color={viewUser.isActive ? "green" : "red"}>{viewUser.isActive ? "Active" : "Inactive (Banned)"}</Tag></Descriptions.Item>
-            <Descriptions.Item label="Joined Date">{moment(viewUser.createdAt).format("DD/MM/YYYY HH:mm")}</Descriptions.Item>
-            {viewUser.role === 'doctor' && viewUser.doctorProfile && (<><Descriptions.Item label="Doctor ID">{viewUser.doctorProfile.doctorId}</Descriptions.Item><Descriptions.Item label="Specializations">{viewUser.doctorProfile.specializations?.join(', ')}</Descriptions.Item></>)}
-            {viewUser.role === 'staff' && viewUser.staffProfile && (<Descriptions.Item label="Staff Type">{viewUser.staffProfile.staffType}</Descriptions.Item>)}
+            <Descriptions.Item label="Phone">
+              {viewUser.patientProfile?.contactInfo?.phone ||
+                viewUser.phone ||
+                "N/A"}
+            </Descriptions.Item>
+            <Descriptions.Item label="Role">
+              <Tag color="blue">{viewUser.role?.toUpperCase()}</Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="Status">
+              <Tag color={viewUser.isActive ? "green" : "red"}>
+                {viewUser.isActive ? "Active" : "Inactive (Banned)"}
+              </Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="Joined Date">
+              {moment(viewUser.createdAt).format("DD/MM/YYYY HH:mm")}
+            </Descriptions.Item>
+            {viewUser.role === "doctor" && viewUser.doctorProfile && (
+              <>
+                <Descriptions.Item label="Doctor ID">
+                  {viewUser.doctorProfile.doctorId}
+                </Descriptions.Item>
+                <Descriptions.Item label="Specializations">
+                  {viewUser.doctorProfile.specializations?.join(", ")}
+                </Descriptions.Item>
+                <Descriptions.Item label="Years of Practice">
+                  {viewUser.doctorProfile.experience?.yearsOfPractice}
+                </Descriptions.Item>
+              </>
+            )}
+            {viewUser.role === "staff" && viewUser.staffProfile && (
+              <Descriptions.Item label="Staff Type">
+                {viewUser.staffProfile.staffType}
+              </Descriptions.Item>
+            )}
           </Descriptions>
         )}
       </Modal>
 
       <Modal
-        title={`Medical History: ${selectedPatient?.fullName || ''}`}
+        title={`Medical History: ${selectedPatient?.fullName || ""}`}
         open={historyModalVisible}
         onCancel={handleHistoryModalCancel}
-        footer={[ <Button key="close" onClick={handleHistoryModalCancel}>Close</Button> ]}
+        footer={[
+          <Button key="close" onClick={handleHistoryModalCancel}>
+            Close
+          </Button>,
+        ]}
         width={800} // Cho modal rộng
         destroyOnClose
       >
@@ -478,26 +660,50 @@ const AdminDashboard = () => {
           <List
             itemLayout="vertical"
             dataSource={historyData}
-            locale={{ emptyText: 'No completed appointments found.' }}
-            renderItem={item => (
+            locale={{ emptyText: "No completed appointments found." }}
+            renderItem={(item) => (
               <List.Item
                 key={item._id}
-                style={{ background: '#f9f9f9', marginBottom: 16, padding: 16, borderRadius: 8 }}
+                style={{
+                  background: "#f9f9f9",
+                  marginBottom: 16,
+                  padding: 16,
+                  borderRadius: 8,
+                }}
               >
                 {/* Dùng Descriptions để hiển thị thông tin chi tiết từ model Appointment */}
-                <Descriptions title={`Appointment: ${moment(item.appointmentDate).format('DD/MM/YYYY HH:mm')}`} column={2}>
-                  <Descriptions.Item label="Doctor">{item.doctor?.user?.fullName || 'N/A'}</Descriptions.Item>
-                  <Descriptions.Item label="Service(s)">{item.selectedServices?.map(s => s.name).join(', ') || 'N/A'}</Descriptions.Item>
-                  <Descriptions.Item label="Reason for Visit" span={2}>{item.reasonForVisit || 'N/A'}</Descriptions.Item>
-                  <Descriptions.Item label="Final Diagnosis" span={2}>{item.finalDiagnosis || 'No diagnosis provided.'}</Descriptions.Item>
-                  <Descriptions.Item label="Treatment" span={2}>{item.treatmentNotes || item.treatment || 'No treatment notes.'}</Descriptions.Item>
+                <Descriptions
+                  title={`Appointment: ${moment(item.appointmentDate).format(
+                    "DD/MM/YYYY HH:mm"
+                  )}`}
+                  column={2}
+                >
+                  <Descriptions.Item label="Doctor">
+                    {item.doctor?.user?.fullName || "N/A"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Service(s)">
+                    {item.selectedServices?.map((s) => s.name).join(", ") ||
+                      "N/A"}
+                  </Descriptions.Item>
+                  
+                  {/* === ĐÃ SỬA LỖI Ở ĐÂY === */}
+                  <Descriptions.Item label="Reason for Visit" span={2}>
+                    {item.reasonForVisit || "N/A"}
+                  </Descriptions.Item> 
+                  {/* ======================== */}
+
+                  <Descriptions.Item label="Final Diagnosis" span={2}>
+                    {item.finalDiagnosis || "No diagnosis provided."}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Treatment" span={2}>
+                    {item.treatmentNotes || item.treatment || "No treatment notes."}
+                  </Descriptions.Item>
                 </Descriptions>
               </List.Item>
             )}
           />
         </Spin>
       </Modal>
-
     </Layout>
   );
 };

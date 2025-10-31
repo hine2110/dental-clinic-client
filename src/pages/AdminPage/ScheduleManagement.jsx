@@ -58,12 +58,13 @@ const ScheduleManagement = () => {
           adminService.getAllLocations(), 
         ]);
 
-        const validUsers = userRes.data.users.filter(u => 
-          ['staff', 'doctor', 'management'].includes(u.role)
+
+        const usersToFilter = userRes.data?.users || []; 
+        const validUsers = usersToFilter.filter(u => 
+            ['staff', 'doctor', 'management'].includes(u.role)
         );
-        setEmployees(validUsers || []);
-        
-        const branchData = branchRes.data.locations || []; 
+        setEmployees(validUsers); 
+        const branchData = branchRes.data?.data || [];
         setBranches(branchData);
 
         const bMap = new Map();
@@ -81,6 +82,15 @@ const ScheduleManagement = () => {
   // 2. Tải lịch làm việc khi tháng/năm xem hoặc bộ lọc thay đổi
   useEffect(() => {
     const fetchSchedules = async () => {
+      // KIỂM TRA: Chỉ tải khi đã chọn một chi nhánh cụ thể
+      if (filters.branchId === 'all') {
+        setSchedules([]); // Xóa lịch cũ
+        setLoading(false);
+        // Bạn có thể thêm message thông báo ở đây nếu muốn
+        // message.info('Vui lòng chọn một chi nhánh để xem lịch');
+        return; // Không làm gì cả nếu đang chọn 'All Branches'
+      }
+
       setLoading(true);
       try {
         const params = {
@@ -88,7 +98,7 @@ const ScheduleManagement = () => {
           month: currentViewDate.month() + 1,
           employeeId: filters.employeeId,
           role: filters.role,
-          branchId: filters.branchId,
+          branchId: filters.branchId, // Bây giờ branchId luôn là một ID cụ thể
         };
 
         const res = await adminService.getSchedules(params);
@@ -105,7 +115,7 @@ const ScheduleManagement = () => {
       }
     };
 
-    fetchSchedules();
+    fetchSchedules(); // Gọi hàm
   }, [currentViewDate, filters]);
 
   // 3. Lọc danh sách lịch theo ngày được chọn (để hiển thị ở sidebar)
