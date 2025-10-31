@@ -734,13 +734,27 @@ const MedicalRecords = () => {
                   {selectedRecord.prescriptions && selectedRecord.prescriptions.length > 0 && (
                     <Descriptions.Item label="Đơn thuốc">
                       <div>
-                        {selectedRecord.prescriptions.map((prescription, index) => (
-                          <div key={index} style={{ marginBottom: '8px', padding: '8px', backgroundColor: '#f0f5ff', borderRadius: '4px' }}>
-                            <strong>{prescription.medicine}</strong><br />
-                            Liều lượng: {prescription.dosage} | Tần suất: {prescription.frequency}<br />
-                            Thời gian: {prescription.duration} | {prescription.instructions}
-                          </div>
-                        ))}
+                        {selectedRecord.prescriptions.map((prescription, index) => {
+                          const extractNumber = (text) => {
+                            const m = String(text || '').match(/\d+(?:[\.,]\d+)?/);
+                            if (!m) return 0;
+                            const n = parseFloat(m[0].replace(',', '.'));
+                            return isNaN(n) ? 0 : n;
+                          };
+                          const dosageNum = extractNumber(prescription.dosage);
+                          const freqNum = extractNumber(prescription.frequency);
+                          const qtyPerDay = dosageNum * freqNum;
+                          const days = parseInt(prescription.duration, 10) || 1;
+                          const totalQty = qtyPerDay * days;
+                          return (
+                            <div key={index} style={{ marginBottom: '8px', padding: '8px', backgroundColor: '#f0f5ff', borderRadius: '4px' }}>
+                              <strong>{prescription.medicine}</strong><br />
+                              Liều lượng: {prescription.dosage} | Tần suất: {prescription.frequency}<br />
+                              Thời gian: {days} ngày | SL/ngày: {qtyPerDay || 'N/A'} | Tổng SL: {totalQty || 'N/A'}
+                              {prescription.instructions ? (<><br />Hướng dẫn: {prescription.instructions}</>) : null}
+                            </div>
+                          );
+                        })}
                       </div>
                     </Descriptions.Item>
                   )}

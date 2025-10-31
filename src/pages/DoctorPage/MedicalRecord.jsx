@@ -429,6 +429,8 @@ const MedicalRecord = () => {
         medicine: item.medicine,
         dosage: item.dosage,
         frequency: item.frequency,
+        // Lưu số ngày vào duration để tương thích schema trên server/medical record
+        duration: item.days ? `${item.days}` : undefined,
         instructions: item.instructions
       }));
       
@@ -465,7 +467,8 @@ const MedicalRecord = () => {
       medicine: values.medicine,
       dosage: values.dosage,
       frequency: values.frequency,
-      instructions: values.instructions
+      instructions: values.instructions,
+      days: Number(values.days || 1)
     };
     
     setPrescriptionItems([...prescriptionItems, newItem]);
@@ -563,9 +566,43 @@ const MedicalRecord = () => {
       key: 'frequency',
     },
     {
-      title: 'Thời gian',
-      dataIndex: 'duration',
-      key: 'duration',
+      title: 'Số ngày',
+      dataIndex: 'days',
+      key: 'days',
+      render: (v) => (v ? v : 1)
+    },
+    {
+      title: 'SL/ngày',
+      key: 'qtyPerDay',
+      render: (_, record) => {
+        const extractNumber = (text) => {
+          const m = String(text || '').match(/\d+(?:[\.,]\d+)?/);
+          if (!m) return 0;
+          const n = parseFloat(m[0].replace(',', '.'));
+          return isNaN(n) ? 0 : n;
+        };
+        const d = extractNumber(record.dosage);
+        const f = extractNumber(record.frequency);
+        return d * f || '';
+      }
+    },
+    {
+      title: 'Tổng SL',
+      key: 'totalQty',
+      render: (_, record) => {
+        const extractNumber = (text) => {
+          const m = String(text || '').match(/\d+(?:[\.,]\d+)?/);
+          if (!m) return 0;
+          const n = parseFloat(m[0].replace(',', '.'));
+          return isNaN(n) ? 0 : n;
+        };
+        const d = extractNumber(record.dosage);
+        const f = extractNumber(record.frequency);
+        const days = Number(record.days || 1);
+        const perDay = d * f;
+        const total = perDay * (Number.isFinite(days) && days > 0 ? days : 1);
+        return total || '';
+      }
     },
     {
       title: 'Hướng dẫn',
@@ -1644,6 +1681,44 @@ const MedicalRecord = () => {
               </Form.Item>
             </Col>
           </Row>
+
+          {/* Số lượng/ngày tự tính từ liều lượng x tần suất */}
+          <Form.Item shouldUpdate noStyle>
+            {() => {
+              const dosageText = prescriptionForm.getFieldValue('dosage') || '';
+              const frequencyText = prescriptionForm.getFieldValue('frequency') || '';
+              const days = Number(prescriptionForm.getFieldValue('days') || 1);
+              const extractNumber = (text) => {
+                const m = String(text).match(/\d+(?:[\.,]\d+)?/);
+                if (!m) return 0;
+                const n = parseFloat(m[0].replace(',', '.'));
+                return isNaN(n) ? 0 : n;
+              };
+              const dosageNum = extractNumber(dosageText);
+              const freqNum = extractNumber(frequencyText);
+              const qtyPerDay = dosageNum * freqNum;
+              const totalQty = qtyPerDay * (Number.isFinite(days) && days > 0 ? days : 1);
+              return (
+                <div>
+                  <Form.Item label="Số lượng/ngày (tự tính)">
+                    <Input value={qtyPerDay || ''} placeholder="Tự tính theo Liều lượng x Tần suất" disabled />
+                  </Form.Item>
+                  <Row gutter={16}>
+                    <Col span={12}>
+                      <Form.Item name="days" label="Số ngày dùng" initialValue={1}>
+                        <Input type="number" min={1} step={1} placeholder="VD: 5" />
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item label="Tổng số lượng (ước tính)">
+                        <Input value={totalQty || ''} placeholder="Số lượng/ngày x Số ngày" disabled />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                </div>
+              );
+            }}
+          </Form.Item>
 
           <Form.Item
             name="instructions"

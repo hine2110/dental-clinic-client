@@ -168,44 +168,7 @@ const DoctorDashboard = () => {
       key: 'reasonForVisit',
       ellipsis: true,
     },
-    {
-      title: 'Hành động',
-      key: 'actions',
-      render: (_, record) => (
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {record.status === 'pending' && (
-            <>
-              <Button 
-                type="primary" 
-                size="small"
-                icon={<CheckCircleOutlined />}
-                onClick={() => handleConfirmAppointment(record._id)}
-              >
-                Xác nhận
-              </Button>
-              <Button 
-                danger 
-                size="small"
-                icon={<CloseCircleOutlined />}
-                onClick={() => handleCancelAppointment(record._id)}
-              >
-                Hủy
-              </Button>
-            </>
-          )}
-          {record.status === 'confirmed' && (
-            <Button 
-              danger 
-              size="small"
-              icon={<CloseCircleOutlined />}
-              onClick={() => handleCancelAppointment(record._id)}
-            >
-              Hủy
-            </Button>
-          )}
-        </div>
-      ),
-    },
+    // Đã bỏ cột Hành động theo yêu cầu
   ];
 
   if (loading) {
