@@ -445,7 +445,7 @@ const Appointments = () => {
             gap: '4px'
           }}>
             <CalendarOutlined style={{ fontSize: '10px' }} />
-            {record.schedule?.location?.name || 'N/A'}
+            {record.schedule?.location?.name || record.location?.name || 'N/A'}
           </div>
         </div>
       ),
