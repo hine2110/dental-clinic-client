@@ -10,12 +10,14 @@ import {
   message,
   Space,
   Result,
+  Upload, // <-- ĐÃ THÊM
 } from "antd";
 import {
   UserOutlined,
   MailOutlined,
   PhoneOutlined,
   LockOutlined,
+  UploadOutlined, // <-- ĐÃ THÊM
 } from "@ant-design/icons";
 import { adminService } from "../../services/adminService";
 
@@ -27,6 +29,11 @@ const CreateAccountModal = ({ visible, onCancel, onSuccess }) => {
   const [successData, setSuccessData] = useState(null);
   const [step, setStep] = useState(1); // 1: form, 2: success
   const selectedRole = Form.useWatch("role", form);
+
+  // === THÊM STATE CHO AVATAR ===
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  // =============================
 
   // When switching to Staff, set default staffType if not selected yet
   useEffect(() => {
@@ -48,24 +55,36 @@ const CreateAccountModal = ({ visible, onCancel, onSuccess }) => {
     { value: "management", label: "Management", color: "#722ed1" },
   ];
 
-  // Handle form submission
+  // === ĐÃ SỬA: Handle form submission ĐỂ GỬI FORMDATA ===
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
-      console.log("🔄 Submitting form with values:", values);
-      const payload = { ...values };
-      // Normalize doctor specializations string -> array
-      if (
-        payload.role === "doctor" &&
-        typeof payload.specializations === "string"
-      ) {
-        payload.specializations = payload.specializations
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean);
+      console.log("ЁЯФД Submitting form with values:", values);
+
+      // 1. TẠO FORMDATA
+      const formData = new FormData();
+
+      // 2. Thêm các giá trị text (và mảng) vào formData
+      for (const key in values) {
+        if (key === 'specializations' && values.role === 'doctor' && typeof values[key] === 'string') {
+          // Xử lý mảng specializations
+          const specializationsArray = values[key].split(',').map(s => s.trim()).filter(Boolean);
+          // Gửi mảng bằng cách append từng giá trị
+          specializationsArray.forEach(spec => formData.append('specializations', spec));
+        } else if (values[key] !== undefined && key !== 'avatar') {
+          // Thêm các trường khác (bỏ qua 'avatar' ảo từ Form)
+          formData.append(key, values[key]);
+        }
       }
-      const response = await adminService.createStaffAccount(payload);
-      console.log("📤 Server response:", response);
+
+      // 3. THÊM AVATAR VÀO FORMDATA (nếu là Doctor và có file)
+      if (avatarFile && values.role === 'doctor') {
+        formData.append('avatar', avatarFile); // Key phải khớp với 'uploadProfile.single("avatar")'
+      }
+
+      // 4. Gọi service với formData
+      const response = await adminService.createStaffAccount(formData);
+      console.log("ЁЯУд Server response:", response);
 
       if (response.success) {
         setSuccessData({
@@ -76,19 +95,21 @@ const CreateAccountModal = ({ visible, onCancel, onSuccess }) => {
         });
         setStep(2);
         form.resetFields();
+        setAvatarFile(null); // <-- Dọn dẹp state
+        setAvatarPreview(null); // <-- Dọn dẹp state
       } else {
         throw new Error(response.message || "Create account failed");
       }
     } catch (error) {
-      console.error("❌ Create account error:", error);
-      console.error("📋 Full error object:", JSON.stringify(error, null, 2));
+      console.error("тЭМ Create account error:", error);
+      console.error("ЁЯУЛ Full error object:", JSON.stringify(error, null, 2));
 
       // Handle different types of errors
       let errorMessage = "Failed to create account. Please try again.";
 
       // Check if it's an API response error
       if (error.response) {
-        console.error("📡 API Error Response:", error.response);
+        console.error("ЁЯУб API Error Response:", error.response);
         const apiError = error.response.data;
 
         if (apiError.errors && Array.isArray(apiError.errors)) {
@@ -97,7 +118,7 @@ const CreateAccountModal = ({ visible, onCancel, onSuccess }) => {
           errorMessage = apiError.message;
         }
 
-        console.error("🔍 API Error Details:", {
+        console.error("ЁЯФН API Error Details:", {
           status: error.response.status,
           message: apiError.message,
           errors: apiError.errors,
@@ -114,6 +135,7 @@ const CreateAccountModal = ({ visible, onCancel, onSuccess }) => {
       setLoading(false);
     }
   };
+  // ========================================================
 
   // Generate random password
   const generatePassword = () => {
@@ -136,6 +158,8 @@ const CreateAccountModal = ({ visible, onCancel, onSuccess }) => {
     setStep(1);
     setSuccessData(null);
     form.resetFields();
+    setAvatarFile(null); // <-- Dọn dẹp state
+    setAvatarPreview(null); // <-- Dọn dẹp state
   };
 
   const renderForm = () => (
@@ -235,9 +259,60 @@ const CreateAccountModal = ({ visible, onCancel, onSuccess }) => {
         </Row>
       )}
 
-      {/* Doctor-only fields (NOW REQUIRED) */}
+      {/* Doctor-only fields (ĐÃ CẬP NHẬT) */}
       {form.getFieldValue("role") === "doctor" && (
         <>
+          {/* === BỔ SUNG KHỐI UPLOAD AVATAR === */}
+          <Form.Item
+            name="avatar"
+            label="Profile Avatar (Optional)"
+            help="Image must be JPG/PNG and smaller than 2MB."
+          >
+            <Upload
+              listType="picture-card"
+              className="avatar-uploader"
+              showUploadList={false}
+              // Ngăn chặn việc tự động upload
+              beforeUpload={(file) => {
+                // Kiểm tra file
+                const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+                if (!isJpgOrPng) {
+                  message.error('You can only upload JPG/PNG file!');
+                  return Upload.LIST_IGNORE;
+                }
+                const isLt2M = file.size / 1024 / 1024 < 2;
+                if (!isLt2M) {
+                  message.error('Image must be smaller than 2MB!');
+                  return Upload.LIST_IGNORE;
+                }
+                
+                // Lưu file vào state
+                setAvatarFile(file);
+                
+                // Tạo preview
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => setAvatarPreview(reader.result);
+
+                return false; // Trả về false để ngăn upload tự động
+              }}
+              onRemove={() => { // Hỗ trợ xóa nếu cần
+                 setAvatarFile(null);
+                 setAvatarPreview(null);
+              }}
+            >
+              {avatarPreview ? (
+                <img src={avatarPreview} alt="avatar" style={{ width: '100%', objectFit: 'cover' }} />
+              ) : (
+                <div>
+                  <UploadOutlined />
+                  <div style={{ marginTop: 8 }}>Upload</div>
+                </div>
+              )}
+            </Upload>
+          </Form.Item>
+          {/* ================================== */}
+
           <Form.Item
             name="specializations"
             label="Specializations (comma-separated)"
@@ -277,6 +352,27 @@ const CreateAccountModal = ({ visible, onCancel, onSuccess }) => {
               </Form.Item>
             </Col>
           </Row>
+
+          {/* === TRƯỜNG KINH NGHIỆM CHO DOCTOR === */}
+          <Form.Item
+            name="yearsOfPractice"
+            label="Years of Practice"
+            initialValue={0}
+            rules={[
+              {
+                required: true,
+                message: "Please enter years of practice (enter 0 if new)",
+              },
+            ]}
+          >
+            <Input
+              type="number"
+              min={0}
+              placeholder="e.g. 5"
+              style={{ width: "100%" }}
+            />
+          </Form.Item>
+          {/* ============================================== */}
         </>
       )}
 

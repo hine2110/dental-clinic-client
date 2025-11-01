@@ -58,8 +58,12 @@ export const adminService = {
     return adminAPI.get(url);
   },
   getUserById: (userId) => adminAPI.get(`/admin/users/${userId}`),
-  createStaffAccount: (userData) =>
-    adminAPI.post("/admin/create-account", userData),
+  createStaffAccount: (formData) => 
+    adminAPI.post("/admin/create-account", formData, { 
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
   updateUser: (userId, userData) =>
     adminAPI.put(`/admin/users/${userId}`, userData),
   deleteUser: (userId) => adminAPI.delete(`/admin/users/${userId}`),
