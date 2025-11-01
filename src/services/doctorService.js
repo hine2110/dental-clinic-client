@@ -31,13 +31,24 @@ export const getDoctorProfile = async () => {
 
 /**
  * Cập nhật thông tin profile của bác sĩ
- * @param {object} profileData - Dữ liệu profile cần cập nhật
+ * @param {object|FormData} profileData - Dữ liệu profile cần cập nhật (có thể là FormData nếu có avatar)
  * @returns {Promise<object>} Kết quả cập nhật
  */
 export const updateDoctorProfile = async (profileData) => {
   try {
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Authorization': `Bearer ${token}`
+    };
+    
+    // Nếu không phải FormData, set Content-Type là JSON
+    if (!(profileData instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
+    }
+    // Nếu là FormData, không set Content-Type để browser tự động set với boundary
+    
     const response = await axios.put(`${API_BASE_URL}/doctor/profile`, profileData, {
-      headers: getAuthHeaders()
+      headers
     });
     return response.data;
   } catch (error) {
