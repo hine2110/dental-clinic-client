@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout, Menu, Avatar, Dropdown, Button, Badge } from 'antd';
 import { 
   DashboardOutlined, 
@@ -15,15 +15,56 @@ import {
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/authContext';
+import { getDoctorProfile } from '../../services/doctorService';
 import './DoctorLayout.css';
 
 const { Header, Sider, Content } = Layout;
 
 const DoctorLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+
+  // Fetch doctor profile to get avatar
+  useEffect(() => {
+    const fetchAvatar = async () => {
+      try {
+        const response = await getDoctorProfile();
+        const doctorData = response.data;
+        
+        if (doctorData.user?.avatar) {
+          // Construct full URL for avatar (same logic as Profile.jsx)
+          const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
+          const STATIC_BASE_URL = API_BASE_URL.replace('/api', '') || 'http://localhost:5000';
+          let avatar = doctorData.user.avatar;
+          
+          if (avatar.startsWith('http')) {
+            // Already a full URL (e.g., Google avatar)
+            setAvatarUrl(avatar);
+          } else if (avatar.includes(':')) {
+            // Absolute Windows path - extract uploads/... part
+            const match = avatar.match(/uploads[/\\].+$/);
+            if (match) {
+              setAvatarUrl(`${STATIC_BASE_URL}/${match[0].replace(/\\/g, '/')}`);
+            } else {
+              setAvatarUrl(avatar.replace(/^.*[/\\]uploads[/\\]/, `${STATIC_BASE_URL}/uploads/`).replace(/\\/g, '/'));
+            }
+          } else {
+            // Relative path
+            setAvatarUrl(`${STATIC_BASE_URL}/${avatar.replace(/\\/g, '/')}`);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching doctor avatar:', error);
+      }
+    };
+    
+    if (user?.role === 'doctor') {
+      fetchAvatar();
+    }
+  }, [user]);
 
   const menuItems = [
     {
@@ -158,7 +199,7 @@ const DoctorLayout = ({ children }) => {
               <div className="user-profile">
                 <div className="user-avatar">
                   <Avatar 
-                    src={user?.avatar} 
+                    src={avatarUrl || user?.avatar} 
                     icon={<UserOutlined />}
                     size={40}
                   />
