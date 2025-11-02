@@ -314,12 +314,16 @@ export const updateAppointmentStatus = async (appointmentId, updateData) => {
 };
 
 /**
- * Lấy danh sách thuốc
+ * Lấy danh sách thuốc theo location
+ * @param {string} locationId - ID của location (bắt buộc)
  * @returns {Promise<object>} Danh sách thuốc
  */
-export const getMedicines = async () => {
+export const getMedicines = async (locationId) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/doctor/medicines`, {
+    if (!locationId) {
+      throw new Error('locationId is required');
+    }
+    const response = await axios.get(`${API_BASE_URL}/doctor/medicines?locationId=${locationId}`, {
       headers: getAuthHeaders()
     });
     return response.data;

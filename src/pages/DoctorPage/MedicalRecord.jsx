@@ -168,7 +168,6 @@ const MedicalRecord = () => {
     if (appointmentId) {
       try {
         fetchAppointmentDetails();
-        fetchMedicines();
         fetchServices();
         fetchServiceDoctors();
       } catch (err) {
@@ -180,6 +179,14 @@ const MedicalRecord = () => {
       navigate('/doctor/appointments');
     }
   }, [appointmentId]);
+
+  // Fetch medicines sau khi appointment đã được load
+  useEffect(() => {
+    if (appointment) {
+      fetchMedicines();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appointment]);
 
   const fetchAppointmentDetails = async () => {
     try {
@@ -240,11 +247,10 @@ const MedicalRecord = () => {
           setPrescriptionItems(prescriptions);
         }
       } else {
-        console.error('❌ Invalid response format:', response);
         throw new Error('Invalid response format');
       }
     } catch (error) {
-      console.error('❌ Error fetching appointment details:', error);
+      console.error('Error fetching appointment details:', error);
       message.error('Lỗi khi tải thông tin lịch hẹn: ' + (error.message || 'Unknown error'));
       navigate('/doctor/appointments');
     } finally {
@@ -254,11 +260,22 @@ const MedicalRecord = () => {
 
   const fetchMedicines = async () => {
     try {
-      const response = await getMedicines();
+      // Lấy locationId từ appointment
+      const locationId = appointment?.location?._id || 
+                        appointment?.location || 
+                        appointment?.schedule?.location?._id || 
+                        appointment?.schedule?.location;
+      
+      if (!locationId) {
+        message.warning('Không thể tải danh sách thuốc: thiếu thông tin cơ sở');
+        return;
+      }
+      
+      const response = await getMedicines(locationId);
       setMedicines(response.data || []);
     } catch (error) {
       console.error('Error fetching medicines:', error);
-      message.error('Lỗi khi tải danh sách thuốc');
+      message.error('Lỗi khi tải danh sách thuốc: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -1112,10 +1129,7 @@ const MedicalRecord = () => {
                           message.success('Bệnh nhân đã được chuyển sang phòng xét nghiệm. Lịch hẹn sẽ chuyển sang trạng thái "Chờ kết quả xét nghiệm". Bạn có thể khám bệnh nhân khác và quay lại sau khi có kết quả.');
                           navigate('/doctor/appointments');
                         } catch (error) {
-                          console.error('=== ERROR: Chuyển bệnh nhân đi xét nghiệm ===');
-                          console.error('Error details:', error);
-                          console.error('Error response:', error.response);
-                          console.error('Error message:', error.message);
+                          console.error('Error transferring patient for tests:', error);
                           
                           message.error('Lỗi khi cập nhật trạng thái lịch hẹn: ' + (error.response?.data?.message || error.message));
                         }
