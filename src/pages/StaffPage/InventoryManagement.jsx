@@ -16,18 +16,54 @@ function InventoryManagement() {
     category: "",
     currentStock: 0, 
     description: "",
+    medicineId: "",
   });
   const [editData, setEditData] = useState(null); 
   const [addStock, setAddStock] = useState(0); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [locations, setLocations] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState("");
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      // (Bạn có thể đưa hàm này ra một file utils.js để dùng chung)
+      setLoading(true);
+      try {
+        const token = getToken();
+        const res = await fetch(`${API_BASE}/locations`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setLocations(data.data);
+          if (data.data.length > 0) {
+            setSelectedLocation(data.data[0]._id);
+          }
+        } else {
+          setError("Không thể tải danh sách cơ sở: " + data.message);
+        }
+      } catch (err) {
+        setError(err.message);
+      }
+      setLoading(false);
+    };
+    fetchLocations();
+  }, []);
+
   // 1. Fetch danh sách thuốc
   const fetchMedicines = async () => {
+    if (!selectedLocation) {
+      setMedicines([]); // Xóa danh sách cũ
+      return;
+    }
+
     setLoading(true);
+    setError(null);
     try {
       const token = getToken();
-      const res = await fetch(`${API_BASE}/staff/store/inventory`, {
+      const res = await fetch(`${API_BASE}/staff/store/inventory?locationId=${selectedLocation}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -44,7 +80,7 @@ function InventoryManagement() {
 
   useEffect(() => {
     fetchMedicines();
-  }, []);
+  }, [selectedLocation]);
 
   // 2. Xử lý thay đổi form
   const handleFormChange = (e) => {
@@ -55,27 +91,32 @@ function InventoryManagement() {
 
   const handleEditFormChange = (e) => {
     const { name, value } = e.target;
-    const val = name === 'price' ? Number(value) : value;
+    const val = name === 'price' ? Number(value) : (name === 'minimumStock' ? Number(value) : value);
     setEditData(prev => ({ ...prev, [name]: val }));
   };
   
   // 3. Xử lý Tạo mới
   const handleCreate = async (e) => {
     e.preventDefault();
+    if (!selectedLocation) {
+      alert("Vui lòng chọn cơ sở trước khi tạo.");
+      return;
+  }
     try {
       const token = getToken();
+      const body = { ...formData, location: selectedLocation };
       const res = await fetch(`${API_BASE}/staff/store/inventory`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(body)
       });
       const data = await res.json();
       if (data.success) {
         fetchMedicines(); 
-        setFormData({ name: "", price: 0, category: "", currentStock: 0, description: "" });
+        setFormData({ name: "", price: 0, category: "", currentStock: 0, description: "", medicineId: "" });
       } else {
         alert("Lỗi khi tạo: " + data.message);
       }
@@ -94,9 +135,9 @@ function InventoryManagement() {
     
     try {
       const token = getToken();
-      const body = { currentStock: addStock }; 
+      const body = { currentStock: addStock };
       
-      const res = await fetch(`${API_BASE}/staff/store/inventory/${editData._id}`, {
+      const res = await fetch(`${API_BASE}/staff/store/inventory/${editData._id}?locationId=${selectedLocation}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -104,6 +145,8 @@ function InventoryManagement() {
         },
         body: JSON.stringify(body)
       });
+
+      
       const data = await res.json();
       if (data.success) {
         fetchMedicines();
@@ -121,12 +164,28 @@ function InventoryManagement() {
   const handleUpdateInfo = async (e) => {
     e.preventDefault();
     if (!editData) return;
+
+    if (!editData.name || editData.name.trim() === "") {
+                      alert("Tên thuốc không được để trống.");
+                      return;
+                  }
+                  if (editData.price === undefined || editData.price < 0) {
+                      alert("Giá thuốc không hợp lệ.");
+                      return;
+                  }
+      
+        const { _id, currentStock, ...updateData } = editData;
     
-    const { _id, currentStock, ...updateBody } = editData;
+        // Tạo body mới và xử lý 'location'
+        const updateBody = {
+          ...updateData,
+          location: updateData.location._id || updateData.location
+        };
+    
 
     try {
       const token = getToken();
-      const res = await fetch(`${API_BASE}/staff/store/inventory/${_id}`, {
+      const res = await fetch(`${API_BASE}/staff/store/inventory/${_id}?locationId=${selectedLocation}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -152,7 +211,7 @@ function InventoryManagement() {
     
     try {
       const token = getToken();
-      const res = await fetch(`${API_BASE}/staff/store/inventory/${medicineId}`, {
+      const res = await fetch(`${API_BASE}/staff/store/inventory/${medicineId}?locationId=${selectedLocation}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -173,6 +232,25 @@ function InventoryManagement() {
   return (
     <div className="store-page-container">
       <h3>Quản lý Thuốc</h3>
+
+      <div className="location-selector-wrapper">
+        <label htmlFor="location-select">Chọn cơ sở:</label>
+        <select 
+          id="location-select"
+          value={selectedLocation}
+          onChange={e => setSelectedLocation(e.target.value)}
+          disabled={loading}
+        >
+          <option value="">-- Chọn một cơ sở --</option>
+          {locations.map(loc => (
+            <option key={loc._id} value={loc._id}>{loc.name}</option>
+          ))}
+        </select>
+      </div>
+      <hr />
+
+      {selectedLocation ? (
+        <>
 
       {/* === FORM TẠO MỚI === */}
       <h4>Tạo thuốc mới</h4>
@@ -234,8 +312,9 @@ function InventoryManagement() {
 
       {/* === DANH SÁCH THUỐC === */}
       <h4>Danh sách thuốc</h4>
-      <div className="store-table-wrapper">
-        <table className="store-table">
+      {loading && <div>Đang tải danh sách...</div>}
+          <div className="store-table-wrapper">
+            <table className="store-table">
           <thead>
             <tr>
               <th>Mã thuốc</th>
@@ -243,6 +322,7 @@ function InventoryManagement() {
               <th>Giá</th>
               <th>Tồn kho</th>
               <th>Loại</th>
+              <th>Mô tả</th>
               <th>Hành động</th>
             </tr>
           </thead>
@@ -254,6 +334,7 @@ function InventoryManagement() {
                 <td>{med.price}</td>
                 <td>{med.currentStock}</td>
                 <td>{med.category}</td>
+                <td>{med.description}</td>
                 <td>
                   <div className="table-actions">
                     <button className="btn btn-secondary" onClick={() => setEditData(med)}>Sửa</button>
@@ -265,6 +346,10 @@ function InventoryManagement() {
           </tbody>
         </table>
       </div>
+      </>
+    ) : (
+      <p>Vui lòng chọn một cơ sở để bắt đầu quản lý.</p>
+    )}
     </div>
   );
 }

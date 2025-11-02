@@ -22,16 +22,49 @@ function ViewEquipmentIssues() {
   const [issuesList, setIssuesList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [locations, setLocations] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState("");
   
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      setLoading(true);
+      try {
+        const token = getToken();
+        const res = await fetch(`${API_BASE}/locations`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setLocations(data.data);
+          if (data.data.length > 0) {
+            setSelectedLocation(data.data[0]._id);
+          }
+        } else {
+          setError("Không thể tải danh sách cơ sở: " + data.message);
+        }
+      } catch (err) {
+        setError(err.message);
+      }
+      setLoading(false);
+    };
+    fetchLocations();
+  }, []);
   // 1. Lấy danh sách báo cáo
   useEffect(() => {
     const fetchIssues = async () => {
+      if (!selectedLocation) {
+        setIssuesList([]);
+        return;
+      }
+
       setLoading(true);
       setError(null);
       try {
         const token = getToken();
         // Gọi API mới chúng ta đã tạo (GET)
-        const res = await fetch(`${API_BASE}/staff/store/equipment/issues`, {
+        const res = await fetch(`${API_BASE}/staff/store/equipment/issues?locationId=${selectedLocation}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -50,7 +83,7 @@ function ViewEquipmentIssues() {
       setLoading(false);
     };
     fetchIssues();
-  }, []);
+  }, [selectedLocation]);
 
   if (loading) return <div className="store-page-container">Đang tải danh sách báo cáo...</div>;
   if (error) return <div className="store-page-container">Lỗi: {error}</div>;
@@ -67,10 +100,45 @@ function ViewEquipmentIssues() {
     }
   };
 
+  const formatStatus = (status) => {
+      switch (status) {
+        case 'reported': return 'Báo cáo';
+        case 'under_review': return 'Đang xem xét';
+        case 'in_repair': return 'Đang sửa chữa';
+        case 'resolved': return 'Đã giải quyết';
+        case 'rejected': return 'Đã từ chối';
+        default: return status; 
+      }
+    };
+
   return (
     <div className="store-page-container">
       <h3>Danh sách Báo cáo Sự cố</h3>
+
+      {/* === MỚI: DROPDOWN LOCATION === */}
+      <div className="location-selector-wrapper">
+        <label htmlFor="location-select">Chọn cơ sở:</label>
+        <select 
+          id="location-select"
+          value={selectedLocation}
+          onChange={e => setSelectedLocation(e.target.value)}
+          disabled={loading}
+        >
+          <option value="">-- Chọn một cơ sở --</option>
+          {locations.map(loc => (
+            <option key={loc._id} value={loc._id}>{loc.name}</option>
+          ))}
+        </select>
+      </div>
+      <hr />
+
+      {loading && <div>Đang tải danh sách báo cáo...</div>}
       
+      {!loading && !selectedLocation && (
+        <p>Vui lòng chọn một cơ sở để xem báo cáo.</p>
+      )}
+      
+      {selectedLocation && (
       <div className="store-table-wrapper">
         <table className="store-table">
           <thead>
@@ -100,7 +168,7 @@ function ViewEquipmentIssues() {
                   <td>{issue.severity || 'N/A'}</td>
                   <td>
                     <span className={getStatusBadge(issue.status)}>
-                      {issue.status}
+                      {formatStatus(issue.status)}
                     </span>
                   </td>
                 </tr>
@@ -109,6 +177,7 @@ function ViewEquipmentIssues() {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 }
