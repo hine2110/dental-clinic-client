@@ -88,7 +88,7 @@ function ManagementProfilePage() {
 
     try {
       const token = getToken();
-      const response = await fetch(`${API_BASE_URL}/api/management/profile`, {
+      const response = await fetch(`${API_BASE_URL}/management/profile`, {
         method: 'PUT',
         headers: { 
           'Authorization': `Bearer ${token}` 

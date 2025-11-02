@@ -11,13 +11,20 @@ const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 const getToken = () => localStorage.getItem('token');
 
 // Enum các trạng thái (lấy từ model)
-const STATUS_OPTIONS = ["reported", "under_review", "in_repair", "resolved", "rejected"];
+const STATUS_OPTIONS = [
+  { value: "reported", label: "Mới báo cáo" },
+  { value: "under_review", label: "Đang xem xét" },
+  { value: "in_repair", label: "Đang sửa chữa" },
+  { value: "resolved", label: "Đã giải quyết" },
+  { value: "rejected", label: "Bị từ chối" }
+];
 
 const ViewManagerEquipmentIssue = () => {
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [updatingStatus, setUpdatingStatus] = useState({}); // Lưu trạng thái loading cho từng dòng
+  const [updatingStatus, setUpdatingStatus] = useState({}); 
+  const [locations, setLocations] = useState([]);
 
   const fetchIssues = async () => {
     setLoading(true);
@@ -37,10 +44,28 @@ const ViewManagerEquipmentIssue = () => {
     }
   };
 
+  const fetchLocations = async () => {
+    try {
+      const token = getToken();
+      // Giả sử manager cũng dùng API /locations (giống StoreKeeper)
+      const response = await fetch(`${API_BASE}/locations`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setLocations(data.data || []);
+      }
+    } catch (err) {
+      console.error("Lỗi tải danh sách cơ sở:", err.message);
+      // Không block UI nếu lỗi tải location
+    }
+  };
+
+
   useEffect(() => {
     fetchIssues();
+    fetchLocations(); // <-- THÊM: Gọi hàm fetch locations
   }, []);
-
   const handleStatusChange = async (issueId, newStatus) => {
     setUpdatingStatus(prev => ({ ...prev, [issueId]: true })); // Bắt đầu loading cho dòng này
     try {
@@ -101,6 +126,14 @@ const ViewManagerEquipmentIssue = () => {
       render: (text, record) => text || `(ID: ${record.equipment?._id || 'N/A'})`, // Hiển thị ID nếu tên null
     },
     {
+      title: 'Cơ sở',
+      key: 'location',
+      dataIndex: ['equipment', 'location'], // Lấy object location
+      render: (location) => location?.name || 'N/A', // Hiển thị tên
+      filters: locations.map(loc => ({ text: loc.name, value: loc._id })),
+      onFilter: (value, record) => record.equipment?.location?._id === value,
+    },
+    {
       title: 'Người báo cáo',
       dataIndex: ['reporter', 'user', 'fullName'], // Truy cập lồng
       key: 'reporter',
@@ -141,6 +174,7 @@ const ViewManagerEquipmentIssue = () => {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
+      filters: STATUS_OPTIONS.map(s => ({ text: s.label, value: s.value })),
       filters: STATUS_OPTIONS.map(s => ({ text: s, value: s })),
       onFilter: (value, record) => record.status === value,
       render: (status, record) => (
@@ -152,8 +186,8 @@ const ViewManagerEquipmentIssue = () => {
           disabled={updatingStatus[record._id]} // Disable khi đang loading
         >
           {STATUS_OPTIONS.map(option => (
-            <Select.Option key={option} value={option}>
-              <Tag color={getStatusColor(option)}>{option}</Tag>
+            <Select.Option key={option.value} value={option.value}>
+              <Tag color={getStatusColor(option.value)}>{option.label}</Tag>
             </Select.Option>
           ))}
         </Select>

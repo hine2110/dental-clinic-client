@@ -1,7 +1,8 @@
 // src/pages/staff/InventoryManagement.jsx
 
 import React, { useState, useEffect } from "react";
-import './StoreManagement.css'; // <<< THÊM DÒNG NÀY
+import './StoreManagement.css'; 
+import Toast from '../../components/common/Toast';
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'; // Đã sửa API_BASE
 
@@ -25,6 +26,8 @@ function InventoryManagement() {
 
   const [locations, setLocations] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState("");
+
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -91,7 +94,10 @@ function InventoryManagement() {
 
   const handleEditFormChange = (e) => {
     const { name, value } = e.target;
-    const val = name === 'price' ? Number(value) : (name === 'minimumStock' ? Number(value) : value);
+    // Thêm 'currentStock' vào danh sách chuyển đổi sang Number
+    const val = (name === 'price' || name === 'minimumStock' || name === 'currentStock') 
+                ? Number(value) 
+                : value;
     setEditData(prev => ({ ...prev, [name]: val }));
   };
   
@@ -135,8 +141,10 @@ function InventoryManagement() {
     
     try {
       const token = getToken();
-      const body = { currentStock: addStock };
+      // Sửa 1: Gửi 'addStock' để backend biết đây là CỘNG DỒN
+      const body = { addStock: addStock }; 
       
+      // Sửa 2: Thêm locationId vào URL
       const res = await fetch(`${API_BASE}/staff/store/inventory/${editData._id}?locationId=${selectedLocation}`, {
         method: 'PUT',
         headers: {
@@ -145,8 +153,6 @@ function InventoryManagement() {
         },
         body: JSON.stringify(body)
       });
-
-      
       const data = await res.json();
       if (data.success) {
         fetchMedicines();
@@ -165,33 +171,39 @@ function InventoryManagement() {
     e.preventDefault();
     if (!editData) return;
 
+    // (Validation giữ nguyên)
     if (!editData.name || editData.name.trim() === "") {
-                      alert("Tên thuốc không được để trống.");
-                      return;
-                  }
-                  if (editData.price === undefined || editData.price < 0) {
-                      alert("Giá thuốc không hợp lệ.");
-                      return;
-                  }
+        alert("Tên thuốc không được để trống.");
+        return;
+    }
+    if (editData.price === undefined || editData.price < 0) {
+        alert("Giá thuốc không hợp lệ.");
+        return;
+    }
+    if (editData.currentStock === undefined || editData.currentStock < 0) {
+        alert("Tồn kho không hợp lệ.");
+        return;
+    }
       
-        const { _id, currentStock, ...updateData } = editData;
+    // Sửa 1: Chỉ lấy _id ra, giữ mọi thứ khác (bao gồm cả currentStock)
+    const { _id, ...updateData } = editData;
     
-        // Tạo body mới và xử lý 'location'
-        const updateBody = {
-          ...updateData,
-          location: updateData.location._id || updateData.location
-        };
+    // Sửa 2: Xử lý 'location' object (giống như logic ta đã sửa)
+    const updateBody = {
+      ...updateData,
+      location: updateData.location._id || updateData.location
+    };
     
-
     try {
       const token = getToken();
+      // Sửa 3: Đảm bảo URL có ?locationId (code của bạn đã có)
       const res = await fetch(`${API_BASE}/staff/store/inventory/${_id}?locationId=${selectedLocation}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(updateBody) 
+        body: JSON.stringify(updateBody) // Gửi body chứa currentStock
       });
       const data = await res.json();
       if (data.success) {
@@ -231,7 +243,16 @@ function InventoryManagement() {
 
   return (
     <div className="store-page-container">
-      <h3>Quản lý Thuốc</h3>
+
+      {toast.show && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(prev => ({ ...prev, show: false }))} 
+        />
+      )}
+
+      <h3>Quản Lý Thuốc</h3>
 
       <div className="location-selector-wrapper">
         <label htmlFor="location-select">Chọn cơ sở:</label>
@@ -251,64 +272,93 @@ function InventoryManagement() {
 
       {selectedLocation ? (
         <>
-
-      {/* === FORM TẠO MỚI === */}
-      <h4>Tạo thuốc mới</h4>
-      <form onSubmit={handleCreate} className="store-form">
-        <div className="form-group">
-          <input name="name" value={formData.name} onChange={handleFormChange} placeholder="Tên thuốc" required />
-        </div>
-        <div className="form-group">
-          <input name="price" type="number" value={formData.price} onChange={handleFormChange} placeholder="Giá" required />
-        </div>
-        <div className="form-group">
-          <input name="currentStock" type="number" value={formData.currentStock} onChange={handleFormChange} placeholder="Số lượng ban đầu" />
-        </div>
-        <div className="form-group">
-          <input name="category" value={formData.category} onChange={handleFormChange} placeholder="Loại thuốc" />
-        </div>
-        <div className="form-group">
-          <input name="description" value={formData.description} onChange={handleFormChange} placeholder="Mô tả" />
-        </div>
-        <button type="submit" className="btn btn-primary">Tạo mới</button>
-      </form>
-      
-      <hr />
+        <div className="form-box">
+          <h4>Tạo thuốc mới</h4>
+          <form onSubmit={handleCreate} className="store-form">
+            {/* ... (các input của form tạo mới giữ nguyên) ... */}
+            <div className="form-group">
+              <input name="name" value={formData.name} onChange={handleFormChange} placeholder="Tên thuốc" required />
+            </div>
+            <div className="form-group">
+              <input name="price" type="number" value={formData.price} onChange={handleFormChange} placeholder="Giá" required />
+            </div>
+            <div className="form-group">
+              <input name="currentStock" type="number" value={formData.currentStock} onChange={handleFormChange} placeholder="Số lượng ban đầu" />
+            </div>
+            <div className="form-group">
+              <input name="category" value={formData.category} onChange={handleFormChange} placeholder="Loại thuốc" />
+            </div>
+            <div className="form-group">
+              <input name="description" value={formData.description} onChange={handleFormChange} placeholder="Mô tả" />
+            </div>
+            <button type="submit" className="btn btn-primary">Tạo mới</button>
+          </form>
+          </div>
+          <hr />
       
       {/* === FORM CẬP NHẬT === */}
       {editData && (
-        <div className="edit-form-container">
-          <h4>Cập nhật thuốc: {editData.name} (Tồn kho: {editData.currentStock})</h4>
+        <div className="form-box">
           
-          {/* Form cập nhật thông tin */}
-          <form onSubmit={handleUpdateInfo} className="store-form">
-            <div className="form-group">
-              <input name="name" value={editData.name} onChange={handleEditFormChange} placeholder="Tên thuốc" required />
-            </div>
-            <div className="form-group">
-              <input name="price" type="number" value={editData.price} onChange={handleEditFormChange} placeholder="Giá" required />
-            </div>
-            <div className="form-group">
-              <input name="category" value={editData.category || ''} onChange={handleEditFormChange} placeholder="Loại thuốc" />
-            </div>
-            <div className="form-group">
-              <input name="description" value={editData.description || ''} onChange={handleEditFormChange} placeholder="Mô tả" />
-            </div>
-            <button type="submit" className="btn btn-primary">Cập nhật</button>
-          </form>
+        {/* === BOX 1: CẬP NHẬT THÔNG TIN === */}
+        <h4>Cập nhật thông tin: {editData.name}</h4>
+        <form onSubmit={handleUpdateInfo} className="store-form">
+          <div className="form-group">
+            <label>Tên thuốc</label>
+            <input name="name" value={editData.name} onChange={handleEditFormChange} placeholder="Tên thuốc" required />
+          </div>
+          <div className="form-group">
+            <label>Giá</label>
+            <input name="price" type="number" value={editData.price} onChange={handleEditFormChange} placeholder="Giá" required />
+          </div>
+          
+          {/* Thêm input cho "Số lượng tồn kho (Tổng)" */}
+          <div className="form-group">
+              <label>Số lượng tồn kho (Tổng)</label>
+              <input 
+                  name="currentStock" 
+                  type="number" 
+                  value={editData.currentStock} 
+                  onChange={handleEditFormChange} 
+                  placeholder="Tồn kho" 
+                  required
+              />
+          </div>
 
-          {/* Form nhập kho */}
-          <form onSubmit={handleAddStock} className="store-form stock-add-form">
-            <div className="form-group">
-              <input type="number" value={addStock} onChange={e => setAddStock(Number(e.target.value))} placeholder="Số lượng nhập thêm" />
-            </div>
-            <button type="submit" className="btn btn-secondary">Nhập kho</button>
-          </form>
-          
-          <button onClick={() => setEditData(null)} className="btn btn-secondary" style={{marginTop: '12px'}}>Hủy</button>
-          <hr />
-        </div>
-      )}
+          <div className="form-group">
+            <label>Loại thuốc</label>
+            <input name="category" value={editData.category || ''} onChange={handleEditFormChange} placeholder="Loại thuốc" />
+          </div>
+          <div className="form-group">
+            <label>Mô tả</label>
+            <input name="description" value={editData.description || ''} onChange={handleEditFormChange} placeholder="Mô tả" />
+          </div>
+          <button type="submit" className="btn btn-primary" style={{width: '100%'}}>Cập nhật thông tin</button>
+        </form>
+
+        <hr style={{margin: '20px 0', borderStyle: 'dashed'}} />
+
+        {/* === BOX 2: NHẬP KHO (CỘNG THÊM) === */}
+        <h4>Nhập kho (Cộng thêm)</h4>
+        <form onSubmit={handleAddStock} className="store-form stock-add-form" style={{justifyContent: 'flex-start'}}>
+          <div className="form-group">
+            <label>Số lượng nhập thêm</label>
+            <input 
+              type="number" 
+              value={addStock} 
+              onChange={e => setAddStock(Number(e.target.value))} 
+              placeholder="Ví dụ: 50" 
+            />
+          </div>
+          <button type="submit" className="btn btn-secondary">Nhập kho</button>
+        </form>
+        
+        <hr style={{margin: '20px 0'}} />
+
+        <button onClick={() => setEditData(null)} className="btn btn-secondary" style={{marginTop: '0'}}>Hủy</button>
+        <hr />
+      </div>
+    )}
 
       {/* === DANH SÁCH THUỐC === */}
       <h4>Danh sách thuốc</h4>
@@ -345,7 +395,7 @@ function InventoryManagement() {
             ))}
           </tbody>
         </table>
-      </div>
+      </div>     
       </>
     ) : (
       <p>Vui lòng chọn một cơ sở để bắt đầu quản lý.</p>

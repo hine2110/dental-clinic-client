@@ -5,6 +5,8 @@
   "dependencies": {
     "@ant-design/charts": "^2.6.6",
     "@ant-design/icons": "^6.0.2",
+    "@fortawesome/free-solid-svg-icons": "^7.1.0",
+    "@fortawesome/react-fontawesome": "^3.1.0",
     "@js-temporal/polyfill": "^0.5.1",
     "@schedule-x/calendar": "^3.3.0",
     "@schedule-x/events-service": "^3.3.0",
