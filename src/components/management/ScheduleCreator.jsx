@@ -468,7 +468,7 @@ function ScheduleCreator({ scheduleType, scheduleSubType, onScheduleCreated, loc
     return schedules; // Nếu không có subType, hiển thị tất cả
   }, [schedules, scheduleSubType]);
   const calendarDays = generateCalendarDays(currentDate, filteredSchedules);
-  const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  const daysOfWeek = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 
   return (
     <div className="schedule-creator">

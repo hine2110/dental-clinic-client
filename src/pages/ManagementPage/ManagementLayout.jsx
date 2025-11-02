@@ -9,6 +9,8 @@ function ManagementLayout() {
   const { user, loading, logout} = useAuth();
   const navigate = useNavigate();
 
+  
+
   useEffect(() => {
     if (!loading) {
       if (!user || user.role !== "management") {

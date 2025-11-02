@@ -1,7 +1,8 @@
 // src/pages/staff/ReportIssue.jsx
 
 import React, { useState, useEffect } from "react";
-import './StoreManagement.css'; // Dùng chung CSS
+import './StoreManagement.css'; 
+import Toast from '../../components/common/Toast';
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
 const getToken = () => localStorage.getItem('token');
@@ -40,6 +41,7 @@ function ReportIssue() {
   const [locations, setLocations] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [loadingLocations, setLoadingLocations] = useState(true);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -233,6 +235,15 @@ function ReportIssue() {
   return (
     <div className="store-page-container">
 
+      {toast.show && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(prev => ({ ...prev, show: false }))} 
+        />
+      )}
+
+      <h3>Báo Cáo Sự Cố Thiết Bị</h3>
       {/* === (MỚI) DROPDOWN LOCATION === */}
       <div className="location-selector-wrapper" style={{marginBottom: '10px'}}>
         <label htmlFor="location-select">Chọn cơ sở:</label>
@@ -252,14 +263,15 @@ function ReportIssue() {
 
       {selectedLocation ? (
         <>
+        <div className="form-box">
           {/* === PHẦN 1: FORM TẠO BÁO CÁO === */}
-          <h3>Báo cáo Sự cố Thiết bị</h3>
+          
           
           {loadingForm && <p>Đang tải danh sách thiết bị...</p>}
           {errorForm && <div className="alert alert-danger">{errorForm}</div>}
           
           {!loadingForm && (
-            <form onSubmit={handleSubmit} className="store-form" style={{flexDirection: 'column', alignItems: 'flex-start'}}>
+            <form onSubmit={handleSubmit} className="store-form form-column">
               
               <div className="form-group" style={{width: '100%'}}>
                 <label>Chọn thiết bị (tại {locations.find(l => l._id === selectedLocation)?.name}):</label>
@@ -297,6 +309,32 @@ function ReportIssue() {
                   {priorityOptions.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
+
+              <div className="form-group" style={{width: '100%'}}>
+                <label>Tải lên hình ảnh (Tùy chọn):</label>
+                <input 
+                  type="file"
+                  multiple // Cho phép chọn nhiều ảnh
+                  onChange={handleImageUpload} // Kích hoạt hàm của bạn
+                  disabled={isUploading} // Khóa lại khi đang upload
+                  accept="image/*" // Chỉ chấp nhận file ảnh
+                />
+                
+                {/* Hiển thị trạng thái đang tải */}
+                {isUploading && <p>Đang tải ảnh lên...</p>}
+
+                {/* Hiển thị các ảnh đã tải lên */}
+                <div className="image-preview-container" style={{marginTop: '10px', display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
+                  {imageUrls.map((url, index) => (
+                    <img 
+                      key={index} 
+                      src={url} 
+                      alt={`Xem trước ${index + 1}`} 
+                      style={{width: '100px', height: '100px', objectFit: 'cover', border: '1px solid #ccc'}}
+                    />
+                  ))}
+                </div>
+              </div>
               
               {/* Khối Upload Ảnh */}
               <button type="submit" className="btn btn-primary" style={{marginTop: '10px'}} disabled={isUploading || equipmentList.length === 0}>
@@ -304,7 +342,7 @@ function ReportIssue() {
               </button>
             </form>
           )}
-
+          </div>
           <hr />
 
       {/* === PHẦN 2: BẢNG DANH SÁCH BÁO CÁO === */}

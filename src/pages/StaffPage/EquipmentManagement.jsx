@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import './StoreManagement.css'; 
+import Toast from '../../components/common/Toast';
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
 const getToken = () => localStorage.getItem('token');
@@ -22,6 +23,8 @@ function EquipmentManagement() {
   // === PHẦN MỚI: QUẢN LÝ LOCATION ===
   const [locations, setLocations] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState("");
+
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   // ==================================
 
   // === MỚI: Fetch danh sách locations ===
@@ -181,14 +184,28 @@ function EquipmentManagement() {
     }
   };
 
-  const equipmentStatusOptions = ["operational", "maintenance", "repair", "out_of_order"];
+  const equipmentStatusOptions = [
+    { value: "operational",   label: "Đang hoạt động" },
+    { value: "maintenance",   label: "Đang bảo trì" },
+    { value: "repair",        label: "Đang sửa chữa" },
+    { value: "out_of_order",  label: "Hỏng (Ngưng sử dụng)" }
+  ];
 
   // if (loading) return <div>Đang tải...</div>; // Tạm bỏ
   if (error) return <div>Lỗi: {error}</div>;
 
   return (
     <div className="store-page-container">
-      <h3>Quản lý Thiết bị</h3>
+
+      {toast.show && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(prev => ({ ...prev, show: false }))} 
+        />
+      )}
+
+      <h3>Quản Lý Thiết Bị</h3>
 
       {/* === MỚI: DROPDOWN LOCATION === */}
       <div className="location-selector-wrapper">
@@ -210,6 +227,8 @@ function EquipmentManagement() {
       {/* Chỉ hiển thị form và bảng nếu đã chọn location */}
       {selectedLocation ? (
         <>
+
+        <div className="form-box">
           {/* === FORM TẠO/CẬP NHẬT === */}
           <h4>{editData ? "Cập nhật thiết bị" : "Tạo thiết bị mới (cho cơ sở đang chọn)"}</h4>
           <form onSubmit={editData ? handleUpdate : handleCreate} className="store-form">
@@ -237,7 +256,12 @@ function EquipmentManagement() {
                 value={editData ? editData.status : formData.status}
                 onChange={editData ? handleEditFormChange : handleFormChange}
               >
-                {equipmentStatusOptions.map(s => <option key={s} value={s.toLowerCase().replace(' ', '_')}>{s}</option>)}
+                {/* === DÒNG NÀY ĐÃ ĐƯỢC THAY ĐỔI === */}
+                                {equipmentStatusOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="form-group">
@@ -259,7 +283,7 @@ function EquipmentManagement() {
             <button type="submit" className="btn btn-primary" disabled={loading}>{editData ? "Cập nhật" : "Tạo mới"}</button>
             {editData && <button type="button" className="btn btn-secondary" onClick={() => setEditData(null)}>Hủy</button>}
           </form>
-          
+            </div>
           <hr />
 
           {/* === DANH SÁCH THIẾT BỊ === */}
