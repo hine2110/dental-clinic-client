@@ -21,7 +21,7 @@ const formatDateTime = (isoDate) => {
 function ReportIssue() {
   // === State cho Form (Phần 1) ===
   const [equipmentList, setEquipmentList] = useState([]);
-  const [loadingForm, setLoadingForm] = useState(true); // Đổi tên
+  const [loadingForm, setLoadingForm] = useState(false); // Đổi tên
   const [errorForm, setErrorForm] = useState(null); // Đổi tên
   const [formData, setFormData] = useState({
     equipment: "", 
@@ -36,13 +36,47 @@ function ReportIssue() {
   const [issuesList, setIssuesList] = useState([]);
   const [loadingIssues, setLoadingIssues] = useState(true);
   const [errorIssues, setErrorIssues] = useState(null);
+
+  const [locations, setLocations] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const [loadingLocations, setLoadingLocations] = useState(true);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      setLoadingLocations(true);
+      try {
+        const token = getToken();
+        const res = await fetch(`${API_BASE}/locations`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setLocations(data.data);
+          if (data.data.length > 0) {
+            setSelectedLocation(data.data[0]._id); // Tự động chọn location đầu tiên
+          }
+        } else {
+          setErrorForm("Lỗi tải cơ sở: " + data.message);
+        }
+      } catch (err) {
+        setErrorForm(err.message);
+      }
+      setLoadingLocations(false);
+    };
+    fetchLocations();
+  }, []);
   
   // 1a. (Form) Lấy danh sách thiết bị cho dropdown
   const fetchEquipment = async () => {
+    if (!selectedLocation) {
+      setEquipmentList([]);
+      return;
+  }
     setLoadingForm(true);
+    setErrorForm(null);
     try {
       const token = getToken();
-      const res = await fetch(`${API_BASE}/staff/store/equipment?isActive=true`, {
+      const res = await fetch(`${API_BASE}/staff/store/equipment?isActive=true&locationId=${selectedLocation}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -63,11 +97,15 @@ function ReportIssue() {
   
   // 1b. (MỚI - Bảng) Lấy danh sách báo cáo
   const fetchIssues = async () => {
+    if (!selectedLocation) {
+      setIssuesList([]);
+      return;
+  }
     setLoadingIssues(true);
     setErrorIssues(null);
     try {
       const token = getToken();
-      const res = await fetch(`${API_BASE}/staff/store/equipment/issues`, {
+      const res = await fetch(`${API_BASE}/staff/store/equipment/issues?locationId=${selectedLocation}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -85,9 +123,9 @@ function ReportIssue() {
 
   // 1c. Chạy cả 2 hàm fetch khi component tải
   useEffect(() => {
-    fetchEquipment();
-    fetchIssues();
-  }, []);
+        fetchEquipment();
+        fetchIssues();
+      }, [selectedLocation]);
 
   // 2. (Form) Xử lý thay đổi input
   const handleChange = (e) => {
@@ -177,89 +215,97 @@ function ReportIssue() {
     }
   };
 
+  const formatStatus = (status) => {
+    switch (status) {
+      case 'reported': return 'Mới báo cáo';
+      case 'under_review': return 'Đang xem xét';
+      case 'in_repair': return 'Đang sửa chữa';
+      case 'resolved': return 'Đã giải quyết';
+      case 'rejected': return 'Bị từ chối';
+      default: return status;
+    }
+  };
+
   // Lấy enum từ model
   const severityOptions = ["low", "medium", "high", "critical"];
   const priorityOptions = ["low", "medium", "high", "urgent"];
 
   return (
     <div className="store-page-container">
-      
-      {/* === PHẦN 1: FORM TẠO BÁO CÁO === */}
-      <h3>Báo cáo Sự cố Thiết bị</h3>
-      
-      {loadingForm && <p>Đang tải danh sách thiết bị...</p>}
-      {errorForm && <div className="alert alert-danger">{errorForm}</div>}
-      
-      {!loadingForm && (
-        <form onSubmit={handleSubmit} className="store-form" style={{flexDirection: 'column', alignItems: 'flex-start'}}>
-          
-          <div className="form-group" style={{width: '100%'}}>
-            <label>Chọn thiết bị:</label>
-            <select name="equipment" value={formData.equipment} onChange={handleChange}>
-              {equipmentList.map(eq => (
-                <option key={eq._id} value={eq._id}>{eq.name} (Model: {eq.model || 'N/A'})</option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="form-group" style={{width: '100%'}}>
-            <label>Mô tả sự cố:</label>
-            <textarea 
-              name="issueDescription" 
-              value={formData.issueDescription} 
-              onChange={handleChange}
-              rows="5"
-              required
-            />
-          </div>
-          
-          <div className="form-group" style={{width: '100%'}}>
-            <label>Mức độ nghiêm trọng (Severity):</label>
-            <select name="severity" value={formData.severity} onChange={handleChange}>
-              {severityOptions.map(o => <option key={o} value={o}>{o}</option>)}
-            </select>
-          </div>
-          
-          <div className="form-group" style={{width: '100%'}}>
-            <label>Mức độ ưu tiên (Priority):</label>
-            <select name="priority" value={formData.priority} onChange={handleChange}>
-              {priorityOptions.map(o => <option key={o} value={o}>{o}</option>)}
-            </select>
-          </div>
-          
-          {/* Khối Upload Ảnh */}
-          <div className="form-group" style={{width: '100%'}}>
-            <label>Tải lên hình ảnh (Tùy chọn):</label>
-            <input 
-              type="file" 
-              className="form-control-file" 
-              multiple
-              onChange={handleImageUpload}
-              disabled={isUploading}
-              accept="image/*"
-            />
-            {isUploading && <small style={{color: '#007bff'}}>Đang tải lên...</small>}
-          </div>
-          {imageUrls.length > 0 && (
-            <div className="image-preview-container">
-              <label>Ảnh đã tải lên:</label>
-              <div className="image-list">
-                {imageUrls.map((url, index) => (
-                  <div key={index} className="image-preview-item">
-                    <img src={url} alt={`Preview ${index}`} height="60" width="60" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          <button type="submit" className="btn btn-primary" style={{marginTop: '10px'}} disabled={isUploading}>
-            {isUploading ? "Đang xử lý ảnh..." : "Gửi báo cáo"}
-          </button>
-        </form>
-      )}
 
+      {/* === (MỚI) DROPDOWN LOCATION === */}
+      <div className="location-selector-wrapper" style={{marginBottom: '10px'}}>
+        <label htmlFor="location-select">Chọn cơ sở:</label>
+        <select 
+          id="location-select"
+          value={selectedLocation}
+          onChange={e => setSelectedLocation(e.target.value)}
+          disabled={loadingForm || loadingIssues}
+        >
+          <option value="">-- Chọn cơ sở --</option>
+          {locations.map(loc => (
+            <option key={loc._id} value={loc._id}>{loc.name}</option>
+          ))}
+        </select>
+      </div>
       <hr />
+
+      {selectedLocation ? (
+        <>
+          {/* === PHẦN 1: FORM TẠO BÁO CÁO === */}
+          <h3>Báo cáo Sự cố Thiết bị</h3>
+          
+          {loadingForm && <p>Đang tải danh sách thiết bị...</p>}
+          {errorForm && <div className="alert alert-danger">{errorForm}</div>}
+          
+          {!loadingForm && (
+            <form onSubmit={handleSubmit} className="store-form" style={{flexDirection: 'column', alignItems: 'flex-start'}}>
+              
+              <div className="form-group" style={{width: '100%'}}>
+                <label>Chọn thiết bị (tại {locations.find(l => l._id === selectedLocation)?.name}):</label>
+                <select name="equipment" value={formData.equipment} onChange={handleChange}>
+                  {equipmentList.length > 0 ? (
+                    equipmentList.map(eq => (
+                      <option key={eq._id} value={eq._id}>{eq.name} {eq.model && `(Model: ${eq.model})`}</option>
+                    ))
+                  ) : (
+                    <option value="">Không có thiết bị nào tại cơ sở này</option>
+                  )}
+                </select>
+              </div>
+              
+              {/* ... (Các phần còn lại của Form giữ nguyên) ... */}
+              <div className="form-group" style={{width: '100%'}}>
+                <label>Mô tả sự cố:</label>
+                <textarea 
+                  name="issueDescription" 
+                  value={formData.issueDescription} 
+                  onChange={handleChange}
+                  rows="5"
+                  required
+                />
+              </div>
+              <div className="form-group" style={{width: '100%'}}>
+                <label>Mức độ nghiêm trọng (Severity):</label>
+                <select name="severity" value={formData.severity} onChange={handleChange}>
+                  {severityOptions.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div className="form-group" style={{width: '100%'}}>
+                <label>Mức độ ưu tiên (Priority):</label>
+                <select name="priority" value={formData.priority} onChange={handleChange}>
+                  {priorityOptions.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              
+              {/* Khối Upload Ảnh */}
+              <button type="submit" className="btn btn-primary" style={{marginTop: '10px'}} disabled={isUploading || equipmentList.length === 0}>
+                {isUploading ? "Đang xử lý..." : "Gửi báo cáo"}
+              </button>
+            </form>
+          )}
+
+          <hr />
 
       {/* === PHẦN 2: BẢNG DANH SÁCH BÁO CÁO === */}
       <h3>Danh sách Báo cáo Đã gửi</h3>
@@ -295,7 +341,7 @@ function ReportIssue() {
                     <td>{issue.severity || 'N/A'}</td>
                     <td>
                       <span className={getStatusBadge(issue.status)}>
-                        {issue.status}
+                        {formatStatus(issue.status)}
                       </span>
                     </td>
                   </tr>
@@ -304,6 +350,10 @@ function ReportIssue() {
             </tbody>
           </table>
         </div>
+      )}
+      </>
+      ) : (
+        <p>Vui lòng chọn một cơ sở để bắt đầu.</p>
       )}
 
     </div>
